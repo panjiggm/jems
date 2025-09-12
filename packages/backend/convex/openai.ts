@@ -20,7 +20,7 @@ export const summary = internalAction({
   handler: async (ctx, { id, title, content }) => {
     const prompt = `Take in the following note and return a summary: Title: ${title}, Note content: ${content}`;
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY as string;
     if (!apiKey) {
       const error = missingEnvVariableUrl(
         "OPENAI_API_KEY",
@@ -33,7 +33,7 @@ export const summary = internalAction({
       });
       return;
     }
-    const openai = new OpenAI({ apiKey });
+    const openai = new OpenAI({ apiKey, baseURL: "https://api.lunos.tech/v1" });
     const output = await openai.chat.completions.create({
       messages: [
         {
@@ -43,7 +43,7 @@ export const summary = internalAction({
         },
         { role: "user", content: prompt },
       ],
-      model: "gpt-4-1106-preview",
+      model: "openai/gpt-5-nano",
       response_format: { type: "json_object" },
     });
 
