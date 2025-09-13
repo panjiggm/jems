@@ -1,5 +1,7 @@
 "use client";
 
+import Hero from "@/components/common/hero";
+import FeatureStack from "@/components/home/feature-stack";
 import Navbar from "@/components/navbar";
 
 export default function Home() {
@@ -23,6 +25,8 @@ export default function Home() {
         {/* Your Content/Components */}
         <div className="relative z-10 max-w-(--breakpoint-lg) mx-auto px-4 sm:px-6 lg:px-8">
           <Navbar />
+          <Hero />
+          <FeatureStack />
         </div>
       </div>
     </main>

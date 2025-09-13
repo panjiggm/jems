@@ -10,7 +10,7 @@ const montserrat = Montserrat({ subsets: ["latin"] });
 const lato = Lato({ weight: "400", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Jems Creator",
+  title: "Hidden Jems",
   description: "AI-driven tools for unstoppable creator",
 };
 

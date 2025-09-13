@@ -25,18 +25,16 @@ export function ThemeToggle({ className, labels }: Props) {
       type="button"
       aria-label="Toggle theme"
       title="Toggle theme"
-      size="icon"
+      size="sm"
       variant="outline"
       className={className}
       onClick={() => setTheme(next)}
     >
-      {isDark ? (
-        <Sun className="size-4" />
-      ) : (
-        <Moon className="size-4" />
-      )}
+      {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
       <span className="sr-only">
-        {isDark ? labels?.light ?? "Switch to light" : labels?.dark ?? "Switch to dark"}
+        {isDark
+          ? (labels?.light ?? "Switch to light")
+          : (labels?.dark ?? "Switch to dark")}
       </span>
     </Button>
   );
