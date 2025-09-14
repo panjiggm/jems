@@ -8,6 +8,7 @@ import {
   Command,
   Home,
   Inbox,
+  Laptop2,
   MessageCircleQuestion,
   Search,
   Settings2,
@@ -18,7 +19,7 @@ import {
 import { NavFavorites } from "@/components/nav-favorites";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
-import { NavWorkspaces } from "@/components/nav-workspaces";
+// import { NavWorkspaces } from "@/components/nav-workspaces";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
@@ -29,28 +30,12 @@ import {
 
 // This is sample data.
 const data = {
-  teams: [
-    {
-      name: "Hidden Jems",
-      logo: Command,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
-      title: "Search",
+      title: "Dashboard",
       url: "#",
-      icon: Search,
+      icon: Home,
+      isActive: true,
     },
     {
       title: "Ask AI",
@@ -58,24 +43,17 @@ const data = {
       icon: Sparkles,
     },
     {
-      title: "Home",
+      title: "Projects",
       url: "#",
-      icon: Home,
-      isActive: true,
+      icon: Laptop2,
     },
     {
-      title: "Inbox",
-      url: "#",
-      icon: Inbox,
-      badge: "10",
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Calendar",
+      title: "Schedules",
       url: "#",
       icon: Calendar,
     },
+  ],
+  navSecondary: [
     {
       title: "Settings",
       url: "#",
@@ -264,12 +242,12 @@ export function SidebarLeft({
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher />
         <NavMain items={data.navMain} />
       </SidebarHeader>
       <SidebarContent>
         <NavFavorites favorites={data.favorites} />
-        <NavWorkspaces workspaces={data.workspaces} />
+        {/* <NavWorkspaces workspaces={data.workspaces} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarRail />
