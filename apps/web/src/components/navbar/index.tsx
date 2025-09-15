@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Logo } from "./logo";
+import { Logo2 } from "./logo2";
 import { NavMenu } from "./nav-menu";
 import { NavigationSheet } from "./navigation-sheet";
 import { ThemeToggle } from "./theme-toggle";
@@ -20,11 +20,10 @@ const Navbar = () => {
         <div className="flex items-center gap-8">
           <Link href="/">
             <div className="flex items-center gap-2">
-              <Logo />
-              <div className="text-sm font-black text-[#4a2e1a] dark:text-[#f8e9b0] leading-4">
-                <h2>Hidden</h2>
-                <h2>Jems</h2>
-              </div>
+              <Logo2 />
+              <h2 className="text-xl font-black text-[#4a2e1a] dark:text-[#f8e9b0]">
+                Holobiont
+              </h2>
             </div>
           </Link>
 
