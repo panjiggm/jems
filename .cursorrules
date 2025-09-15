@@ -1,0 +1,197 @@
+# Hidden Jems - Cursor Rules
+
+## Project Overview
+
+This is a monorepo containing:
+
+- **Web App** (Next.js 15 + TypeScript + Tailwind CSS + Radix UI)
+- **Native App** (React Native + Expo)
+- **Backend** (Convex + TypeScript)
+- **Monorepo** (Turbo + Yarn workspaces)
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS 4.x
+- **UI Components**: Radix UI, shadcn/ui, Lucide React icons
+- **Authentication**: Clerk
+- **Backend**: Convex (real-time database)
+- **Mobile**: React Native, Expo
+- **Build System**: Turbo, Yarn workspaces
+- **Styling**: Tailwind CSS, CSS modules
+
+## Code Style & Standards
+
+### TypeScript
+
+- Use strict TypeScript with proper type definitions
+- Prefer interfaces over types for object shapes
+- Use proper generic constraints and utility types
+- Always define return types for functions
+- Use `as const` for literal types when needed
+
+### React/Next.js
+
+- Use functional components with hooks
+- Prefer `use client` directive only when necessary
+- Use proper error boundaries and loading states
+- Implement proper SEO with Next.js metadata API
+- Use App Router patterns (app directory structure)
+- Prefer server components when possible
+
+### Styling
+
+- Use Tailwind CSS utility classes
+- Follow mobile-first responsive design
+- Use CSS variables for theming
+- Prefer Radix UI components over custom implementations
+- Use proper semantic HTML elements
+
+### File Organization
+
+- Follow the established folder structure
+- Use barrel exports (index.ts files) for clean imports
+- Group related components in feature folders
+- Keep components small and focused on single responsibility
+
+## Conventions
+
+### Naming
+
+- Use PascalCase for components and types
+- Use camelCase for functions and variables
+- Use kebab-case for file names (except components)
+- Use descriptive, self-documenting names
+
+### Imports
+
+- Group imports: external libraries, internal modules, relative imports
+- Use absolute imports for internal modules (@/components, @/lib)
+- Prefer named exports over default exports for utilities
+
+### Components
+
+- Create reusable, composable components
+- Use proper prop types with TypeScript
+- Implement proper accessibility (ARIA labels, keyboard navigation)
+- Use proper semantic HTML elements
+
+### State Management
+
+- Use React hooks for local state
+- Use Convex for server state and real-time data
+- Prefer composition over complex state management
+- Use proper error handling and loading states
+
+## Project Structure
+
+```
+apps/
+  web/          # Next.js web application
+  native/       # React Native mobile app
+packages/
+  backend/      # Convex backend functions
+```
+
+## Development Guidelines
+
+### Before Making Changes
+
+- Check existing code patterns and follow them
+- Ensure TypeScript compilation passes
+- Run linting and formatting
+- Test changes in both web and mobile apps if applicable
+
+### Code Quality
+
+- Write self-documenting code with clear variable names
+- Add comments for complex business logic
+- Use proper error handling and validation
+- Implement proper loading and error states
+- Follow accessibility best practices
+
+### Performance
+
+- Use React.memo for expensive components
+- Implement proper code splitting
+- Optimize images and assets
+- Use proper caching strategies
+- Minimize bundle size
+
+### Security
+
+- Validate all inputs on both client and server
+- Use proper authentication with Clerk
+- Implement proper authorization checks
+- Sanitize user-generated content
+- Use environment variables for sensitive data
+
+## Specific Rules
+
+### Convex Backend
+
+- Use proper TypeScript types for all functions
+- Implement proper error handling in mutations
+- Use queries for read operations, mutations for writes
+- Follow Convex best practices for real-time updates
+
+### Next.js Web App
+
+- Use App Router patterns
+- Implement proper metadata for SEO
+- Use server components when possible
+- Implement proper error pages and loading states
+- Use proper middleware for authentication
+
+### React Native App
+
+- Follow React Native best practices
+- Use proper navigation patterns
+- Implement proper platform-specific code when needed
+- Use proper asset management
+- Follow Expo guidelines
+
+### Styling
+
+- Use Tailwind CSS utility classes
+- Implement proper responsive design
+- Use CSS variables for theming
+- Follow design system patterns
+- Use proper color contrast ratios
+
+## Testing
+
+- Write unit tests for utility functions
+- Test components with proper test cases
+- Use proper mocking for external dependencies
+- Test error scenarios and edge cases
+
+## Documentation
+
+- Keep README files updated
+- Document complex business logic
+- Use proper JSDoc comments for functions
+- Document API endpoints and data structures
+
+## Git Workflow
+
+- Use descriptive commit messages
+- Create feature branches for new features
+- Use proper pull request descriptions
+- Keep commits atomic and focused
+
+## Environment Setup
+
+- Use proper environment variables
+- Document required environment setup
+- Use proper secrets management
+- Follow security best practices for sensitive data
+
+## Performance Monitoring
+
+- Monitor bundle sizes
+- Use proper caching strategies
+- Implement proper error tracking
+- Monitor Core Web Vitals
+- Use proper analytics implementation
+
+Remember: Always prioritize code readability, maintainability, and user experience. Follow established patterns and conventions in the codebase.
