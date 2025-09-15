@@ -74,6 +74,7 @@ export const dictionary = {
     terms: "Ketentuan",
     policy: "Kebijakan",
     contact: "Hubungi",
+    free: "Gratis",
   },
 
   // Notes

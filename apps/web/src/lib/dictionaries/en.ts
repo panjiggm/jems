@@ -74,6 +74,7 @@ export const dictionary = {
     terms: "Terms",
     policy: "Policy",
     contact: "Contact",
+    free: "Free",
   },
 
   // Notes
