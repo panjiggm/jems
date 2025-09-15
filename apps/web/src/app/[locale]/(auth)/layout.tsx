@@ -1,14 +1,17 @@
-"use client";
-
+import { Metadata } from "next";
 import Navbar from "@/components/navbar";
-import Link from "next/link";
+import FooterSimple from "@/components/common/footer-simple";
+
+export const metadata: Metadata = {
+  title: "Authentication | Holobiont",
+  description: "Sign in or sign up to Holobiont",
+};
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const year = new Date().getFullYear();
   return (
     <main>
       <div className="min-h-screen w-full relative">
@@ -32,16 +35,7 @@ export default function AuthLayout({
           <div className="flex-1 flex items-center justify-center">
             {children}
           </div>
-          <footer className="py-6">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>© {year} Hidden Jems</span>
-              <div className="flex items-center gap-4">
-                <Link href="/terms">Terms</Link>
-                <Link href="/policy">Policy</Link>
-                <Link href="/contact">Contact</Link>
-              </div>
-            </div>
-          </footer>
+          <FooterSimple />
         </div>
       </div>
     </main>

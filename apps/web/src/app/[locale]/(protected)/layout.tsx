@@ -12,6 +12,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard | Holobiont",
+  description: "Your personal dashboard",
+};
 
 export default function DashboardLayout({
   children,

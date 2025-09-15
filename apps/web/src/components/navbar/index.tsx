@@ -5,14 +5,16 @@ import { Logo2 } from "./logo2";
 import { NavMenu } from "./nav-menu";
 import { NavigationSheet } from "./navigation-sheet";
 import { ThemeToggle } from "./theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { ButtonPrimary } from "../ui/button-primary";
 import { LogIn } from "lucide-react";
-
 import { usePathname } from "next/navigation";
+import { useTranslations } from "@/hooks/use-translations";
 
 const Navbar = () => {
+  const { t } = useTranslations();
   const pathname = usePathname();
-  const isSignIn = pathname === "/sign-in";
+  const isSignIn = pathname.includes("/sign-in");
 
   return (
     <nav className="h-16">
@@ -22,7 +24,7 @@ const Navbar = () => {
             <div className="flex items-center gap-2">
               <Logo2 />
               <h2 className="text-xl font-black text-[#4a2e1a] dark:text-[#f8e9b0]">
-                Holobiont
+                {t("nav.title")}
               </h2>
             </div>
           </Link>
@@ -32,13 +34,14 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           {isSignIn ? (
             <ButtonPrimary
               asChild
               size={"sm"}
               className="hidden sm:inline-flex"
             >
-              <Link href="/sign-up">Getting Started</Link>
+              <Link href="/sign-up">{t("nav.gettingStarted")}</Link>
             </ButtonPrimary>
           ) : (
             <ButtonPrimary
@@ -49,7 +52,7 @@ const Navbar = () => {
             >
               <Link href="/sign-in">
                 <LogIn />
-                Sign In
+                {t("nav.signIn")}
               </Link>
             </ButtonPrimary>
           )}

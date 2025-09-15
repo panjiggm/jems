@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bot, CalendarClock, FolderOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Transition } from "framer-motion";
+import { useTranslations } from "@/hooks/use-translations";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -47,28 +48,30 @@ function FeatureCard({
   );
 }
 
-const features = [
-  {
-    key: "files",
-    title: "File Management",
-    desc: "Store briefs, assets, and drafts in one place—searchable, secure, and share-ready.",
-    Icon: FolderOpen,
-  },
-  {
-    key: "ai",
-    title: "AI Personal Assistant",
-    desc: "Brainstorm ideas, write scripts/VO, and get smart suggestions tailored to your niche.",
-    Icon: Bot,
-  },
-  {
-    key: "organize",
-    title: "Organize Content & Scheduling",
-    desc: "Plan projects, track statuses, and schedule posts with reminders that keep you on pace.",
-    Icon: CalendarClock,
-  },
-] as const;
-
 export default function FeatureStack() {
+  const { t } = useTranslations();
+
+  const features = [
+    {
+      key: "files",
+      title: t("home.features.fileManagement.title"),
+      desc: t("home.features.fileManagement.description"),
+      Icon: FolderOpen,
+    },
+    {
+      key: "ai",
+      title: t("home.features.aiAssistant.title"),
+      desc: t("home.features.aiAssistant.description"),
+      Icon: Bot,
+    },
+    {
+      key: "organize",
+      title: t("home.features.organizeContent.title"),
+      desc: t("home.features.organizeContent.description"),
+      Icon: CalendarClock,
+    },
+  ] as const;
+
   return (
     <section className="w-full">
       {/* Mobile / small screens: vertical list */}

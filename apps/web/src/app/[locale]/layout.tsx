@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Montserrat, Lato } from "next/font/google";
 import { cn } from "@/lib/utils";
-import "../styles/globals.css";
+import "@/styles/globals.css";
 import ConvexClientProvider from "@/components/providers/convex-providers";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="id" suppressHydrationWarning>
       <body
         className={cn(inter.className, montserrat.className, lato.className)}
       >
