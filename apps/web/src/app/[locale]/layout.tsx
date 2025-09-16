@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import ConvexClientProvider from "@/components/providers/convex-providers";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 const montserrat = Montserrat({ subsets: ["latin"] });
@@ -26,6 +27,7 @@ export default function RootLayout({
       >
         <ThemeProvider attribute={"class"} defaultTheme="system" enableSystem>
           <ConvexClientProvider>{children}</ConvexClientProvider>
+          <Toaster position="top-right" richColors />
         </ThemeProvider>
       </body>
     </html>
