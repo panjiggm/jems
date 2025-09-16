@@ -47,7 +47,7 @@ const Navbar = () => {
                 <Link href="/dashboard">{t("nav.dashboard")}</Link>
               </ButtonPrimary>
               <UserButton
-                afterSignOutUrl="/"
+                afterSwitchSessionUrl="/"
                 appearance={{
                   elements: {
                     avatarBox: "h-8 w-8",
