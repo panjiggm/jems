@@ -10,11 +10,13 @@ import { ButtonPrimary } from "../ui/button-primary";
 import { LogIn } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "@/hooks/use-translations";
+import { useUser, UserButton } from "@clerk/nextjs";
 
 const Navbar = () => {
   const { t } = useTranslations();
   const pathname = usePathname();
   const isSignIn = pathname.includes("/sign-in");
+  const { isSignedIn } = useUser();
 
   return (
     <nav className="h-16">
@@ -35,7 +37,25 @@ const Navbar = () => {
 
         <div className="flex items-center gap-3">
           <LanguageSwitcher />
-          {isSignIn ? (
+          {isSignedIn ? (
+            <>
+              <ButtonPrimary
+                asChild
+                size={"sm"}
+                className="hidden sm:inline-flex"
+              >
+                <Link href="/dashboard">{t("nav.dashboard")}</Link>
+              </ButtonPrimary>
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "h-8 w-8",
+                  },
+                }}
+              />
+            </>
+          ) : isSignIn ? (
             <ButtonPrimary
               asChild
               size={"sm"}
