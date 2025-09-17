@@ -19,7 +19,7 @@ export default defineSchema({
     slug: v.string(),
     label: v.string(),
     category: v.string(),
-    description: v.optional(v.string()),
+    emoji: v.optional(v.string()),
   }),
   persona: defineTable({
     userId: v.string(),
