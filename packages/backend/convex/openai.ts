@@ -110,12 +110,11 @@ Write this as a system prompt that will be used to instruct an AI assistant.`;
         {
           role: "system",
           content:
-            "You are an expert at creating AI persona prompts that help AI assistants provide personalized and relevant responses. max 1000 characters",
+            "You are an expert at creating AI persona prompts that help AI assistants provide personalized and relevant responses. max 1500 characters",
         },
         { role: "user", content: prompt },
       ],
       model: "gpt-4o-mini",
-      temperature: 0.7,
     });
 
     const aiPrompt = output.choices[0]?.message.content?.trim();
@@ -154,12 +153,11 @@ ${nicheNames ? ` my niches: ${nicheNames}` : ""}`;
         {
           role: "system" as const,
           content:
-            "You are a helpful bio writer. Create a bio for a profile based on the categories and niches. Max 500 characters.",
+            "You are a helpful bio writer. Create a bio for a profile based on the categories and niches. Max 400 characters.",
         },
         { role: "user" as const, content: prompt },
       ],
       model: "gpt-4o-mini",
-      temperature: 0.7,
     });
 
     const messageContent = output.choices[0]?.message.content?.trim();

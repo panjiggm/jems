@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/../../packages/backend/convex/_generated/api";
 import { ButtonPrimary } from "@/components/ui/button-primary";
-import { Badge } from "@/components/ui/badge";
+import { BadgePrimary } from "@/components/ui/badge-primary";
+import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import { Badge } from "../ui/badge";
 
 interface Step2CategoriesProps {
   onNext: (data: { categories: string[] }) => void;
@@ -23,7 +25,7 @@ export function Step2Categories({
   );
   const categories = useQuery(api.niches.getCategories);
 
-  const maxCategories = 3;
+  const maxCategories = 2;
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) => {
@@ -59,59 +61,52 @@ export function Step2Categories({
         <p className="text-muted-foreground text-sm">
           Select up to {maxCategories} categories that interest you most
         </p>
-        <div className="text-xs text-muted-foreground">
-          {selectedCategories.length}/{maxCategories} selected
-        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="flex flex-wrap gap-2">
         {categories.map((category) => {
           const isSelected = selectedCategories.includes(category);
           const isDisabled =
             !isSelected && selectedCategories.length >= maxCategories;
 
           return (
-            <button
+            <BadgePrimary
               key={category}
-              onClick={() => toggleCategory(category)}
-              disabled={isDisabled}
-              className={`
-                relative p-4 rounded-lg border-2 transition-all text-left
-                ${
-                  isSelected
-                    ? "border-primary bg-primary/5"
-                    : isDisabled
-                      ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-50"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                }
-              `}
+              asChild
+              tone={isSelected ? "solid" : "outline"}
+              className={cn(
+                "cursor-pointer select-none px-3 py-2 text-xs transition-all",
+                "flex items-center justify-start gap-2 rounded-full",
+                isSelected && "shadow-sm",
+                isDisabled && !isSelected && "opacity-50 pointer-events-none",
+              )}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">{category}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Explore opportunities in {category.toLowerCase()}
-                  </p>
-                </div>
-                {isSelected && (
-                  <div className="flex-shrink-0">
-                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => toggleCategory(category)}
+                disabled={isDisabled}
+                aria-pressed={isSelected}
+              >
+                {isSelected && <Check className="h-4 w-4" />}
+                <span>{category}</span>
+              </button>
+            </BadgePrimary>
           );
         })}
       </div>
 
       {selectedCategories.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-medium">Selected Categories:</p>
+          <p className="text-xs font-medium">
+            Selected Categories ({selectedCategories.length}/{maxCategories}):
+          </p>
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map((category) => (
-              <Badge key={category} variant="secondary" className="px-3 py-1">
+              <Badge
+                key={category}
+                variant={"secondary"}
+                className="px-3 py-1 text-xs"
+              >
                 {category}
               </Badge>
             ))}

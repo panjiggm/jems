@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/../../packages/backend/convex/_generated/api";
 import { ButtonPrimary } from "@/components/ui/button-primary";
-import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
+import { BadgePrimary } from "@/components/ui/badge-primary";
+import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 import type { Id } from "@/../../packages/backend/convex/_generated/dataModel";
 
 interface Step3NichesProps {
@@ -24,9 +25,11 @@ export function Step3Niches({
   const [selectedNicheIds, setSelectedNicheIds] = useState<Id<"niches">[]>(
     initialData?.nicheIds || [],
   );
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const hasInitializedOpen = useRef(false);
   const niches = useQuery(api.niches.getNichesByCategories, { categories });
 
-  const maxNiches = 6;
+  const maxNiches = 4;
 
   const toggleNiche = (nicheId: Id<"niches">) => {
     setSelectedNicheIds((prev) => {
@@ -45,6 +48,51 @@ export function Step3Niches({
     }
   };
 
+  type Niche = NonNullable<typeof niches>[number];
+
+  // Group niches by category for better display
+  const nichesByCategory = useMemo(() => {
+    if (!niches) {
+      return {} as Record<string, Niche[]>;
+    }
+
+    return niches.reduce<Record<string, Niche[]>>((acc, niche) => {
+      if (!acc[niche.category]) {
+        acc[niche.category] = [];
+      }
+      acc[niche.category]!.push(niche);
+      return acc;
+    }, {});
+  }, [niches]);
+
+  const categoryEntries = useMemo(
+    () => Object.entries(nichesByCategory) as [string, Niche[]][],
+    [nichesByCategory],
+  );
+  const firstCategory = categoryEntries[0]?.[0];
+
+  useEffect(() => {
+    if (hasInitializedOpen.current) {
+      return;
+    }
+
+    if (firstCategory) {
+      setOpenCategory(firstCategory);
+      hasInitializedOpen.current = true;
+    }
+  }, [firstCategory]);
+
+  useEffect(() => {
+    if (!openCategory) {
+      return;
+    }
+
+    if (!nichesByCategory[openCategory]) {
+      const fallbackCategory = categoryEntries[0]?.[0] ?? null;
+      setOpenCategory(fallbackCategory);
+    }
+  }, [openCategory, nichesByCategory, categoryEntries]);
+
   if (!niches) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -52,18 +100,6 @@ export function Step3Niches({
       </div>
     );
   }
-
-  // Group niches by category for better display
-  const nichesByCategory = niches.reduce(
-    (acc, niche) => {
-      if (!acc[niche.category]) {
-        acc[niche.category] = [];
-      }
-      acc[niche.category].push(niche);
-      return acc;
-    },
-    {} as Record<string, typeof niches>,
-  );
 
   return (
     <div className="space-y-6">
@@ -74,79 +110,100 @@ export function Step3Niches({
         <p className="text-muted-foreground text-sm">
           Choose up to {maxNiches} specific areas you want to focus on
         </p>
-        <div className="text-xs text-muted-foreground">
-          {selectedNicheIds.length}/{maxNiches} selected
-        </div>
       </div>
 
-      <div className="space-y-6 max-h-96 overflow-y-auto">
-        {Object.entries(nichesByCategory).map(([category, categoryNiches]) => (
-          <div key={category} className="space-y-3">
-            <h4 className="font-medium text-primary border-b border-gray-200 pb-1">
-              {category}
-            </h4>
-            <div className="grid grid-cols-1 gap-2">
-              {categoryNiches.map((niche) => {
-                const isSelected = selectedNicheIds.includes(niche._id);
-                const isDisabled =
-                  !isSelected && selectedNicheIds.length >= maxNiches;
+      <div className="space-y-1 max-h-[420px] overflow-y-auto pr-1">
+        {categoryEntries.map(([category, categoryNiches]) => {
+          const isOpen = openCategory === category;
 
-                return (
-                  <button
-                    key={niche._id}
-                    onClick={() => toggleNiche(niche._id)}
-                    disabled={isDisabled}
-                    className={`
-                      relative p-3 rounded-lg border transition-all text-left
-                      ${
-                        isSelected
-                          ? "border-primary bg-primary/5"
-                          : isDisabled
-                            ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-50"
-                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                      }
-                    `}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h5 className="font-medium text-sm">{niche.label}</h5>
-                        {niche.description && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {niche.description}
-                          </p>
-                        )}
-                      </div>
-                      {isSelected && (
-                        <div className="flex-shrink-0 ml-2">
-                          <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+          return (
+            <div
+              key={category}
+              className={cn(
+                "rounded-lg border border-border/40 bg-muted/20 transition",
+                isOpen && "border-primary/50 bg-primary/5",
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => setOpenCategory(isOpen ? null : category)}
+                aria-expanded={isOpen}
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm font-semibold text-primary transition hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+              >
+                <span>{category}</span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 shrink-0 transition-transform",
+                    isOpen && "rotate-180",
+                  )}
+                />
+              </button>
+              {isOpen && (
+                <div className="px-3 pb-3 pt-2">
+                  <div className="flex flex-wrap gap-2">
+                    {categoryNiches.map((niche) => {
+                      const isSelected = selectedNicheIds.includes(niche._id);
+                      const isDisabled =
+                        !isSelected && selectedNicheIds.length >= maxNiches;
+
+                      return (
+                        <button
+                          key={niche._id}
+                          type="button"
+                          onClick={() => toggleNiche(niche._id)}
+                          disabled={isDisabled}
+                          aria-pressed={isSelected}
+                          className={cn(
+                            "relative flex basis-full flex-col rounded-lg border px-3 py-3 text-left transition",
+                            "sm:basis-[calc(50%-0.5rem)] lg:basis-[calc(33.333%-0.5rem)]",
+                            isSelected
+                              ? "border-primary bg-primary/5"
+                              : isDisabled
+                                ? "border-border/40 bg-muted text-muted-foreground cursor-not-allowed opacity-60"
+                                : "border-border hover:border-primary/40 hover:bg-primary/5",
+                          )}
+                        >
+                          <span className="text-xs font-medium">
+                            {niche.emoji}
+                          </span>
+                          <span className="text-xs font-medium">
+                            {niche.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {selectedNicheIds.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-medium">Selected Niches:</p>
+          <p className="text-xs font-medium">
+            Selected Niches ({selectedNicheIds.length}/{maxNiches}):
+          </p>
           <div className="flex flex-wrap gap-2">
             {selectedNicheIds.map((nicheId) => {
               const niche = niches.find((n) => n._id === nicheId);
-              return niche ? (
-                <Badge
+              if (!niche) {
+                return null;
+              }
+
+              const displayLabel = `${niche.emoji} ${niche.label}`;
+
+              return (
+                <BadgePrimary
                   key={nicheId}
-                  variant="secondary"
-                  className="px-2 py-1 text-xs"
+                  tone="outline"
+                  size="sm"
+                  className="px-3 py-1"
                 >
-                  {niche.label}
-                </Badge>
-              ) : null;
+                  {displayLabel}
+                </BadgePrimary>
+              );
             })}
           </div>
         </div>
