@@ -7,11 +7,10 @@ import {
 } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { missingEnvVariableUrl } from "./utils";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY as string,
-  baseURL: "https://api.lunos.tech/v1",
+  baseURL: process.env.OPENAI_BASE_URL as string,
 });
 
 export const openaiKeySet = query({
@@ -28,7 +27,6 @@ export const summary = internalAction({
     content: v.string(),
   },
   handler: async (ctx, { id, title, content }) => {
-    console.log("summary args: ", { id, title, content });
     const prompt = `Take in the following note and return a summary: Title: ${title}, Note content: ${content}`;
 
     const output = await openai.chat.completions.create({
@@ -46,11 +44,7 @@ export const summary = internalAction({
 
     // Pull the message content out of the response
     const messageContent = output.choices[0]?.message.content;
-
-    console.log({ messageContent });
-
     const parsedOutput = JSON.parse(messageContent!);
-    console.log({ parsedOutput });
 
     await ctx.runMutation(internal.openai.saveSummary, {
       id: id,
@@ -74,49 +68,40 @@ export const saveSummary = internalMutation({
 // Generate AI prompt for persona
 export const generatePersonaPrompt = internalAction({
   args: {
+    full_name: v.string(),
     bio: v.string(),
-    tone: v.string(),
     niches: v.array(
       v.object({
         label: v.string(),
         category: v.string(),
-        description: v.string(),
       }),
     ),
   },
-  handler: async (ctx, { bio, tone, niches }) => {
-    const apiKey = process.env.OPENAI_API_KEY as string;
-    if (!apiKey) {
-      throw new Error("OPENAI_API_KEY is not set");
-    }
-
+  handler: async (ctx, { full_name, bio, niches }) => {
     const nicheDetails = niches
-      .map(
-        (niche) => `${niche.label} (${niche.category}): ${niche.description}`,
-      )
+      .map((niche) => `${niche.label} - (${niche.category})`)
       .join("\n");
 
-    const prompt = `Create a comprehensive AI persona prompt based on this user profile:
+    const prompt = `Create a persona prompt for an AI assistant based on this user profile:
+
+Full Name: ${full_name}
 
 Bio: ${bio}
 
-Tone preference: ${tone}
-
-Areas of expertise/interest:
+Niche Details:
 ${nicheDetails}
 
-Generate a detailed AI persona prompt that will help an AI assistant:
-1. Understand this person's background and expertise
-2. Match their communication style and tone
-3. Provide relevant advice and insights for their niches
-4. Be helpful in their specific areas of interest
+Generate a detailed persona prompt that will help an AI assistant understand this person:
+1. Help this person to find ideas related to their bio, niches and their category to create content
+2. Understand this person's full name, bio and niches
+3. Provide relevant advice and insights for their niches and their category
 
-The prompt should be comprehensive (200-400 words) and include:
-- Their professional background and expertise
-- Their communication style and preferred tone
-- Their specific interests and focus areas
+The prompt should be comprehensive and include the following:
+- This person is Content Creator
+- Their full name
+- Their bio
+- Their niches and their category
 - How the AI should interact with them
-- What kind of responses would be most valuable
 
 Write this as a system prompt that will be used to instruct an AI assistant.`;
 
@@ -125,16 +110,16 @@ Write this as a system prompt that will be used to instruct an AI assistant.`;
         {
           role: "system",
           content:
-            "You are an expert at creating AI persona prompts that help AI assistants provide personalized and relevant responses.",
+            "You are an expert at creating AI persona prompts that help AI assistants provide personalized and relevant responses. max 1000 characters",
         },
         { role: "user", content: prompt },
       ],
-      model: "openai/gpt-5-nano",
-      max_tokens: 600,
+      model: "gpt-4o-mini",
       temperature: 0.7,
     });
 
     const aiPrompt = output.choices[0]?.message.content?.trim();
+
     return aiPrompt || "";
   },
 });
@@ -161,21 +146,20 @@ export const generateBioAction = action({
           )
         : "";
 
-    console.log("nicheNames: ", nicheNames);
-
     const prompt = `This is my categories: ${args.categories.join(", ")} and 
-${nicheNames ? ` niches: ${nicheNames}` : ""}. in Social Media`;
+${nicheNames ? ` my niches: ${nicheNames}` : ""}`;
 
     const output = await openai.chat.completions.create({
       messages: [
         {
           role: "system" as const,
           content:
-            "You are a helpful bio writer. Create a bio for a social media profile. Max 500 characters.",
+            "You are a helpful bio writer. Create a bio for a profile based on the categories and niches. Max 500 characters.",
         },
         { role: "user" as const, content: prompt },
       ],
-      model: "gpt-5-nano",
+      model: "gpt-4o-mini",
+      temperature: 0.7,
     });
 
     const messageContent = output.choices[0]?.message.content?.trim();

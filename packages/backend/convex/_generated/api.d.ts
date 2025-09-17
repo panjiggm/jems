@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as debugging_rawRequestResponseHandler from "../debugging/rawRequestResponseHandler.js";
 import type * as models from "../models.js";
 import type * as niches from "../niches.js";
 import type * as notes from "../notes.js";
@@ -33,7 +32,6 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  "debugging/rawRequestResponseHandler": typeof debugging_rawRequestResponseHandler;
   models: typeof models;
   niches: typeof niches;
   notes: typeof notes;

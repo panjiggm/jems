@@ -24,7 +24,6 @@ export default defineSchema({
   persona: defineTable({
     userId: v.string(),
     nicheIds: v.array(v.id("niches")),
-    tone: v.string(),
     bio: v.string(),
     ai_prompt: v.string(),
   }),

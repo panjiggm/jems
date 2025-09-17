@@ -39,6 +39,14 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
 
   const totalSteps = 5;
 
+  const handleClose = () => {
+    // Reset state when closing
+    setCurrentStep(0);
+    setOnboardingData({});
+    setIsCompleting(false);
+    onClose();
+  };
+
   const handleStep0Next = () => {
     setCurrentStep(1);
   };
@@ -70,7 +78,6 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
         categories: onboardingData.categories!,
         nicheIds: onboardingData.nicheIds!,
         bio: data.bio,
-        tone: "professional", // Default tone
       });
 
       toast.success("🎉 Welcome to Holobiont!", {
@@ -79,14 +86,16 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
         duration: 5000,
       });
 
-      onClose();
+      // Close dialog after a short delay to ensure toast is visible
+      setTimeout(() => {
+        handleClose();
+      }, 1000);
     } catch (error) {
       console.error("Onboarding completion error:", error);
       toast.error("Failed to complete setup", {
         description:
           "Please try again or contact support if the problem persists.",
       });
-    } finally {
       setIsCompleting(false);
     }
   };
@@ -144,7 +153,7 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Getting Started</DialogTitle>

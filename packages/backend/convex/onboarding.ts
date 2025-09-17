@@ -1,4 +1,9 @@
-import { mutation, internalMutation } from "./_generated/server";
+import {
+  mutation,
+  internalMutation,
+  internalAction,
+  internalQuery,
+} from "./_generated/server";
 import { v } from "convex/values";
 import { getUserId } from "./notes";
 import { internal } from "./_generated/api";
@@ -13,7 +18,6 @@ export const completeOnboarding = mutation({
     categories: v.array(v.string()),
     nicheIds: v.array(v.id("niches")),
     bio: v.string(),
-    tone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -49,13 +53,10 @@ export const completeOnboarding = mutation({
       .filter((q) => q.eq(q.field("userId"), userId))
       .first();
 
-    const tone = args.tone || "professional"; // Default tone
-
     let personaId;
     if (existingPersona) {
       await ctx.db.patch(existingPersona._id, {
         nicheIds: args.nicheIds,
-        tone,
         bio: args.bio,
         ai_prompt: "", // Will be generated
       });
@@ -64,81 +65,107 @@ export const completeOnboarding = mutation({
       personaId = await ctx.db.insert("persona", {
         userId,
         nicheIds: args.nicheIds,
-        tone,
         bio: args.bio,
         ai_prompt: "", // Will be generated
       });
     }
 
-    // 3. Schedule AI prompt generation
-    await ctx.scheduler.runAfter(
-      0,
-      internal.onboarding.generateAndSaveAIPrompt,
-      {
-        personaId,
-        profileId,
-        bio: args.bio,
-        tone,
-        nicheIds: args.nicheIds,
-      },
-    );
+    // 3. Schedule AI prompt generation and save
+    await ctx.scheduler.runAfter(0, internal.onboarding.generateAndSavePrompt, {
+      personaId,
+      profileId,
+      bio: args.bio,
+      nicheIds: args.nicheIds,
+      full_name: args.full_name,
+    });
 
     return { profileId, personaId };
   },
 });
 
-// Internal function to generate AI prompt and complete onboarding
-export const generateAndSaveAIPrompt = internalMutation({
+// Generate AI prompt and save to persona
+export const generateAndSavePrompt = internalAction({
   args: {
     personaId: v.id("persona"),
     profileId: v.id("profile"),
     bio: v.string(),
-    tone: v.string(),
     nicheIds: v.array(v.id("niches")),
+    full_name: v.string(),
   },
   handler: async (ctx, args) => {
     try {
       // Get niche details
       const niches = await Promise.all(
-        args.nicheIds.map((id) => ctx.db.get(id)),
+        args.nicheIds.map((id) =>
+          ctx.runQuery(internal.onboarding.getNiche, { id }),
+        ),
       );
       const validNiches = niches.filter(Boolean);
 
       // Generate AI prompt
-      const aiPrompt = await ctx.scheduler.runAfter(
-        0,
+      const aiPrompt = await ctx.runAction(
         internal.openai.generatePersonaPrompt,
         {
+          full_name: args.full_name,
           bio: args.bio,
-          tone: args.tone,
           niches: validNiches.map((niche) => ({
-            label: niche.label,
-            category: niche.category,
-            description: niche.description || "",
+            label: niche?.label || "",
+            category: niche?.category || "",
           })),
         },
       );
 
-      // Update persona with AI prompt
-      await ctx.db.patch(args.personaId, {
-        ai_prompt: aiPrompt || "Default AI prompt - generation failed",
+      // Save to persona
+      await ctx.runMutation(internal.onboarding.updatePersonaPrompt, {
+        personaId: args.personaId,
+        aiPrompt: aiPrompt || "Default AI prompt - generation failed",
       });
 
-      // Mark onboarding as completed
-      await ctx.db.patch(args.profileId, {
-        is_onboarding_completed: true,
+      // Mark onboarding complete
+      await ctx.runMutation(internal.onboarding.completeOnboardingProcess, {
+        profileId: args.profileId,
       });
-
-      return { success: true };
     } catch (error) {
-      console.error("Failed to generate AI prompt:", error);
-
-      // Still mark onboarding as completed even if AI prompt generation fails
-      await ctx.db.patch(args.profileId, {
-        is_onboarding_completed: true,
+      // Save fallback and complete onboarding
+      await ctx.runMutation(internal.onboarding.updatePersonaPrompt, {
+        personaId: args.personaId,
+        aiPrompt: "Default AI prompt - generation failed",
       });
 
-      return { success: false, error: "AI prompt generation failed" };
+      await ctx.runMutation(internal.onboarding.completeOnboardingProcess, {
+        profileId: args.profileId,
+      });
     }
+  },
+});
+
+// Helper mutations for internalAction
+export const updatePersonaPrompt = internalMutation({
+  args: {
+    personaId: v.id("persona"),
+    aiPrompt: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.personaId, {
+      ai_prompt: args.aiPrompt,
+    });
+  },
+});
+
+export const completeOnboardingProcess = internalMutation({
+  args: {
+    profileId: v.id("profile"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.profileId, {
+      is_onboarding_completed: true,
+    });
+  },
+});
+
+export const getNiche = internalQuery({
+  args: { id: v.id("niches") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
   },
 });
