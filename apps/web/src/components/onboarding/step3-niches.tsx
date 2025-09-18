@@ -8,6 +8,7 @@ import { BadgePrimary } from "@/components/ui/badge-primary";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import type { Id } from "@/../../packages/backend/convex/_generated/dataModel";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Step3NichesProps {
   onNext: (data: { nicheIds: Id<"niches">[] }) => void;
@@ -28,6 +29,7 @@ export function Step3Niches({
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const hasInitializedOpen = useRef(false);
   const niches = useQuery(api.niches.getNichesByCategories, { categories });
+  const { t } = useTranslations();
 
   const maxNiches = 4;
 
@@ -105,10 +107,11 @@ export function Step3Niches({
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h3 className="text-lg font-semibold">
-          Select Your Specific Niches 🎭
+          {t("onboarding.niches.title")}
         </h3>
         <p className="text-muted-foreground text-sm">
-          Choose up to {maxNiches} specific areas you want to focus on
+          {t("onboarding.niches.description")} {maxNiches}{" "}
+          {t("onboarding.niches.maxNiches")}
         </p>
       </div>
 
@@ -183,7 +186,8 @@ export function Step3Niches({
       {selectedNicheIds.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-medium">
-            Selected Niches ({selectedNicheIds.length}/{maxNiches}):
+            {t("onboarding.niches.selected")} ({selectedNicheIds.length}/
+            {maxNiches}):
           </p>
           <div className="flex flex-wrap gap-2">
             {selectedNicheIds.map((nicheId) => {
@@ -212,14 +216,14 @@ export function Step3Niches({
       {/* Navigation Buttons */}
       <div className="flex justify-between pt-4">
         <ButtonPrimary tone="outline" onClick={onPrevious}>
-          Previous
+          {t("onboarding.navigation.previous")}
         </ButtonPrimary>
 
         <ButtonPrimary
           onClick={handleNext}
           disabled={selectedNicheIds.length === 0}
         >
-          Next
+          {t("onboarding.navigation.next")}
         </ButtonPrimary>
       </div>
     </div>

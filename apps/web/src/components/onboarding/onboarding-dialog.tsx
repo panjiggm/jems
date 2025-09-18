@@ -17,6 +17,7 @@ import { Step3Niches } from "./step3-niches";
 import { Step4Bio } from "./step4-bio";
 import { toast } from "sonner";
 import type { Id } from "@/../../packages/backend/convex/_generated/dataModel";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface OnboardingDialogProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
   const [isCompleting, setIsCompleting] = useState(false);
+  const { t } = useTranslations();
 
   const completeOnboarding = useMutation(api.onboarding.completeOnboarding);
 
@@ -80,9 +82,8 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
         bio: data.bio,
       });
 
-      toast.success("🎉 Welcome to Holobiont!", {
-        description:
-          "Your profile has been set up successfully. We're generating your personalized AI assistant in the background.",
+      toast.success(t("onboarding.success.title"), {
+        description: t("onboarding.success.description"),
         duration: 5000,
       });
 
@@ -92,9 +93,8 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
       }, 1000);
     } catch (error) {
       console.error("Onboarding completion error:", error);
-      toast.error("Failed to complete setup", {
-        description:
-          "Please try again or contact support if the problem persists.",
+      toast.error(t("onboarding.error.title"), {
+        description: t("onboarding.error.description"),
       });
       setIsCompleting(false);
     }
@@ -156,10 +156,8 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Getting Started</DialogTitle>
-          <DialogDescription>
-            Complete your setup to get the most out of Holobiont
-          </DialogDescription>
+          <DialogTitle>{t("onboarding.title")}</DialogTitle>
+          <DialogDescription>{t("onboarding.description")}</DialogDescription>
         </DialogHeader>
 
         <div className="py-4">
@@ -168,10 +166,12 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">
-                  Step {currentStep} of {totalSteps - 1}
+                  {t("onboarding.step")} {currentStep} {t("onboarding.of")}{" "}
+                  {totalSteps - 1}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  {Math.round((currentStep / (totalSteps - 1)) * 100)}%
+                  {Math.round((currentStep / (totalSteps - 1)) * 100)}
+                  {t("onboarding.percent")}
                 </span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -191,9 +191,9 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
               <div className="flex flex-col items-center justify-center py-8 space-y-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 <div className="text-center">
-                  <h3 className="font-semibold">Setting up your profile...</h3>
+                  <h3 className="font-semibold">{t("onboarding.settingUp")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    We're creating your personalized AI assistant
+                    {t("onboarding.creatingAssistant")}
                   </p>
                 </div>
               </div>

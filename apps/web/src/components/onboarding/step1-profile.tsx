@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { ButtonPrimary } from "@/components/ui/button-primary";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Step1ProfileProps {
   onNext: (data: { full_name: string; phone: string }) => void;
@@ -20,22 +21,23 @@ export function Step1Profile({
   const [errors, setErrors] = useState<{ full_name?: string; phone?: string }>(
     {},
   );
+  const { t } = useTranslations();
 
   const validateForm = () => {
     const newErrors: { full_name?: string; phone?: string } = {};
 
     if (!fullName.trim()) {
-      newErrors.full_name = "Full name is required";
+      newErrors.full_name = t("onboarding.profile.fullNameRequired");
     } else if (fullName.trim().length < 2) {
-      newErrors.full_name = "Full name must be at least 2 characters";
+      newErrors.full_name = t("onboarding.profile.fullNameMinLength");
     }
 
     if (!phone.trim()) {
-      newErrors.phone = "Phone number is required";
+      newErrors.phone = t("onboarding.profile.phoneRequired");
     } else if (!/^\+?[\d\s\-\(\)]+$/.test(phone.trim())) {
-      newErrors.phone = "Please enter a valid phone number";
+      newErrors.phone = t("onboarding.profile.phoneInvalid");
     } else if (phone.replace(/\D/g, "").length < 10) {
-      newErrors.phone = "Phone number must be at least 10 digits";
+      newErrors.phone = t("onboarding.profile.phoneMinLength");
     }
 
     setErrors(newErrors);
@@ -60,9 +62,11 @@ export function Step1Profile({
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h3 className="text-lg font-semibold">Let's Get to Know You! 👤</h3>
+        <h3 className="text-lg font-semibold">
+          {t("onboarding.profile.title")}
+        </h3>
         <p className="text-muted-foreground text-sm">
-          We'll need some basic information to set up your profile
+          {t("onboarding.profile.description")}
         </p>
       </div>
 
@@ -70,12 +74,12 @@ export function Step1Profile({
         {/* Full Name Input */}
         <div className="space-y-2">
           <label htmlFor="fullName" className="text-sm font-medium">
-            Full Name *
+            {t("onboarding.profile.fullName")} *
           </label>
           <Input
             id="fullName"
             type="text"
-            placeholder="Enter your full name"
+            placeholder={t("onboarding.profile.fullNamePlaceholder")}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -89,12 +93,12 @@ export function Step1Profile({
         {/* Phone Input */}
         <div className="space-y-2">
           <label htmlFor="phone" className="text-sm font-medium">
-            Phone Number *
+            {t("onboarding.profile.phone")} *
           </label>
           <Input
             id="phone"
             type="tel"
-            placeholder="Enter your phone number"
+            placeholder={t("onboarding.profile.phonePlaceholder")}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -104,7 +108,7 @@ export function Step1Profile({
             <p className="text-red-500 text-xs">{errors.phone}</p>
           )}
           <p className="text-xs text-muted-foreground">
-            Include country code if outside Indonesia (e.g., +62 812 3456 7890)
+            {t("onboarding.profile.phoneHelp")}
           </p>
         </div>
       </div>
@@ -116,14 +120,14 @@ export function Step1Profile({
           onClick={onPrevious}
           className="invisible"
         >
-          Previous
+          {t("onboarding.navigation.previous")}
         </ButtonPrimary>
 
         <ButtonPrimary
           onClick={handleNext}
           disabled={!fullName.trim() || !phone.trim()}
         >
-          Next
+          {t("onboarding.navigation.next")}
         </ButtonPrimary>
       </div>
     </div>

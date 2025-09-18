@@ -2,6 +2,7 @@
 
 import { ButtonPrimary } from "@/components/ui/button-primary";
 import Image from "next/image";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Step0WelcomeProps {
   onNext: () => void;
@@ -9,6 +10,8 @@ interface Step0WelcomeProps {
 }
 
 export function Step0Welcome({ onNext, onPrevious }: Step0WelcomeProps) {
+  const { t } = useTranslations();
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-4">
@@ -28,13 +31,15 @@ export function Step0Welcome({ onNext, onPrevious }: Step0WelcomeProps) {
 
         {/* Welcome Text */}
         <h2 className="text-2xl font-bold text-primary">
-          Welcome to Holobiont! 🎉
+          {t("onboarding.welcome.title")}
         </h2>
 
         <div className="text-base text-muted-foreground mt-4">
-          This quick setup will help us understand your interests and
-          preferences. It's only takes{" "}
-          <strong className="text-stone-700">2-3 minutes</strong> ⏱️
+          {t("onboarding.welcome.description")}{" "}
+          <strong className="text-stone-700">
+            {t("onboarding.welcome.time")}
+          </strong>{" "}
+          ⏱️
         </div>
       </div>
 
@@ -45,11 +50,11 @@ export function Step0Welcome({ onNext, onPrevious }: Step0WelcomeProps) {
           onClick={onPrevious}
           className="invisible"
         >
-          Previous
+          {t("onboarding.navigation.previous")}
         </ButtonPrimary>
 
         <ButtonPrimary onClick={onNext} className="px-8">
-          Let's Get Started!
+          {t("onboarding.welcome.cta")}
         </ButtonPrimary>
       </div>
     </div>

@@ -8,6 +8,7 @@ import { BadgePrimary } from "@/components/ui/badge-primary";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { Badge } from "../ui/badge";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Step2CategoriesProps {
   onNext: (data: { categories: string[] }) => void;
@@ -24,6 +25,7 @@ export function Step2Categories({
     initialData?.categories || [],
   );
   const categories = useQuery(api.niches.getCategories);
+  const { t } = useTranslations();
 
   const maxCategories = 2;
 
@@ -56,10 +58,11 @@ export function Step2Categories({
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h3 className="text-lg font-semibold">
-          Choose Your Interest Categories 🎯
+          {t("onboarding.categories.title")}
         </h3>
         <p className="text-muted-foreground text-sm">
-          Select up to {maxCategories} categories that interest you most
+          {t("onboarding.categories.description")} {maxCategories}{" "}
+          {t("onboarding.categories.maxCategories")}
         </p>
       </div>
 
@@ -98,7 +101,8 @@ export function Step2Categories({
       {selectedCategories.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-medium">
-            Selected Categories ({selectedCategories.length}/{maxCategories}):
+            {t("onboarding.categories.selected")} ({selectedCategories.length}/
+            {maxCategories}):
           </p>
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map((category) => (
@@ -117,14 +121,14 @@ export function Step2Categories({
       {/* Navigation Buttons */}
       <div className="flex justify-between pt-4">
         <ButtonPrimary tone="outline" onClick={onPrevious}>
-          Previous
+          {t("onboarding.navigation.previous")}
         </ButtonPrimary>
 
         <ButtonPrimary
           onClick={handleNext}
           disabled={selectedCategories.length === 0}
         >
-          Next
+          {t("onboarding.navigation.next")}
         </ButtonPrimary>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { ButtonPrimary } from "@/components/ui/button-primary";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Loader2 } from "lucide-react";
 import type { Id } from "@/../../packages/backend/convex/_generated/dataModel";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Step4BioProps {
   onNext: (data: { bio: string }) => void;
@@ -26,6 +27,7 @@ export function Step4Bio({
   const [bio, setBio] = useState(initialData?.bio || "");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslations();
 
   const generateBioAction = useAction(api.openai.generateBioAction);
 
@@ -46,7 +48,7 @@ export function Step4Bio({
         setBio(generatedBio);
       }
     } catch (err) {
-      setError("Failed to generate bio. Please try again or write your own.");
+      setError(t("onboarding.bio.generateError"));
       console.error("Bio generation error:", err);
     } finally {
       setIsGenerating(false);
@@ -55,15 +57,19 @@ export function Step4Bio({
 
   const validateBio = () => {
     if (!bio.trim()) {
-      setError("Bio is required");
+      setError(t("onboarding.bio.required"));
       return false;
     }
     if (bio.trim().length < minBioLength) {
-      setError(`Bio must be at least ${minBioLength} characters long`);
+      setError(
+        `${t("onboarding.bio.minLength")} ${minBioLength} ${t("onboarding.bio.characters")}`,
+      );
       return false;
     }
     if (bio.trim().length > maxBioLength) {
-      setError(`Bio must be no more than ${maxBioLength} characters long`);
+      setError(
+        `${t("onboarding.bio.maxLength")} ${maxBioLength} ${t("onboarding.bio.characters")}`,
+      );
       return false;
     }
     setError("");
@@ -82,11 +88,7 @@ export function Step4Bio({
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h3 className="text-lg font-semibold">Tell Us About Yourself ✨</h3>
-        <p className="text-muted-foreground text-sm">
-          Write a bio that describes your experience, interests, and what makes
-          you unique
-        </p>
+        <h3 className="text-lg font-semibold">{t("onboarding.bio.title")}</h3>
       </div>
 
       <div className="space-y-4">
@@ -104,18 +106,20 @@ export function Step4Bio({
             ) : (
               <Sparkles className="w-4 h-4" />
             )}
-            {isGenerating ? "AI Agent is creating..." : "Generate Bio with AI"}
+            {isGenerating
+              ? t("onboarding.bio.generating")
+              : t("onboarding.bio.generateBio")}
           </ButtonPrimary>
         </div>
 
         {/* Bio Textarea */}
         <div className="space-y-2">
           <label htmlFor="bio" className="text-sm font-medium">
-            Your Bio *
+            {t("onboarding.bio.label")} *
           </label>
           <Textarea
             id="bio"
-            placeholder="Tell us about yourself, your experience, your passions, and what drives you..."
+            placeholder={t("onboarding.bio.placeholder")}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             className={`min-h-32 ${error ? "border-red-500" : ""}`}
@@ -128,11 +132,13 @@ export function Step4Bio({
               className={`${isValidLength ? "text-green-600" : "text-muted-foreground"}`}
             >
               {bioLength < minBioLength
-                ? `${minBioLength - bioLength} more characters needed`
-                : `${bioLength}/${maxBioLength} characters`}
+                ? `${minBioLength - bioLength} ${t("onboarding.bio.moreNeeded")}`
+                : `${bioLength}/${maxBioLength} ${t("onboarding.bio.characters")}`}
             </span>
             {isValidLength && (
-              <span className="text-green-600 font-medium">✓ Good length</span>
+              <span className="text-green-600 font-medium">
+                {t("onboarding.bio.goodLength")}
+              </span>
             )}
           </div>
 
@@ -147,14 +153,14 @@ export function Step4Bio({
           onClick={onPrevious}
           disabled={isGenerating}
         >
-          Previous
+          {t("onboarding.navigation.previous")}
         </ButtonPrimary>
 
         <ButtonPrimary
           onClick={handleNext}
           disabled={!isValidLength || isGenerating}
         >
-          Complete Setup
+          {t("onboarding.navigation.complete")}
         </ButtonPrimary>
       </div>
     </div>
