@@ -18,6 +18,7 @@ export const completeOnboarding = mutation({
     categories: v.array(v.string()),
     nicheIds: v.array(v.id("niches")),
     bio: v.string(),
+    locale: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -77,6 +78,7 @@ export const completeOnboarding = mutation({
       bio: args.bio,
       nicheIds: args.nicheIds,
       full_name: args.full_name,
+      locale: args.locale,
     });
 
     return { profileId, personaId };
@@ -91,6 +93,7 @@ export const generateAndSavePrompt = internalAction({
     bio: v.string(),
     nicheIds: v.array(v.id("niches")),
     full_name: v.string(),
+    locale: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     try {
@@ -112,6 +115,7 @@ export const generateAndSavePrompt = internalAction({
             label: niche?.label || "",
             category: niche?.category || "",
           })),
+          locale: args.locale,
         },
       );
 

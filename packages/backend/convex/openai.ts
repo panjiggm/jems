@@ -76,13 +76,40 @@ export const generatePersonaPrompt = internalAction({
         category: v.string(),
       }),
     ),
+    locale: v.optional(v.string()),
   },
-  handler: async (ctx, { full_name, bio, niches }) => {
+  handler: async (ctx, { full_name, bio, niches, locale }) => {
+    // Determine language based on locale
+    const isIndonesian = locale === "id";
+
     const nicheDetails = niches
       .map((niche) => `${niche.label} - (${niche.category})`)
       .join("\n");
 
-    const prompt = `Create a persona prompt for an AI assistant based on this user profile:
+    const prompt = isIndonesian
+      ? `Buatkan prompt persona untuk asisten AI berdasarkan profil pengguna ini:
+
+Nama Lengkap: ${full_name}
+
+Bio: ${bio}
+
+Detail Niche:
+${nicheDetails}
+
+Buatkan prompt persona yang detail yang akan membantu asisten AI memahami orang ini:
+1. Bantu orang ini menemukan ide yang terkait dengan bio, niche dan kategori mereka untuk membuat konten
+2. Pahami nama lengkap, bio dan niche orang ini
+3. Berikan saran dan wawasan yang relevan untuk niche dan kategori mereka
+
+Prompt harus komprehensif dan mencakup hal-hal berikut:
+- Orang ini adalah Content Creator
+- Nama lengkap mereka
+- Bio mereka
+- Niche dan kategori mereka
+- Bagaimana AI harus berinteraksi dengan mereka
+
+Tulis ini sebagai system prompt yang akan digunakan untuk menginstruksikan asisten AI.`
+      : `Create a persona prompt for an AI assistant based on this user profile:
 
 Full Name: ${full_name}
 
@@ -105,12 +132,15 @@ The prompt should be comprehensive and include the following:
 
 Write this as a system prompt that will be used to instruct an AI assistant.`;
 
+    const systemPrompt = isIndonesian
+      ? "Kamu adalah ahli dalam membuat prompt persona AI yang membantu asisten AI memberikan respons yang dipersonalisasi dan relevan. Maksimal 1500 karakter."
+      : "You are an expert at creating AI persona prompts that help AI assistants provide personalized and relevant responses. max 1500 characters";
+
     const output = await openai.chat.completions.create({
       messages: [
         {
           role: "system",
-          content:
-            "You are an expert at creating AI persona prompts that help AI assistants provide personalized and relevant responses. max 1500 characters",
+          content: systemPrompt,
         },
         { role: "user", content: prompt },
       ],
@@ -128,6 +158,7 @@ export const generateBioAction = action({
   args: {
     categories: v.array(v.string()),
     nicheIds: v.array(v.id("niches")),
+    locale: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<string> => {
     // Get niche names for better context
@@ -145,22 +176,36 @@ export const generateBioAction = action({
           )
         : "";
 
-    const prompt = `This is my categories: ${args.categories.join(", ")} and 
-${nicheNames ? ` my niches: ${nicheNames}` : ""}`;
+    // Determine language based on locale
+    const isIndonesian = args.locale === "id";
+
+    const systemPrompt = isIndonesian
+      ? "Kamu adalah penulis bio yang membantu. Buatkan bio untuk profil berdasarkan kategori dan niche yang diberikan. Maksimal 400 karakter. Tulis dalam bahasa Indonesia yang natural dan menarik."
+      : "You are a helpful bio writer. Create a bio for a profile based on the categories and niches. Max 400 characters. Write in natural and engaging language.";
+
+    const userPrompt = isIndonesian
+      ? `Ini adalah kategoriku: ${args.categories.join(", ")} dan 
+${nicheNames ? ` niche-ku: ${nicheNames}` : ""}. Buatkan bio yang menarik dan profesional berdasarkan informasi ini.`
+      : `This is my categories: ${args.categories.join(", ")} and 
+${nicheNames ? ` my niches: ${nicheNames}` : ""}. Create an engaging and professional bio based on this information.`;
 
     const output = await openai.chat.completions.create({
       messages: [
         {
           role: "system" as const,
-          content:
-            "You are a helpful bio writer. Create a bio for a profile based on the categories and niches. Max 400 characters.",
+          content: systemPrompt,
         },
-        { role: "user" as const, content: prompt },
+        { role: "user" as const, content: userPrompt },
       ],
       model: "gpt-4o-mini",
     });
 
     const messageContent = output.choices[0]?.message.content?.trim();
-    return messageContent || "Unable to generate bio at this time.";
+    return (
+      messageContent ||
+      (isIndonesian
+        ? "Tidak dapat membuat bio saat ini. Silakan coba lagi."
+        : "Unable to generate bio at this time.")
+    );
   },
 });

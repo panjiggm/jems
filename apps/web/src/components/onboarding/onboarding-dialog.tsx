@@ -6,7 +6,6 @@ import { api } from "@/../../packages/backend/convex/_generated/api";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -35,7 +34,7 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
   const [isCompleting, setIsCompleting] = useState(false);
-  const { t } = useTranslations();
+  const { t, locale } = useTranslations();
 
   const completeOnboarding = useMutation(api.onboarding.completeOnboarding);
 
@@ -80,6 +79,7 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
         categories: onboardingData.categories!,
         nicheIds: onboardingData.nicheIds!,
         bio: data.bio,
+        locale: locale,
       });
 
       toast.success(t("onboarding.success.title"), {
@@ -157,17 +157,15 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>{t("onboarding.title")}</DialogTitle>
-          <DialogDescription>{t("onboarding.description")}</DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="pb-4">
           {/* Progress indicator - hide on welcome step */}
           {currentStep > 0 && (
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">
-                  {t("onboarding.step")} {currentStep} {t("onboarding.of")}{" "}
-                  {totalSteps - 1}
+                  {currentStep}/{totalSteps - 1}
                 </span>
                 <span className="text-sm text-muted-foreground">
                   {Math.round((currentStep / (totalSteps - 1)) * 100)}

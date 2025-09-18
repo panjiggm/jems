@@ -27,7 +27,7 @@ export function Step4Bio({
   const [bio, setBio] = useState(initialData?.bio || "");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
-  const { t } = useTranslations();
+  const { t, locale } = useTranslations();
 
   const generateBioAction = useAction(api.openai.generateBioAction);
 
@@ -42,6 +42,7 @@ export function Step4Bio({
       const generatedBio = await generateBioAction({
         categories,
         nicheIds,
+        locale: locale,
       });
 
       if (generatedBio) {

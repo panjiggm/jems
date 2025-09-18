@@ -102,8 +102,7 @@ export const dictionary = {
 
   // Onboarding
   onboarding: {
-    title: "Getting Started",
-    description: "Complete your setup to get the most out of Holobiont",
+    title: "Onboarding",
     step: "Step",
     of: "of",
     percent: "%",

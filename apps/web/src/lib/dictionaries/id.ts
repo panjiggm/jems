@@ -102,9 +102,7 @@ export const dictionary = {
 
   // Onboarding
   onboarding: {
-    title: "Memulai",
-    description:
-      "Lengkapi pengaturan Kamu untuk mendapatkan manfaat maksimal dari Holobiont",
+    title: "Pengenalan",
     step: "Langkah",
     of: "dari",
     percent: "%",
