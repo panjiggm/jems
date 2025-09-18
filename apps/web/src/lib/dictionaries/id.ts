@@ -77,16 +77,6 @@ export const dictionary = {
     free: "Gratis",
   },
 
-  // Notes
-  notes: {
-    title: "Catatan",
-    create: "Buat Catatan",
-    edit: "Edit Catatan",
-    delete: "Hapus Catatan",
-    empty: "Belum ada catatan",
-    placeholder: "Mulai menulis catatan Kamu...",
-  },
-
   // Auth
   auth: {
     signIn: "Masuk ke akun Kamu",

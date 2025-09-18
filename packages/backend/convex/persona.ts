@@ -1,6 +1,6 @@
 import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getUserId } from "./notes";
+import { getUserId } from "./schema";
 
 // Get user persona
 export const getPersona = query({

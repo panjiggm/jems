@@ -10,7 +10,6 @@
 
 import type * as models from "../models.js";
 import type * as niches from "../niches.js";
-import type * as notes from "../notes.js";
 import type * as onboarding from "../onboarding.js";
 import type * as openai from "../openai.js";
 import type * as persona from "../persona.js";
@@ -34,7 +33,6 @@ import type {
 declare const fullApi: ApiFromModules<{
   models: typeof models;
   niches: typeof niches;
-  notes: typeof notes;
   onboarding: typeof onboarding;
   openai: typeof openai;
   persona: typeof persona;

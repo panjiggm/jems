@@ -5,7 +5,7 @@ import {
   internalQuery,
 } from "./_generated/server";
 import { v } from "convex/values";
-import { getUserId } from "./notes";
+import { getUserId } from "./schema";
 import { internal } from "./_generated/api";
 
 // Complete full onboarding process

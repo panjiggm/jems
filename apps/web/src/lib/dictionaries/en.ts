@@ -77,16 +77,6 @@ export const dictionary = {
     free: "Free",
   },
 
-  // Notes
-  notes: {
-    title: "Notes",
-    create: "Create Note",
-    edit: "Edit Note",
-    delete: "Delete Note",
-    empty: "No notes yet",
-    placeholder: "Start writing your note...",
-  },
-
   // Auth
   auth: {
     signIn: "Sign in to your account",

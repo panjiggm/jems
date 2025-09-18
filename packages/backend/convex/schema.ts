@@ -1,13 +1,12 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { Auth } from "convex/server";
+
+export const getUserId = async (ctx: { auth: Auth }) => {
+  return (await ctx.auth.getUserIdentity())?.subject;
+};
 
 export default defineSchema({
-  notes: defineTable({
-    userId: v.string(),
-    title: v.string(),
-    content: v.string(),
-    summary: v.optional(v.string()),
-  }),
   profile: defineTable({
     userId: v.string(),
     full_name: v.string(),

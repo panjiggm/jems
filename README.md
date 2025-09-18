@@ -12,19 +12,6 @@ featuring:
 - [Clerk](https://clerk.dev): User authentication
 - OpenAI: Text summarization (optional)
 
-The example app is a note taking app that can summarize notes using AI. Features
-include:
-
-- Marketing page
-- Dashboard page (web & native)
-- Note taking page (web & native)
-- Backend API that serves web & native with the same API
-- Relational database
-- End to end type safety (schema definition to frontend API clients)
-- User authentication
-- Asynchronous call to an OpenAI
-- Everything is realtime by default
-
 ## Using this example
 
 ### 1. Install dependencies

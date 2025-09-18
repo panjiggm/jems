@@ -20,51 +20,6 @@ export const openaiKeySet = query({
   },
 });
 
-export const summary = internalAction({
-  args: {
-    id: v.id("notes"),
-    title: v.string(),
-    content: v.string(),
-  },
-  handler: async (ctx, { id, title, content }) => {
-    const prompt = `Take in the following note and return a summary: Title: ${title}, Note content: ${content}`;
-
-    const output = await openai.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a helpful assistant designed to output JSON in this format: {summary: string}",
-        },
-        { role: "user", content: prompt },
-      ],
-      model: "openai/gpt-5-nano",
-      response_format: { type: "json_object" },
-    });
-
-    // Pull the message content out of the response
-    const messageContent = output.choices[0]?.message.content;
-    const parsedOutput = JSON.parse(messageContent!);
-
-    await ctx.runMutation(internal.openai.saveSummary, {
-      id: id,
-      summary: parsedOutput.summary,
-    });
-  },
-});
-
-export const saveSummary = internalMutation({
-  args: {
-    id: v.id("notes"),
-    summary: v.string(),
-  },
-  handler: async (ctx, { id, summary }) => {
-    await ctx.db.patch(id, {
-      summary: summary,
-    });
-  },
-});
-
 // Generate AI prompt for persona
 export const generatePersonaPrompt = internalAction({
   args: {
