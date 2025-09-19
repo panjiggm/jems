@@ -1,25 +1,32 @@
 # Feature #1 - Implementation Checklist (Tasks)
 
-This file is a step-by-step plan to ship Projects & Content Planning CRUD with filters, pagination, and status control.
+This file is a step-by-step plan to ship Projects & Content Planning CRUD with filters, pagination, and status control. Use Convex MCP!
 
 ---
 
 ## 2) Data Model
 
-- [ ] Implement convex/schema.ts (projects, contents, tasks) with indexes.
-- [ ] Create convex/utils/validators.ts (pagination & filters).
+- [x] Implement convex/schema.ts (projects, contents, tasks) with indexes. check "docs\instructions\feature-1_convex-setup-and-schema.md"
+- [x] Create convex/utils/validators.ts (pagination & filters).
 
-## 3) Server Functions
+## 3) Convex Functions
 
-- [ ] projects/queries.ts
-- [ ] projects/mutations.ts
-- [ ] projects/actions.ts
-- [ ] contents/queries.ts
-- [ ] contents/mutations.ts
-- [ ] contents/actions.ts
-- [ ] tasks/queries.ts
-- [ ] tasks/mutations.ts
-- [ ] tasks/actions.ts
+- [x] queries/projects.ts (list with search & pagination)
+- [x] mutations/projects.ts (create, update, remove)
+- [x] queries/contents.ts (list with filters & pagination)
+- [x] mutations/contents.ts (create, setStatus)
+- [x] queries/tasks.ts (list with overdue filter & pagination)
+- [x] mutations/tasks.ts (create, setStatus)
+- [x] actions/ai.ts (generateIdeas)
+- [x] actions/seed.ts (placeholder for demo data)
+- [x] Reorganized existing functions:
+  - [x] queries/niches.ts (moved from niches.ts)
+  - [x] queries/persona.ts (moved from persona.ts)
+  - [x] queries/profile.ts (moved from profile.ts)
+  - [x] mutations/persona.ts (moved from persona.ts)
+  - [x] mutations/profile.ts (moved from profile.ts)
+  - [x] mutations/onboarding.ts (moved from onboarding.ts)
+  - [x] actions/onboarding.ts (moved from onboarding.ts)
 
 ## 4) Client Screens (MVP)
 
