@@ -1,6 +1,6 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { currentUserId } from "../auth";
+import { getUserId } from "../schema";
 
 export const list = query({
   args: {
@@ -14,19 +14,19 @@ export const list = query({
     pageSize: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     const pageSize = Math.min(args.pageSize ?? 20, 100);
 
     let q = ctx.db
       .query("contents")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .order("desc");
 
     if (args.projectId) {
       q = ctx.db
         .query("contents")
         .withIndex("by_user_project", (q) =>
-          q.eq("userId", userId).eq("projectId", args.projectId!),
+          q.eq("userId", userId!).eq("projectId", args.projectId!),
         );
     }
 

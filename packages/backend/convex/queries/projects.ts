@@ -1,33 +1,30 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { currentUserId } from "../auth";
+import { getUserId } from "../schema";
 
 export const list = query({
   args: {
-    cursor: v.optional(v.string()),
-    pageSize: v.optional(v.number()),
     search: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
 
-    const pageSize = Math.min(args.pageSize ?? 20, 100);
-    const q = ctx.db
+    // Get all projects for the user
+    const allProjects = await ctx.db
       .query("projects")
-      .withIndex("by_user_createdAt", (q) => q.eq("userId", userId))
-      .order("desc");
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .order("desc")
+      .collect();
 
-    const { page, isDone, continueCursor } = await q.paginate({
-      cursor: args.cursor ?? null,
-      numItems: pageSize,
-    });
+    // Apply search filter if provided
+    // const filtered = args.search
+    //   ? allProjects.filter((p) =>
+    //       p.title.toLowerCase().includes((args.search as string).toLowerCase()),
+    //     )
+    //   : allProjects;
 
-    const filtered = args.search
-      ? page.filter((p) =>
-          p.title.toLowerCase().includes((args.search as string).toLowerCase()),
-        )
-      : page;
+    // return { items: filtered, cursor: null, isDone: true };
 
-    return { items: filtered, cursor: continueCursor, isDone };
+    return allProjects;
   },
 });

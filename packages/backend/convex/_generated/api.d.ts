@@ -9,18 +9,21 @@
  */
 
 import type * as actions_ai from "../actions/ai.js";
+import type * as actions_onboarding from "../actions/onboarding.js";
 import type * as actions_seed from "../actions/seed.js";
 import type * as auth from "../auth.js";
 import type * as models from "../models.js";
 import type * as mutations_contents from "../mutations/contents.js";
+import type * as mutations_onboarding from "../mutations/onboarding.js";
+import type * as mutations_persona from "../mutations/persona.js";
+import type * as mutations_profile from "../mutations/profile.js";
 import type * as mutations_projects from "../mutations/projects.js";
 import type * as mutations_tasks from "../mutations/tasks.js";
-import type * as niches from "../niches.js";
-import type * as onboarding from "../onboarding.js";
 import type * as openai from "../openai.js";
-import type * as persona from "../persona.js";
-import type * as profile from "../profile.js";
 import type * as queries_contents from "../queries/contents.js";
+import type * as queries_niches from "../queries/niches.js";
+import type * as queries_persona from "../queries/persona.js";
+import type * as queries_profile from "../queries/profile.js";
 import type * as queries_projects from "../queries/projects.js";
 import type * as queries_tasks from "../queries/tasks.js";
 import type * as utils_validators from "../utils/validators.js";
@@ -42,18 +45,21 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   "actions/ai": typeof actions_ai;
+  "actions/onboarding": typeof actions_onboarding;
   "actions/seed": typeof actions_seed;
   auth: typeof auth;
   models: typeof models;
   "mutations/contents": typeof mutations_contents;
+  "mutations/onboarding": typeof mutations_onboarding;
+  "mutations/persona": typeof mutations_persona;
+  "mutations/profile": typeof mutations_profile;
   "mutations/projects": typeof mutations_projects;
   "mutations/tasks": typeof mutations_tasks;
-  niches: typeof niches;
-  onboarding: typeof onboarding;
   openai: typeof openai;
-  persona: typeof persona;
-  profile: typeof profile;
   "queries/contents": typeof queries_contents;
+  "queries/niches": typeof queries_niches;
+  "queries/persona": typeof queries_persona;
+  "queries/profile": typeof queries_profile;
   "queries/projects": typeof queries_projects;
   "queries/tasks": typeof queries_tasks;
   "utils/validators": typeof utils_validators;

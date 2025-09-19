@@ -7,6 +7,6 @@ export async function assertIdentity(ctx: QueryCtx | MutationCtx | ActionCtx) {
 }
 
 export async function currentUserId(ctx: QueryCtx | MutationCtx | ActionCtx) {
-  const identity = await assertIdentity(ctx);
-  return identity.subject; // Clerk user id
+  const identity = (await assertIdentity(ctx)).subject;
+  return identity; // Clerk user id
 }

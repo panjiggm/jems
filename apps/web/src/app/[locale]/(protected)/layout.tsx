@@ -15,7 +15,7 @@ import {
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard | Holobiont",
+  title: "Dashboard | Hidden Jems",
   description: "Your personal dashboard",
 };
 

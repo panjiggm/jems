@@ -12,7 +12,7 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Query to check onboarding status
-  const onboardingStatus = useQuery(api.profile.getOnboardingStatus);
+  const onboardingStatus = useQuery(api.queries.profile.getOnboardingStatus);
 
   useEffect(() => {
     // Only check onboarding status when user is loaded and we have the query result

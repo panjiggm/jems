@@ -33,23 +33,23 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: Home,
       isActive: true,
     },
     {
       title: "Ask AI",
-      url: "#",
+      url: "/ai",
       icon: Sparkles,
     },
     {
       title: "Projects",
-      url: "#",
+      url: "/projects",
       icon: Laptop2,
     },
     {
       title: "Schedules",
-      url: "#",
+      url: "/schedules",
       icon: Calendar,
     },
   ],
@@ -61,17 +61,17 @@ const data = {
     },
     {
       title: "Templates",
-      url: "#",
+      url: "/templates",
       icon: Blocks,
     },
     {
       title: "Trash",
-      url: "#",
+      url: "/trash",
       icon: Trash2,
     },
     {
       title: "Help",
-      url: "#",
+      url: "/help",
       icon: MessageCircleQuestion,
     },
   ],
