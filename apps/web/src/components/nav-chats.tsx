@@ -25,10 +25,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-export function NavFavorites({
-  favorites,
+export function NavChats({
+  chats,
 }: {
-  favorites: {
+  chats: {
     name: string;
     url: string;
     emoji: string;
@@ -40,7 +40,7 @@ export function NavFavorites({
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Chats</SidebarGroupLabel>
       <SidebarMenu>
-        {favorites.map((item) => (
+        {chats.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
               <a href={item.url} title={item.name}>

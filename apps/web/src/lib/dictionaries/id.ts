@@ -75,6 +75,7 @@ export const dictionary = {
     policy: "Kebijakan",
     contact: "Hubungi",
     free: "Gratis",
+    navigation: "Navigasi",
   },
 
   // Auth
@@ -162,5 +163,10 @@ export const dictionary = {
       description:
         "Silakan coba lagi atau hubungi dukungan jika masalah berlanjut.",
     },
+  },
+
+  mobileApp: {
+    title: "Segera Hadir!",
+    description: "Tunggu kehadiran aplikasi Holobiont di smartphone Kamu.",
   },
 } as const;

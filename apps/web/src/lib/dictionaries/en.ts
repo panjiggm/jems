@@ -75,6 +75,7 @@ export const dictionary = {
     policy: "Policy",
     contact: "Contact",
     free: "Free",
+    navigation: "Navigation",
   },
 
   // Auth
@@ -163,5 +164,11 @@ export const dictionary = {
       description:
         "Please try again or contact support if the problem persists.",
     },
+  },
+
+  mobileApp: {
+    title: "Coming Soon!",
+    description:
+      "Wait for the Holobiont app to be available on your smartphone.",
   },
 } as const;

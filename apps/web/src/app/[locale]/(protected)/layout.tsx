@@ -50,7 +50,7 @@ export default function DashboardLayout({
           {children}
         </div>
       </SidebarInset>
-      <SidebarRight />
+      {/* <SidebarRight /> */}
     </SidebarProvider>
   );
 }
