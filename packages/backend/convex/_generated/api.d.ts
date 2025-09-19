@@ -8,12 +8,22 @@
  * @module
  */
 
+import type * as actions_ai from "../actions/ai.js";
+import type * as actions_seed from "../actions/seed.js";
+import type * as auth from "../auth.js";
 import type * as models from "../models.js";
+import type * as mutations_contents from "../mutations/contents.js";
+import type * as mutations_projects from "../mutations/projects.js";
+import type * as mutations_tasks from "../mutations/tasks.js";
 import type * as niches from "../niches.js";
 import type * as onboarding from "../onboarding.js";
 import type * as openai from "../openai.js";
 import type * as persona from "../persona.js";
 import type * as profile from "../profile.js";
+import type * as queries_contents from "../queries/contents.js";
+import type * as queries_projects from "../queries/projects.js";
+import type * as queries_tasks from "../queries/tasks.js";
+import type * as utils_validators from "../utils/validators.js";
 import type * as utils from "../utils.js";
 
 import type {
@@ -31,12 +41,22 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "actions/ai": typeof actions_ai;
+  "actions/seed": typeof actions_seed;
+  auth: typeof auth;
   models: typeof models;
+  "mutations/contents": typeof mutations_contents;
+  "mutations/projects": typeof mutations_projects;
+  "mutations/tasks": typeof mutations_tasks;
   niches: typeof niches;
   onboarding: typeof onboarding;
   openai: typeof openai;
   persona: typeof persona;
   profile: typeof profile;
+  "queries/contents": typeof queries_contents;
+  "queries/projects": typeof queries_projects;
+  "queries/tasks": typeof queries_tasks;
+  "utils/validators": typeof utils_validators;
   utils: typeof utils;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
