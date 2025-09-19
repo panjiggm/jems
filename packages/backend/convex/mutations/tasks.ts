@@ -22,6 +22,24 @@ export const create = mutation({
   },
 });
 
+export const update = mutation({
+  args: {
+    id: v.id("tasks"),
+    patch: v.object({
+      title: v.optional(v.string()),
+      dueDate: v.optional(v.string()),
+      contentId: v.optional(v.id("contents")),
+    }),
+  },
+  handler: async (ctx, { id, patch }) => {
+    const userId = await currentUserId(ctx);
+    const doc = await ctx.db.get(id);
+    if (!doc || doc.userId !== userId) throw new Error("NOT_FOUND");
+    await ctx.db.patch(id, { ...patch, updatedAt: Date.now() });
+    return id;
+  },
+});
+
 export const setStatus = mutation({
   args: {
     id: v.id("tasks"),
@@ -33,5 +51,16 @@ export const setStatus = mutation({
     if (!doc || doc.userId !== userId) throw new Error("NOT_FOUND");
     await ctx.db.patch(id, { status, updatedAt: Date.now() });
     return id;
+  },
+});
+
+export const remove = mutation({
+  args: { id: v.id("tasks") },
+  handler: async (ctx, { id }) => {
+    const userId = await currentUserId(ctx);
+    const doc = await ctx.db.get(id);
+    if (!doc || doc.userId !== userId) throw new Error("NOT_FOUND");
+    await ctx.db.delete(id);
+    return true;
   },
 });
