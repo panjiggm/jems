@@ -24,7 +24,7 @@ export function Step2Categories({
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     initialData?.categories || [],
   );
-  const categories = useQuery(api.niches.getCategories);
+  const categories = useQuery(api.queries.niches.getCategories);
   const { t } = useTranslations();
 
   const maxCategories = 2;

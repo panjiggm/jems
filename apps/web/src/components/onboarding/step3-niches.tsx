@@ -28,7 +28,9 @@ export function Step3Niches({
   );
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const hasInitializedOpen = useRef(false);
-  const niches = useQuery(api.niches.getNichesByCategories, { categories });
+  const niches = useQuery(api.queries.niches.getNichesByCategories, {
+    categories,
+  });
   const { t } = useTranslations();
 
   const maxNiches = 4;
