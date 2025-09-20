@@ -32,7 +32,6 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: Home,
-      isActive: true,
     },
     {
       title: "Ask AI",
