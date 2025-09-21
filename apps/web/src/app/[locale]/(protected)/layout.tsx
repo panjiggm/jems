@@ -1,3 +1,5 @@
+"use client";
+
 import { SidebarLeft } from "@/components/sidebar-left";
 import {
   Breadcrumb,
@@ -11,12 +13,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Dashboard | Hidden Jems",
-  description: "Your personal dashboard",
-};
 
 export default function DashboardLayout({
   children,
@@ -45,9 +41,7 @@ export default function DashboardLayout({
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 mx-auto max-w-6xl container">
-          {children}
-        </div>
+        <div>{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

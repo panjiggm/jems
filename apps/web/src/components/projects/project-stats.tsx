@@ -1,64 +1,85 @@
-"use client";
+import React from "react";
 
-import { useQuery } from "convex/react";
-import { api } from "@packages/backend/convex/_generated/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, CalendarDays, RotateCcw } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  Mail,
+  Phone,
+  Plus,
+  FileText,
+  User,
+  Bell,
+  MoreHorizontal,
+  ArrowLeft,
+  Star,
+} from "lucide-react";
+import { format } from "date-fns";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "../ui/button";
 
-export function ProjectStats() {
-  const projects = useQuery(api.queries.projects.list, {}) ?? [];
+// Dummy data based on schema.ts
+const userInfo = {
+  name: "Alex Johnson",
+  avatar: "/images/profile.png",
+  createdDate: "15 Oct, 2024",
+  lastActivity: "2 Nov, 2024 at 09:00AM",
+  role: "Content Creator",
+  projectsCount: "5 Projects",
+  assignedUsers: [
+    { id: 1, name: "Content Creator", avatar: "/images/profile.png" },
+    { id: 2, name: "Video Editor", avatar: "/images/profile.png" },
+    { id: 3, name: "Social Media Manager", avatar: "/images/profile.png" },
+  ],
+};
 
-  const stats = {
-    total: projects?.length ?? 0,
-    campaigns: projects?.filter((p) => p.type === "campaign").length ?? 0,
-    series: projects?.filter((p) => p.type === "series").length ?? 0,
-    routines: projects?.filter((p) => p.type === "routine").length ?? 0,
-  };
-
-  if (stats.total === 0) {
-    return null;
-  }
-
+const ProjectStats = () => {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.total}</div>
-        </CardContent>
-      </Card>
+    <div className="p-6 border-b">
+      <div className="flex items-center gap-3 mb-4">
+        <Avatar className="h-12 w-12">
+          <AvatarImage src={userInfo.avatar} alt={userInfo.name} />
+          <AvatarFallback>{userInfo.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div>
+          <h2 className="font-semibold text-lg">{userInfo.name}</h2>
+          <p className="text-sm text-muted-foreground">
+            Created On {userInfo.createdDate}
+          </p>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Campaigns</CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.campaigns}</div>
-        </CardContent>
-      </Card>
+      {/* Assigned Users */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex -space-x-2">
+          {userInfo.assignedUsers.map((user, index) => (
+            <Avatar key={user.id} className="h-8 w-8 border-2 border-white">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+          ))}
+          <div className="h-8 w-8 bg-yellow-400 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white">
+            +2
+          </div>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Series</CardTitle>
-          <CalendarDays className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.series}</div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Routines</CardTitle>
-          <RotateCcw className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.routines}</div>
-        </CardContent>
-      </Card>
+      {/* Action Buttons */}
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" className="flex-1">
+          <Mail className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Mail</span>
+        </Button>
+        <Button variant="outline" size="sm" className="flex-1">
+          <Phone className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Call</span>
+        </Button>
+        <Button variant="outline" size="sm">
+          <MoreHorizontal className="h-4 w-4" />
+          <span className="hidden sm:inline">More</span>
+        </Button>
+      </div>
     </div>
   );
-}
+};
+
+export default ProjectStats;
