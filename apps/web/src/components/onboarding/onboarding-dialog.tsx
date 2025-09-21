@@ -36,7 +36,9 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const { t, locale } = useTranslations();
 
-  const completeOnboarding = useMutation(api.onboarding.completeOnboarding);
+  const completeOnboarding = useMutation(
+    api.mutations.onboarding.completeOnboarding,
+  );
 
   const totalSteps = 5;
 
