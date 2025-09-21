@@ -1,30 +1,23 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
 import { getUserId } from "../schema";
+import { paginationOptsValidator } from "convex/server";
 
 export const list = query({
   args: {
     search: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
 
     // Get all projects for the user
-    const allProjects = await ctx.db
+    const projects = await ctx.db
       .query("projects")
-      .filter((q) => q.eq(q.field("userId"), userId))
+      .withIndex("by_user_createdAt", (q) => q.eq("userId", userId!))
       .order("desc")
-      .collect();
+      .paginate(args.paginationOpts);
 
-    // Apply search filter if provided
-    // const filtered = args.search
-    //   ? allProjects.filter((p) =>
-    //       p.title.toLowerCase().includes((args.search as string).toLowerCase()),
-    //     )
-    //   : allProjects;
-
-    // return { items: filtered, cursor: null, isDone: true };
-
-    return allProjects;
+    return projects;
   },
 });

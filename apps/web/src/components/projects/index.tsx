@@ -3,23 +3,30 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Plus, User, Bell } from "lucide-react";
+import { Clock, Plus, User, Bell, ChevronDown } from "lucide-react";
 import ProjectStats from "./project-stats";
 import RecentActivity from "./recent-activity";
 import ProjectTabs from "./tabs";
 import { ButtonPrimary } from "../ui/button-primary";
 import { CreateProjectDialog } from "./dialog-create-project";
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
-import { useQuery } from "convex-helpers/react/cache/hooks";
+import { usePaginatedQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
-import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 export default function ProjectsComponent() {
   const { openDialog } = useCreateProjectDialogStore();
-  const projects = useQuery(api.queries.projects.list, {});
+  const {
+    results: projects,
+    status,
+    loadMore,
+  } = usePaginatedQuery(
+    api.queries.projects.list,
+    { search: undefined },
+    { initialNumItems: 12 },
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className=" bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b">
         <div className="flex items-center justify-between p-4">
@@ -165,6 +172,29 @@ export default function ProjectsComponent() {
                 ))
               )}
             </div>
+
+            {/* Load More Button */}
+            {projects && projects.length > 0 && status !== "Exhausted" && (
+              <div className="flex justify-center pt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => loadMore(5)}
+                  disabled={status === "LoadingMore"}
+                >
+                  {status === "LoadingMore" ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 mr-2" />
+                      Load More
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
