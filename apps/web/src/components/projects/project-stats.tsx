@@ -12,12 +12,10 @@ import {
   AlertTriangle,
   Rocket,
   BarChart3,
-  Clock,
   CheckCircle2,
   User,
 } from "lucide-react";
 import { format } from "date-fns";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "../ui/badge";
 import { useTranslations } from "@/hooks/use-translations";
 
@@ -42,7 +40,7 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   const isProjectsList = pathname.includes("/projects") && !projectId;
   const isProjectDetail = projectId && !contentId;
   const isContentDetail = projectId && contentId && !taskId;
-  const isTaskDetail = projectId && contentId && taskId;
+  // const isTaskDetail = projectId && contentId && taskId;
 
   // Fetch dashboard stats (all projects, contents, tasks)
   const dashboardStats = useQuery(
@@ -63,20 +61,20 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   );
 
   // Fetch individual stats for specific entities
-  const individualProjectStats = useQuery(
-    api.queries.projects.getStats,
-    isProjectDetail && projectId ? {} : "skip",
-  );
+  // const individualProjectStats = useQuery(
+  //   api.queries.projects.getStats,
+  //   isProjectDetail && projectId ? {} : "skip",
+  // );
 
-  const individualContentStats = useQuery(
-    api.queries.contents.getStats,
-    isContentDetail && projectId ? { projectId: projectId as any } : "skip",
-  );
+  // const individualContentStats = useQuery(
+  //   api.queries.contents.getStats,
+  //   isContentDetail && projectId ? { projectId: projectId as any } : "skip",
+  // );
 
-  const individualTaskStats = useQuery(
-    api.queries.tasks.getStats,
-    isContentDetail && projectId ? { projectId: projectId as any } : "skip",
-  );
+  // const individualTaskStats = useQuery(
+  //   api.queries.tasks.getStats,
+  //   isContentDetail && projectId ? { projectId: projectId as any } : "skip",
+  // );
 
   // Loading state
   if (
@@ -108,11 +106,6 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   }
 
   const userName = profile?.full_name || "User";
-  const userInitials = userName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
 
   // Render stats based on current route
   const renderStats = () => {
@@ -259,18 +252,20 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   return (
     <div className="p-6 border-b">
       <div className="flex items-center gap-3 mb-4">
-        <div className="relative">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={profile?.avatar_url} alt={userName} />
-            <AvatarFallback>{userInitials}</AvatarFallback>
-          </Avatar>
-          <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-background border-2 border-background rounded-full flex items-center justify-center">
-            <User className="h-3 w-3 text-muted-foreground" />
-          </div>
+        <div className="relative bg-orange-50 rounded-lg p-4 text-orange-400">
+          {isProjectsList ? (
+            <FolderOpen className="h-7 w-7" />
+          ) : isProjectDetail && projectStats ? (
+            <FolderOpen className="h-7 w-7" />
+          ) : isContentDetail && contentStats ? (
+            <FileText className="h-7 w-7" />
+          ) : (
+            <User className="h-7 w-7" />
+          )}
         </div>
         <div>
-          <h2 className="font-semibold text-lg">{titleInfo.title}</h2>
-          <p className="text-sm text-muted-foreground">{titleInfo.subtitle}</p>
+          <h2 className="font-semibold text-md">{titleInfo.title}</h2>
+          <p className="text-xs text-muted-foreground">{titleInfo.subtitle}</p>
         </div>
       </div>
 
