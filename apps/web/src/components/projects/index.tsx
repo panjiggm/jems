@@ -1,20 +1,24 @@
 "use client";
 
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Plus, User, Bell, ChevronDown } from "lucide-react";
+import { Plus, ChevronDown } from "lucide-react";
 import ProjectStats from "./project-stats";
 import RecentActivity from "./recent-activity";
 import ProjectTabs from "./tabs";
 import { ButtonPrimary } from "../ui/button-primary";
 import { CreateProjectDialog } from "./dialog-create-project";
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
+import { ProjectCard } from "./card-project";
 import { usePaginatedQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
+import { useTranslations } from "@/hooks/use-translations";
 
 export default function ProjectsComponent() {
   const { openDialog } = useCreateProjectDialogStore();
+  const { t } = useTranslations();
   const {
     results: projects,
     status,
@@ -24,6 +28,11 @@ export default function ProjectsComponent() {
     { search: undefined },
     { initialNumItems: 12 },
   );
+
+  const handleViewDetails = React.useCallback((projectId: string) => {
+    // TODO: Implement project details navigation
+    console.log("View details for project:", projectId);
+  }, []);
 
   return (
     <div className=" bg-gray-50">
@@ -37,7 +46,7 @@ export default function ProjectsComponent() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ButtonPrimary size="sm" onClick={openDialog}>
                 <Plus className="h-4 w-4 mr-2" />
-                Create Project
+                {t("projects.createProject")}
               </ButtonPrimary>
             </div>
           </div>
@@ -55,11 +64,13 @@ export default function ProjectsComponent() {
             {/* Header with Create Project Button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Projects</h2>
+                <h2 className="text-lg font-semibold">{t("projects.title")}</h2>
                 {projects && (
                   <Badge variant="secondary" className="text-xs">
                     {projects.length}{" "}
-                    {projects.length === 1 ? "project" : "projects"}
+                    {projects.length === 1
+                      ? t("projects.project")
+                      : t("projects.projects")}
                   </Badge>
                 )}
               </div>
@@ -86,89 +97,26 @@ export default function ProjectsComponent() {
                 <div className="col-span-full text-center py-12">
                   <div className="text-muted-foreground mb-4">
                     <Plus className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <h3 className="text-lg font-medium">No projects yet</h3>
+                    <h3 className="text-lg font-medium">
+                      {t("projects.noProjects")}
+                    </h3>
                     <p className="text-sm">
-                      Create your first project to get started
+                      {t("projects.noProjectsDescription")}
                     </p>
                   </div>
                   <ButtonPrimary onClick={openDialog}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Project
+                    {t("projects.createProject")}
                   </ButtonPrimary>
                 </div>
               ) : (
                 // Projects list
                 projects.map((project) => (
-                  <Card
+                  <ProjectCard
                     key={project._id}
-                    className="shadow-none border rounded-lg hover:shadow-sm transition-shadow"
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <h4 className="font-medium text-sm leading-tight">
-                              {project.title}
-                            </h4>
-                            <Badge
-                              variant="secondary"
-                              className="text-xs ml-2 flex-shrink-0 capitalize"
-                            >
-                              {project.type}
-                            </Badge>
-                          </div>
-                          {project.description && (
-                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                              {project.description}
-                            </p>
-                          )}
-                          <div className="space-y-2 text-xs text-muted-foreground">
-                            {project.startDate && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">
-                                  Start:{" "}
-                                  {new Date(
-                                    project.startDate,
-                                  ).toLocaleDateString()}
-                                </span>
-                              </div>
-                            )}
-                            {project.endDate && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">
-                                  End:{" "}
-                                  {new Date(
-                                    project.endDate,
-                                  ).toLocaleDateString()}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate">
-                                Created{" "}
-                                {new Date(
-                                  project.createdAt,
-                                ).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="mt-3 pt-3 border-t">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-full justify-center"
-                            >
-                              <Bell className="h-4 w-4 mr-2" />
-                              View Details
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    project={project}
+                    onViewDetails={handleViewDetails}
+                  />
                 ))
               )}
             </div>
@@ -184,12 +132,12 @@ export default function ProjectsComponent() {
                   {status === "LoadingMore" ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
-                      Loading...
+                      {t("projects.loading")}
                     </>
                   ) : (
                     <>
                       <ChevronDown className="h-4 w-4 mr-2" />
-                      Load More
+                      {t("projects.loadMore")}
                     </>
                   )}
                 </Button>

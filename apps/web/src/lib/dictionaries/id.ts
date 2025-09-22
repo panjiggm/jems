@@ -169,4 +169,30 @@ export const dictionary = {
     title: "Segera Hadir!",
     description: "Tunggu kehadiran aplikasi Holobiont di smartphone Kamu.",
   },
+
+  // Projects
+  projects: {
+    title: "Proyek",
+    createProject: "Buat Proyek",
+    noProjects: "Belum ada proyek",
+    noProjectsDescription: "Buat proyek pertama Kamu untuk memulai",
+    loadMore: "Muat Lebih Banyak",
+    loading: "Memuat...",
+    viewDetails: "Lihat Detail",
+    project: "proyek",
+    projects: "proyek",
+    start: "Mulai",
+    end: "Selesai",
+    created: "Dibuat",
+    types: {
+      campaign: "Kampanye",
+      series: "Seri",
+      routine: "Rutinitas",
+    },
+    dates: {
+      today: "Hari ini",
+      tomorrow: "Besok",
+      yesterday: "Kemarin",
+    },
+  },
 } as const;

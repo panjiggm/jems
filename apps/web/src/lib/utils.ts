@@ -15,20 +15,23 @@ type GroupBy<T, K extends keyof T> = Record<string, T[]>;
 
 export function groupBy<T, K extends keyof T>(
   array: T[],
-  key: K
+  key: K,
 ): GroupBy<T, K> {
-  return array.reduce((acc, item) => {
-    const keyValue = String(item[key]);
-    if (!acc[keyValue]) {
-      acc[keyValue] = [];
-    }
-    acc[keyValue].push(item);
-    return acc;
-  }, {} as GroupBy<T, K>);
+  return array.reduce(
+    (acc, item) => {
+      const keyValue = String(item[key]);
+      if (!acc[keyValue]) {
+        acc[keyValue] = [];
+      }
+      acc[keyValue].push(item);
+      return acc;
+    },
+    {} as GroupBy<T, K>,
+  );
 }
 
 export function absoluteUrl(path: string) {
   return process.env.NODE_ENV === "development"
-    ? `http://localhost:3000${path}`
+    ? `${process.env.NEXT_PUBLIC_APP_URL}${path}`
     : `https://${config.appUrl}${path}`;
 }

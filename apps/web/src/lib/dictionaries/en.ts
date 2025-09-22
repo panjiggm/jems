@@ -171,4 +171,30 @@ export const dictionary = {
     description:
       "Wait for the Holobiont app to be available on your smartphone.",
   },
+
+  // Projects
+  projects: {
+    title: "Projects",
+    createProject: "Create Project",
+    noProjects: "No projects yet",
+    noProjectsDescription: "Create your first project to get started",
+    loadMore: "Load More",
+    loading: "Loading...",
+    viewDetails: "View Details",
+    project: "project",
+    projects: "projects",
+    start: "Start",
+    end: "End",
+    created: "Created",
+    types: {
+      campaign: "Campaign",
+      series: "Series",
+      routine: "Routine",
+    },
+    dates: {
+      today: "Today",
+      tomorrow: "Tomorrow",
+      yesterday: "Yesterday",
+    },
+  },
 } as const;
