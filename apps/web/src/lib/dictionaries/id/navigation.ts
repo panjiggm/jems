@@ -1,0 +1,18 @@
+export const nav = {
+  title: "Holobiont",
+  home: "Beranda",
+  dashboard: "Dashboard",
+  projects: "Proyek",
+  schedules: "Jadwal",
+  askAI: "Tanya AI",
+  settings: "Pengaturan",
+  templates: "Template",
+  trash: "Sampah",
+  help: "Bantuan",
+  signIn: "Masuk",
+  signUp: "Daftar",
+  gettingStarted: "Mulai Sekarang",
+  blog: "Blog",
+  about: "Tentang",
+  contactUs: "Hubungi Kami",
+} as const;
