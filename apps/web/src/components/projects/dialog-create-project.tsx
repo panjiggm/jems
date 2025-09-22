@@ -27,8 +27,10 @@ import { DatePicker } from "@/components/ui/date-picker";
 
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
 import { ButtonPrimary } from "../ui/button-primary";
+import { useTranslations } from "@/hooks/use-translations";
 
 export function CreateProjectDialog() {
+  const { t } = useTranslations();
   const {
     isOpen,
     isLoading,
@@ -54,12 +56,12 @@ export function CreateProjectDialog() {
     let hasErrors = false;
 
     if (!formData.title.trim()) {
-      setError("title", "Title is required");
+      setError("title", t("projects.dialog.form.titleRequired"));
       hasErrors = true;
     }
 
     if (!formData.type) {
-      setError("type", "Project type is required");
+      setError("type", t("projects.dialog.form.typeRequired"));
       hasErrors = true;
     }
 
@@ -68,7 +70,7 @@ export function CreateProjectDialog() {
       formData.endDate &&
       formData.startDate > formData.endDate
     ) {
-      setError("endDate", "End date must be after start date");
+      setError("endDate", t("projects.dialog.form.endDateError"));
       hasErrors = true;
     }
 
@@ -87,8 +89,8 @@ export function CreateProjectDialog() {
         endDate: formData.endDate?.toISOString().split("T")[0],
       });
 
-      toast.success("Project created successfully!", {
-        description: `"${formData.title}" has been created.`,
+      toast.success(t("projects.dialog.messages.success"), {
+        description: `"${formData.title}" ${t("projects.dialog.messages.successDescription")}`,
       });
 
       // Reset form and close dialog
@@ -96,9 +98,8 @@ export function CreateProjectDialog() {
       closeDialog();
     } catch (error) {
       console.error("Failed to create project:", error);
-      toast.error("Failed to create project", {
-        description:
-          "Please try again or contact support if the problem persists.",
+      toast.error(t("projects.dialog.messages.error"), {
+        description: t("projects.dialog.messages.errorDescription"),
       });
     } finally {
       setLoading(false);
@@ -122,9 +123,9 @@ export function CreateProjectDialog() {
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
+            <DialogTitle>{t("projects.dialog.title")}</DialogTitle>
             <DialogDescription>
-              Create a new project to organize your content and track progress.
+              {t("projects.dialog.description")}
             </DialogDescription>
           </DialogHeader>
 
@@ -132,13 +133,14 @@ export function CreateProjectDialog() {
             {/* Project Title */}
             <div className="grid gap-2">
               <Label htmlFor="title">
-                Project Title <span className="text-red-500">*</span>
+                {t("projects.dialog.form.title")}{" "}
+                <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => updateFormData({ title: e.target.value })}
-                placeholder="Enter project title..."
+                placeholder={t("projects.dialog.form.titlePlaceholder")}
                 disabled={isLoading}
                 className={errors.title ? "border-red-500" : ""}
               />
@@ -150,7 +152,8 @@ export function CreateProjectDialog() {
             {/* Project Type */}
             <div className="grid gap-2">
               <Label htmlFor="type">
-                Project Type <span className="text-red-500">*</span>
+                {t("projects.dialog.form.type")}{" "}
+                <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={formData.type}
@@ -160,12 +163,20 @@ export function CreateProjectDialog() {
                 disabled={isLoading}
               >
                 <SelectTrigger className={errors.type ? "border-red-500" : ""}>
-                  <SelectValue placeholder="Select project type" />
+                  <SelectValue
+                    placeholder={t("projects.dialog.form.typePlaceholder")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="campaign">Campaign</SelectItem>
-                  <SelectItem value="series">Series</SelectItem>
-                  <SelectItem value="routine">Routine</SelectItem>
+                  <SelectItem value="campaign">
+                    {t("projects.types.campaign")}
+                  </SelectItem>
+                  <SelectItem value="series">
+                    {t("projects.types.series")}
+                  </SelectItem>
+                  <SelectItem value="routine">
+                    {t("projects.types.routine")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
               {errors.type && (
@@ -175,14 +186,16 @@ export function CreateProjectDialog() {
 
             {/* Description */}
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">
+                {t("projects.dialog.form.description")}
+              </Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) =>
                   updateFormData({ description: e.target.value })
                 }
-                placeholder="Describe your project..."
+                placeholder={t("projects.dialog.form.descriptionPlaceholder")}
                 rows={3}
                 disabled={isLoading}
                 className={errors.description ? "border-red-500" : ""}
@@ -195,7 +208,7 @@ export function CreateProjectDialog() {
             {/* Date Range */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DatePicker
-                label="Start Date"
+                label={t("projects.dialog.form.startDate")}
                 onSelectDate={handleDateChange("startDate")}
               />
               {errors.startDate && (
@@ -203,7 +216,7 @@ export function CreateProjectDialog() {
               )}
 
               <DatePicker
-                label="End Date"
+                label={t("projects.dialog.form.endDate")}
                 onSelectDate={handleDateChange("endDate")}
               />
               {errors.endDate && (
@@ -219,11 +232,13 @@ export function CreateProjectDialog() {
               onClick={handleClose}
               disabled={isLoading}
             >
-              Cancel
+              {t("projects.dialog.buttons.cancel")}
             </ButtonPrimary>
             <ButtonPrimary type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoading ? "Creating..." : "Create Project"}
+              {isLoading
+                ? t("projects.dialog.buttons.creating")
+                : t("projects.dialog.buttons.create")}
             </ButtonPrimary>
           </DialogFooter>
         </form>

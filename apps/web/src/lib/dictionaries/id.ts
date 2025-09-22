@@ -194,5 +194,35 @@ export const dictionary = {
       tomorrow: "Besok",
       yesterday: "Kemarin",
     },
+    dialog: {
+      title: "Buat Proyek Baru",
+      description:
+        "Buat proyek baru untuk mengorganisir konten dan melacak progress Kamu.",
+      form: {
+        title: "Judul Proyek",
+        titlePlaceholder: "Masukkan judul proyek...",
+        titleRequired: "Judul wajib diisi",
+        type: "Tipe Proyek",
+        typePlaceholder: "Pilih tipe proyek",
+        typeRequired: "Tipe proyek wajib dipilih",
+        description: "Deskripsi",
+        descriptionPlaceholder: "Jelaskan proyek Kamu...",
+        startDate: "Tanggal Mulai",
+        endDate: "Tanggal Selesai",
+        endDateError: "Tanggal selesai harus setelah tanggal mulai",
+      },
+      buttons: {
+        cancel: "Batal",
+        create: "Buat Proyek",
+        creating: "Membuat...",
+      },
+      messages: {
+        success: "Proyek berhasil dibuat!",
+        successDescription: "telah dibuat.",
+        error: "Gagal membuat proyek",
+        errorDescription:
+          "Silakan coba lagi atau hubungi dukungan jika masalah berlanjut.",
+      },
+    },
   },
 } as const;

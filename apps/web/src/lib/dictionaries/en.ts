@@ -196,5 +196,35 @@ export const dictionary = {
       tomorrow: "Tomorrow",
       yesterday: "Yesterday",
     },
+    dialog: {
+      title: "Create New Project",
+      description:
+        "Create a new project to organize your content and track progress.",
+      form: {
+        title: "Project Title",
+        titlePlaceholder: "Enter project title...",
+        titleRequired: "Title is required",
+        type: "Project Type",
+        typePlaceholder: "Select project type",
+        typeRequired: "Project type is required",
+        description: "Description",
+        descriptionPlaceholder: "Describe your project...",
+        startDate: "Start Date",
+        endDate: "End Date",
+        endDateError: "End date must be after start date",
+      },
+      buttons: {
+        cancel: "Cancel",
+        create: "Create Project",
+        creating: "Creating...",
+      },
+      messages: {
+        success: "Project created successfully!",
+        successDescription: "has been created.",
+        error: "Failed to create project",
+        errorDescription:
+          "Please try again or contact support if the problem persists.",
+      },
+    },
   },
 } as const;
