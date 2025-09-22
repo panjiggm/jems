@@ -121,7 +121,9 @@ export const generateBioAction = action({
       args.nicheIds.length > 0
         ? await Promise.all(
             args.nicheIds.map((id) =>
-              ctx.runQuery(internal.niches.getInternalNicheById, { id }),
+              ctx.runQuery(internal.queries.niches.getInternalNicheById, {
+                id,
+              }),
             ),
           ).then((niches) =>
             niches
