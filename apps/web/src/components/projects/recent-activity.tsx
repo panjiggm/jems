@@ -1,73 +1,260 @@
+"use client";
+
 import React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useQuery } from "convex-helpers/react/cache/hooks";
+import { api } from "@packages/backend/convex/_generated/api";
 import { Badge } from "../ui/badge";
-import { CheckCircle2 } from "lucide-react";
+import {
+  CheckCircle2,
+  ArrowRight,
+  Clock,
+  Sparkles,
+  Edit3,
+  Trash2,
+  RotateCcw,
+  CheckCircle,
+  Rocket,
+  Calendar,
+  FileText,
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
-const recentActivity = [
-  {
-    id: 1,
-    user: "Content Creator",
-    action: "published TikTok video",
-    time: "Today 12:00 PM",
-    status: "Published",
-    type: "content",
-  },
-  {
-    id: 2,
-    user: "Video Editor",
-    action: "updated content status",
-    time: "Today 14:30 PM",
-    status: "Draft → In Progress",
-    type: "progress",
-  },
-  {
-    id: 3,
-    user: "Social Media Manager",
-    action: "completed task for Instagram post",
-    time: "Today 12:00 PM",
-    type: "task",
-  },
-];
+interface RecentActivityProps {
+  projectId?: string;
+  limit?: number;
+}
 
-const RecentActivity = () => {
+// Helper function to get action icon and color
+const getActionIcon = (action: string, entityType: string) => {
+  switch (action) {
+    case "created":
+      return {
+        icon: Sparkles,
+        color: "text-blue-600",
+        bgColor: "bg-blue-50",
+      };
+    case "updated":
+      return {
+        icon: Edit3,
+        color: "text-orange-600",
+        bgColor: "bg-orange-50",
+      };
+    case "deleted":
+      return {
+        icon: Trash2,
+        color: "text-red-600",
+        bgColor: "bg-red-50",
+      };
+    case "status_changed":
+      return {
+        icon: RotateCcw,
+        color: "text-purple-600",
+        bgColor: "bg-purple-50",
+      };
+    case "completed":
+      return {
+        icon: CheckCircle,
+        color: "text-green-600",
+        bgColor: "bg-green-50",
+      };
+    case "published":
+      return {
+        icon: Rocket,
+        color: "text-green-600",
+        bgColor: "bg-green-50",
+      };
+    case "scheduled":
+      return {
+        icon: Calendar,
+        color: "text-blue-600",
+        bgColor: "bg-blue-50",
+      };
+    default:
+      return {
+        icon: FileText,
+        color: "text-gray-600",
+        bgColor: "bg-gray-50",
+      };
+  }
+};
+
+// Helper function to format time
+const formatActivityTime = (timestamp: number) => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const activityDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+
+  if (activityDate.getTime() === today.getTime()) {
+    return `Today ${date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })}`;
+  } else {
+    return formatDistanceToNow(date, { addSuffix: true });
+  }
+};
+
+const RecentActivity: React.FC<RecentActivityProps> = ({
+  projectId,
+  limit = 10,
+}) => {
+  // Fetch recent activities
+  const activities = useQuery(
+    api.queries.projectActivities.getRecentActivities,
+    {
+      projectId: projectId as any,
+      limit,
+    },
+  );
+
+  // Fetch user profile for avatar
+  const profile = useQuery(api.queries.profile.getProfile);
+
+  if (activities === undefined) {
+    return (
+      <div className="p-6">
+        <h3 className="font-medium text-sm text-muted-foreground mb-4">
+          Recent Activity
+        </h3>
+        <div className="space-y-0">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex gap-3 animate-pulse relative">
+              <div className="flex flex-col items-center">
+                <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
+                {i < 2 && <div className="w-px h-8 bg-gray-200 mt-2"></div>}
+              </div>
+              <div className="flex-1 pb-6">
+                <div className="h-4 bg-gray-200 rounded mb-1"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!activities || activities.length === 0) {
+    return (
+      <div className="p-6">
+        <h3 className="font-medium text-sm text-muted-foreground mb-4">
+          Recent Activity
+        </h3>
+        <div className="text-center py-8">
+          <Clock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">No recent activity</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <h3 className="font-medium text-sm text-muted-foreground mb-4">
-        RECENT ACTIVITY
+        Recent Activity
       </h3>
-      <div className="space-y-4">
-        {recentActivity.map((activity) => (
-          <div key={activity.id} className="flex gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/images/profile.png" alt={activity.user} />
-              <AvatarFallback>{activity.user.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm">
-                <span className="font-medium">{activity.user}</span>{" "}
-                {activity.action}
-              </p>
-              <p className="text-xs text-muted-foreground">{activity.time}</p>
-              {activity.status && (
-                <div className="mt-1">
-                  {activity.type === "progress" ? (
-                    <Badge variant="secondary" className="text-xs">
-                      {activity.status}
-                    </Badge>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3 text-green-500" />
-                      <span className="text-xs text-green-600">
-                        {activity.status}
-                      </span>
-                    </div>
-                  )}
+      <div className="space-y-0">
+        {activities.map((activity, index) => {
+          const {
+            icon: IconComponent,
+            color,
+            bgColor,
+          } = getActionIcon(activity.action, activity.entityType);
+          const userName = profile?.full_name || "User";
+          const isLast = index === activities.length - 1;
+
+          return (
+            <div key={activity._id} className="flex gap-3 group relative">
+              {/* Activity Icon with connecting line */}
+              <div className="flex flex-col items-center">
+                <div
+                  className={`h-8 w-8 rounded-full border flex items-center justify-center text-sm ${bgColor} relative z-10`}
+                >
+                  <IconComponent className={`h-4 w-4 ${color}`} />
                 </div>
-              )}
+                {/* Connecting line */}
+                {!isLast && <div className="w-px h-8 bg-border mt-2"></div>}
+              </div>
+
+              <div className="flex-1 min-w-0 pb-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm">
+                      <span className="font-medium">{userName}</span>{" "}
+                      <span className="text-muted-foreground">
+                        {activity.description ||
+                          `${activity.action} ${activity.entityType}`}
+                      </span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {formatActivityTime(activity.timestamp)}
+                    </p>
+
+                    {/* Status badges for specific actions */}
+                    {activity.action === "status_changed" &&
+                      activity.metadata && (
+                        <div className="mt-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {activity.metadata.oldValue} →{" "}
+                            {activity.metadata.newValue}
+                          </Badge>
+                        </div>
+                      )}
+
+                    {activity.action === "published" && (
+                      <div className="flex items-center gap-1 mt-2">
+                        <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        <span className="text-xs text-green-600">
+                          Published
+                        </span>
+                      </div>
+                    )}
+
+                    {activity.action === "completed" && (
+                      <div className="flex items-center gap-1 mt-2">
+                        <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        <span className="text-xs text-green-600">
+                          Completed
+                        </span>
+                      </div>
+                    )}
+
+                    {activity.action === "scheduled" &&
+                      activity.metadata?.scheduledAt && (
+                        <div className="mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            Scheduled for{" "}
+                            {new Date(
+                              activity.metadata.scheduledAt,
+                            ).toLocaleDateString()}
+                          </Badge>
+                        </div>
+                      )}
+                  </div>
+
+                  {/* Arrow icon like in the image */}
+                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {/* View all activities link */}
+      {activities.length >= limit && (
+        <div className="pt-4 border-t mt-4">
+          <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            View all activities →
+          </button>
+        </div>
+      )}
     </div>
   );
 };

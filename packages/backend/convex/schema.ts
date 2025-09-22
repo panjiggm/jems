@@ -92,4 +92,37 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_project", ["userId", "projectId"])
     .index("by_user_dueDate", ["userId", "dueDate"]),
+
+  // Project Activities - Track all activities for projects, contents, and tasks
+  projectActivities: defineTable({
+    userId: v.string(),
+    projectId: v.id("projects"),
+    entityType: v.union(
+      v.literal("project"),
+      v.literal("content"),
+      v.literal("task"),
+    ),
+    entityId: v.string(), // ID of the project/content/task
+    action: v.union(
+      v.literal("created"),
+      v.literal("updated"),
+      v.literal("deleted"),
+      v.literal("status_changed"),
+      v.literal("assigned"),
+      v.literal("completed"),
+      v.literal("scheduled"),
+      v.literal("published"),
+    ),
+    description: v.optional(v.string()), // Human-readable description of the action
+    metadata: v.optional(v.any()), // Additional data about the change (old/new values, etc.)
+    timestamp: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_project", ["userId", "projectId"])
+    .index("by_user_timestamp", ["userId", "timestamp"])
+    .index("by_project", ["projectId"])
+    .index("by_entity", ["entityType", "entityId"])
+    .index("by_action", ["action"])
+    .index("by_user_entity", ["userId", "entityType"])
+    .index("by_project_timestamp", ["projectId", "timestamp"]),
 });
