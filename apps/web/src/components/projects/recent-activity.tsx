@@ -18,6 +18,7 @@ import {
   FileText,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface RecentActivityProps {
   projectId?: string;
@@ -104,6 +105,8 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
   projectId,
   limit = 10,
 }) => {
+  const { t } = useTranslations();
+
   // Fetch recent activities
   const activities = useQuery(
     api.queries.projectActivities.getRecentActivities,
@@ -120,7 +123,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
     return (
       <div className="p-6">
         <h3 className="font-medium text-sm text-muted-foreground mb-4">
-          Recent Activity
+          {t("projects.activity.title")}
         </h3>
         <div className="space-y-0">
           {[...Array(3)].map((_, i) => (
@@ -144,11 +147,13 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
     return (
       <div className="p-6">
         <h3 className="font-medium text-sm text-muted-foreground mb-4">
-          Recent Activity
+          {t("projects.activity.title")}
         </h3>
         <div className="text-center py-8">
           <Clock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">No recent activity</p>
+          <p className="text-sm text-muted-foreground">
+            {t("projects.activity.noActivity")}
+          </p>
         </div>
       </div>
     );
@@ -157,7 +162,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
   return (
     <div className="p-6">
       <h3 className="font-medium text-sm text-muted-foreground mb-4">
-        Recent Activity
+        {t("projects.activity.title")}
       </h3>
       <div className="space-y-0">
         {activities.map((activity, index) => {
@@ -189,7 +194,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
                       <span className="font-medium">{userName}</span>{" "}
                       <span className="text-muted-foreground">
                         {activity.description ||
-                          `${activity.action} ${activity.entityType}`}
+                          `${t(`projects.activity.actions.${activity.action}`)} ${t(`projects.activity.entities.${activity.entityType}`)}`}
                       </span>
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -211,7 +216,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
                       <div className="flex items-center gap-1 mt-2">
                         <CheckCircle2 className="h-3 w-3 text-green-500" />
                         <span className="text-xs text-green-600">
-                          Published
+                          {t("projects.activity.statuses.published")}
                         </span>
                       </div>
                     )}
@@ -220,7 +225,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
                       <div className="flex items-center gap-1 mt-2">
                         <CheckCircle2 className="h-3 w-3 text-green-500" />
                         <span className="text-xs text-green-600">
-                          Completed
+                          {t("projects.activity.statuses.completed")}
                         </span>
                       </div>
                     )}
@@ -229,7 +234,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
                       activity.metadata?.scheduledAt && (
                         <div className="mt-2">
                           <Badge variant="outline" className="text-xs">
-                            Scheduled for{" "}
+                            {t("projects.activity.statuses.scheduledFor")}{" "}
                             {new Date(
                               activity.metadata.scheduledAt,
                             ).toLocaleDateString()}
@@ -251,7 +256,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
       {activities.length >= limit && (
         <div className="pt-4 border-t mt-4">
           <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            View all activities →
+            {t("projects.activity.viewAll")} →
           </button>
         </div>
       )}

@@ -19,6 +19,7 @@ import {
 import { format } from "date-fns";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "../ui/badge";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface ProjectStatsProps {
   projectId?: string;
@@ -31,6 +32,7 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   contentId,
   taskId,
 }) => {
+  const { t } = useTranslations();
   const pathname = usePathname();
 
   // Fetch user profile
@@ -126,22 +128,22 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
     if (isProjectsList && dashboardStats) {
       items = [
         {
-          label: "Projects",
+          label: t("projects.stats.labels.projects"),
           value: dashboardStats.summary.totalProjects,
           icon: FolderOpen,
         },
         {
-          label: "Contents",
+          label: t("projects.stats.labels.contents"),
           value: dashboardStats.summary.totalContents,
           icon: FileText,
         },
         {
-          label: "Tasks",
+          label: t("projects.stats.labels.tasks"),
           value: dashboardStats.summary.totalTasks,
           icon: CheckSquare,
         },
         {
-          label: "Overdue",
+          label: t("projects.stats.labels.overdue"),
           value: dashboardStats.summary.totalOverdue,
           tone: "critical",
           icon: AlertTriangle,
@@ -150,22 +152,22 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
     } else if (isProjectDetail && projectStats) {
       items = [
         {
-          label: "Contents",
+          label: t("projects.stats.labels.contents"),
           value: projectStats.summary.totalContents,
           icon: FileText,
         },
         {
-          label: "Tasks",
+          label: t("projects.stats.labels.tasks"),
           value: projectStats.summary.totalTasks,
           icon: CheckSquare,
         },
         {
-          label: "Published",
+          label: t("projects.stats.labels.published"),
           value: projectStats.contents.byStatus.published,
           icon: Rocket,
         },
         {
-          label: "Completion",
+          label: t("projects.stats.labels.completion"),
           value: `${projectStats.health.taskCompletionRate}%`,
           icon: BarChart3,
         },
@@ -173,23 +175,23 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
     } else if (isContentDetail && contentStats) {
       items = [
         {
-          label: "Tasks",
+          label: t("projects.stats.labels.tasks"),
           value: contentStats.summary.totalTasks,
           icon: CheckSquare,
         },
         {
-          label: "Completed",
+          label: t("projects.stats.labels.completed"),
           value: contentStats.summary.completedTasks,
           icon: CheckCircle2,
         },
         {
-          label: "Overdue",
+          label: t("projects.stats.labels.overdue"),
           value: contentStats.summary.overdueTasks,
           tone: "critical",
           icon: AlertTriangle,
         },
         {
-          label: "Progress",
+          label: t("projects.stats.labels.progress"),
           value: `${contentStats.summary.completionRate}%`,
           icon: BarChart3,
         },
@@ -230,25 +232,25 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   const getTitleInfo = () => {
     if (isProjectsList) {
       return {
-        title: "Dashboard Overview",
-        subtitle: "All your projects, contents, and tasks",
+        title: t("projects.stats.dashboardOverview"),
+        subtitle: t("projects.stats.dashboardSubtitle"),
       };
     }
     if (isProjectDetail && projectStats) {
       return {
         title: projectStats.project.title,
-        subtitle: `Created ${format(new Date(projectStats.project.createdAt), "MMM dd, yyyy")}`,
+        subtitle: `${t("projects.stats.created")} ${format(new Date(projectStats.project.createdAt), "MMM dd, yyyy")}`,
       };
     }
     if (isContentDetail && contentStats) {
       return {
         title: contentStats.content.title,
-        subtitle: `Platform: ${contentStats.content.platform} • Status: ${contentStats.content.status}`,
+        subtitle: `${t("projects.stats.platform")}: ${contentStats.content.platform} • ${t("projects.stats.status")}: ${contentStats.content.status}`,
       };
     }
     return {
       title: userName,
-      subtitle: "Content Creator",
+      subtitle: t("projects.stats.contentCreator"),
     };
   };
 
@@ -281,12 +283,12 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
           <Badge variant="outline">{projectStats.project.type}</Badge>
           {projectStats.health.overdueItems > 0 && (
             <Badge variant="destructive">
-              {projectStats.health.overdueItems} Overdue
+              {projectStats.health.overdueItems} {t("projects.stats.overdue")}
             </Badge>
           )}
           {projectStats.health.upcomingItems > 0 && (
             <Badge variant="secondary">
-              {projectStats.health.upcomingItems} Upcoming
+              {projectStats.health.upcomingItems} {t("projects.stats.upcoming")}
             </Badge>
           )}
         </div>
@@ -307,7 +309,8 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
           {contentStats.content.dueDate && (
             <Badge variant="outline">
               <Calendar className="h-3 w-3 mr-1" />
-              Due {format(new Date(contentStats.content.dueDate), "MMM dd")}
+              {t("projects.stats.due")}{" "}
+              {format(new Date(contentStats.content.dueDate), "MMM dd")}
             </Badge>
           )}
         </div>
