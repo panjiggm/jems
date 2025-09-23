@@ -1,6 +1,5 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { currentUserId } from "../auth";
 
 // Get activities for a specific project
 export const getProjectActivities = query({
@@ -10,7 +9,13 @@ export const getProjectActivities = query({
     cursor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    // Check if user is authenticated first
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return { page: [], isDone: true, continueCursor: null };
+    }
+
+    const userId = identity.subject;
     const limit = Math.min(args.limit ?? 50, 100);
 
     const result = await ctx.db
@@ -58,7 +63,13 @@ export const getUserActivities = query({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    // Check if user is authenticated first
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return { page: [], isDone: true, continueCursor: null };
+    }
+
+    const userId = identity.subject;
     const limit = Math.min(args.limit ?? 50, 100);
 
     let query = ctx.db
@@ -105,7 +116,13 @@ export const getEntityActivities = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    // Check if user is authenticated first
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return [];
+    }
+
+    const userId = identity.subject;
     const limit = Math.min(args.limit ?? 20, 50);
 
     const activities = await ctx.db
@@ -128,7 +145,13 @@ export const getRecentActivities = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    // Check if user is authenticated first
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return []; // Return empty array if not authenticated
+    }
+
+    const userId = identity.subject;
     const limit = Math.min(args.limit ?? 20, 50);
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000; // 24 hours ago
 
@@ -162,7 +185,18 @@ export const getActivityStats = query({
     days: v.optional(v.number()), // Number of days to look back
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    // Check if user is authenticated first
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return {
+        total: 0,
+        byAction: {},
+        byEntityType: {},
+        byDay: {},
+      };
+    }
+
+    const userId = identity.subject;
     const days = args.days ?? 7;
     const timeAgo = Date.now() - days * 24 * 60 * 60 * 1000;
 
