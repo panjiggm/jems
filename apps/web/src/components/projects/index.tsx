@@ -4,10 +4,16 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ChevronDown } from "lucide-react";
+import {
+  Plus,
+  ChevronDown,
+  FolderOpen,
+  FileText,
+  CheckSquare,
+  Calendar,
+} from "lucide-react";
 import ProjectStats from "./project-stats";
 import RecentActivity from "./recent-activity";
-import ProjectTabs from "./tabs";
 import { ButtonPrimary } from "../ui/button-primary";
 import { CreateProjectDialog } from "./dialog-create-project";
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
@@ -15,6 +21,15 @@ import { ProjectCard } from "./card-project";
 import { usePaginatedQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
 import { useTranslations } from "@/hooks/use-translations";
+import TabsCustom from "../tabs-custom";
+import ProjectBreadcrumb from "./project-breadcrumb";
+
+const projectsTabs = [
+  { id: "info", label: "Projects", icon: FolderOpen },
+  { id: "activity", label: "Contents", icon: FileText },
+  { id: "content", label: "Tasks", icon: CheckSquare },
+  { id: "calendar", label: "Calendar", icon: Calendar },
+];
 
 export default function ProjectsComponent() {
   const { openDialog } = useCreateProjectDialogStore();
@@ -29,20 +44,13 @@ export default function ProjectsComponent() {
     { initialNumItems: 12 },
   );
 
-  const handleViewDetails = React.useCallback((projectId: string) => {
-    // TODO: Implement project details navigation
-    console.log("View details for project:", projectId);
-  }, []);
-
   return (
     <div className=" bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center justify-between w-full px-2">
-            <div className="text-sm text-muted-foreground">
-              Active Projects &gt; Summer Campaign
-            </div>
+            <ProjectBreadcrumb />
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ButtonPrimary size="sm" onClick={openDialog}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -57,7 +65,14 @@ export default function ProjectsComponent() {
         {/* Main Content */}
         <div className="flex-1">
           {/* Tabs */}
-          <ProjectTabs />
+          <div className="bg-white border-b">
+            <TabsCustom
+              tabs={projectsTabs}
+              defaultValue="activity"
+              onValueChange={(value) => console.log("Tab changed to:", value)}
+              className="font-black"
+            />
+          </div>
 
           {/* Content Area */}
           <div className="p-6 space-y-6">
@@ -112,11 +127,7 @@ export default function ProjectsComponent() {
               ) : (
                 // Projects list
                 projects.map((project) => (
-                  <ProjectCard
-                    key={project._id}
-                    project={project}
-                    onViewDetails={handleViewDetails}
-                  />
+                  <ProjectCard key={project._id} project={project} />
                 ))
               )}
             </div>

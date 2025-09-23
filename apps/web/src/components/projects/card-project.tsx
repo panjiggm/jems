@@ -15,19 +15,18 @@ import {
 import { id } from "date-fns/locale";
 import { useTranslations } from "@/hooks/use-translations";
 import { ButtonPrimary } from "../ui/button-primary";
+import { useRouter } from "next/navigation";
 
 interface ProjectCardProps {
   project: Project;
-  onViewDetails?: (projectId: Id<"projects">) => void;
 }
 
-export function ProjectCard({ project, onViewDetails }: ProjectCardProps) {
+export function ProjectCard({ project }: ProjectCardProps) {
+  const router = useRouter();
   const { t, locale } = useTranslations();
 
   const handleViewDetails = () => {
-    if (onViewDetails) {
-      onViewDetails(project._id);
-    }
+    router.push(`/projects/${project._id}`);
   };
 
   const formatDate = (dateString: string) => {

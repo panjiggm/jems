@@ -51,26 +51,8 @@ export const projects = {
         "Silakan coba lagi atau hubungi dukungan jika masalah berlanjut.",
     },
   },
-  stats: {
-    dashboardOverview: "Ringkasan Dashboard",
-    dashboardSubtitle: "Semua proyek, konten, dan tugas Kamu",
-    contentCreator: "Content Creator",
-    created: "Dibuat",
-    platform: "Platform",
-    status: "Status",
-    due: "Jatuh Tempo",
-    overdue: "Terlambat",
-    upcoming: "Mendatang",
-    labels: {
-      projects: "Proyek",
-      contents: "Konten",
-      tasks: "Tugas",
-      overdue: "Terlambat",
-      published: "Dipublikasikan",
-      completion: "Penyelesaian",
-      completed: "Selesai",
-      progress: "Progress",
-    },
+  breadcrumb: {
+    allProjects: "Semua Proyek",
   },
   stats: {
     dashboardOverview: "Ringkasan Dashboard",

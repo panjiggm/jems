@@ -51,26 +51,8 @@ export const projects = {
         "Please try again or contact support if the problem persists.",
     },
   },
-  stats: {
-    dashboardOverview: "Dashboard Overview",
-    dashboardSubtitle: "All your projects, contents, and tasks",
-    contentCreator: "Content Creator",
-    created: "Created",
-    platform: "Platform",
-    status: "Status",
-    due: "Due",
-    overdue: "Overdue",
-    upcoming: "Upcoming",
-    labels: {
-      projects: "Projects",
-      contents: "Contents",
-      tasks: "Tasks",
-      overdue: "Overdue",
-      published: "Published",
-      completion: "Completion",
-      completed: "Completed",
-      progress: "Progress",
-    },
+  breadcrumb: {
+    allProjects: "All Projects",
   },
   stats: {
     dashboardOverview: "Dashboard Overview",
