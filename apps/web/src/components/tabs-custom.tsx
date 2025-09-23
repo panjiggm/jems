@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useRouter, usePathname } from "next/navigation";
 import {
   FolderOpen,
   FileText,
@@ -21,6 +22,7 @@ interface TabItem {
   badge?: string;
   content?: React.ReactNode;
   icon?: React.ComponentType<{ className?: string }>;
+  href?: string; // Add href for URL-based navigation
 }
 
 interface TabsCustomProps {
@@ -30,6 +32,7 @@ interface TabsCustomProps {
   className?: string;
   variant?: "default" | "underline" | "pills";
   autoAssignIcons?: boolean;
+  useUrlNavigation?: boolean; // Add flag for URL-based navigation
 }
 
 // Helper function to get default icons based on tab ID
@@ -89,7 +92,50 @@ const TabsCustom = ({
   className,
   variant = "underline",
   autoAssignIcons = true,
+  useUrlNavigation = false,
 }: TabsCustomProps) => {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Get current active tab based on URL
+  const getCurrentTab = () => {
+    if (!useUrlNavigation) return defaultValue;
+
+    // Sort tabs by href length (longest first) to match more specific routes first
+    const sortedTabs = [...tabs].sort(
+      (a, b) => (b.href?.length || 0) - (a.href?.length || 0),
+    );
+
+    // Check which tab's href matches the current pathname
+    const currentTab = sortedTabs.find((tab) => {
+      if (!tab.href) return false;
+
+      // Exact match
+      if (pathname === tab.href) return true;
+
+      // Check if pathname starts with tab.href and the next character is '/' or end of string
+      // This prevents /projects from matching /projects/contents
+      const nextChar = pathname[tab.href.length];
+      return (
+        pathname.startsWith(tab.href) &&
+        (nextChar === "/" || nextChar === undefined)
+      );
+    });
+
+    return currentTab?.id || defaultValue;
+  };
+
+  const handleTabChange = (value: string) => {
+    if (useUrlNavigation) {
+      const tab = tabs.find((t) => t.id === value);
+      if (tab?.href) {
+        router.push(tab.href);
+      }
+    } else {
+      onValueChange?.(value);
+    }
+  };
+
   const getTabsListClass = () => {
     switch (variant) {
       case "underline":
@@ -132,8 +178,8 @@ const TabsCustom = ({
   return (
     <div className={cn("w-full", className)}>
       <Tabs
-        defaultValue={defaultValue}
-        onValueChange={onValueChange}
+        value={useUrlNavigation ? getCurrentTab() : defaultValue}
+        onValueChange={handleTabChange}
         className="w-full"
       >
         <TabsList className={getTabsListClass()}>

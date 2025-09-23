@@ -1,6 +1,8 @@
 export const projects = {
   title: "Proyek",
   createProject: "Buat Proyek",
+  createContent: "Buat Konten",
+  createTask: "Buat Tugas",
   noProjects: "Belum ada proyek",
   noProjectsDescription: "Buat proyek pertama Kamu untuk memulai",
   loadMore: "Muat Lebih Banyak",
