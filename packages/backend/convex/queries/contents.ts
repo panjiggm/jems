@@ -185,6 +185,26 @@ export const getByIdWithStats = query({
   },
 });
 
+// Get contents by project for Kanban board
+export const getByProject = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    const contents = await ctx.db
+      .query("contents")
+      .withIndex("by_user_project", (q) =>
+        q.eq("userId", userId).eq("projectId", args.projectId),
+      )
+      .collect();
+
+    return contents;
+  },
+});
+
 // Get contents by project with stats
 export const getByProjectWithStats = query({
   args: {

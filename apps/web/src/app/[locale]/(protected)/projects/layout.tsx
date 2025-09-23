@@ -17,6 +17,8 @@ import { useTranslations } from "@/hooks/use-translations";
 import TabsCustom from "@/components/tabs-custom";
 import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
 import { useParams, usePathname } from "next/navigation";
+import { useContentDialogStore } from "@/store/use-dialog-content-store";
+import { ContentDialog } from "@/components/contents/dialog-content";
 
 export default function ProjectsLayout({
   children,
@@ -27,6 +29,7 @@ export default function ProjectsLayout({
   const pathname = usePathname();
   const locale = params.locale as string;
   const { openDialog } = useCreateProjectDialogStore();
+  const { openDialog: openContentDialog } = useContentDialogStore();
   const { t } = useTranslations();
 
   const projectsTabs = [
@@ -56,15 +59,16 @@ export default function ProjectsLayout({
     },
   ];
 
-  // Determine current tab and create button text
   const getCurrentTabAndButton = () => {
+    const projectDetailPattern = new RegExp(`^/${locale}/projects/[^/]+$`);
+    const isProjectDetail = projectDetailPattern.test(pathname);
+
     if (pathname.includes("/projects/contents")) {
       return {
         tabId: "activity",
         buttonText: t("projects.createContent"),
         buttonAction: () => {
-          // TODO: Open create content dialog
-          console.log("Create content clicked");
+          openContentDialog();
         },
       };
     } else if (pathname.includes("/projects/tasks")) {
@@ -74,6 +78,15 @@ export default function ProjectsLayout({
         buttonAction: () => {
           // TODO: Open create task dialog
           console.log("Create task clicked");
+        },
+      };
+    } else if (isProjectDetail) {
+      const projectId = pathname.split("/").pop();
+      return {
+        tabId: "info",
+        buttonText: t("projects.createContent"),
+        buttonAction: () => {
+          openContentDialog(projectId);
         },
       };
     } else {
@@ -93,7 +106,7 @@ export default function ProjectsLayout({
       <div className="bg-white border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center justify-between w-full px-2">
-            {/* <ProjectBreadcrumb /> */}
+            <ProjectBreadcrumb />
             <div></div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ButtonPrimary size="sm" onClick={buttonAction}>
@@ -134,6 +147,7 @@ export default function ProjectsLayout({
 
       {/* Create Project Dialog */}
       <CreateProjectDialog />
+      <ContentDialog />
     </div>
   );
 }

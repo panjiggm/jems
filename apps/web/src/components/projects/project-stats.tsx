@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { useQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
 import {
@@ -26,12 +26,18 @@ interface ProjectStatsProps {
 }
 
 const ProjectStats: React.FC<ProjectStatsProps> = ({
-  projectId,
-  contentId,
-  taskId,
+  projectId: propProjectId,
+  contentId: propContentId,
+  taskId: propTaskId,
 }) => {
   const { t } = useTranslations();
   const pathname = usePathname();
+  const params = useParams();
+
+  // Extract IDs from URL params if not provided as props
+  const projectId = propProjectId || (params.projectId as string);
+  const contentId = propContentId || (params.contentId as string);
+  const taskId = propTaskId || (params.taskId as string);
 
   // Fetch user profile
   const profile = useQuery(api.queries.profile.getProfile);
