@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { getDictionary } from "@/lib/get-dictionary";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Locale } from "@/lib/i18n";
 
 export function useTranslations() {
@@ -12,25 +12,46 @@ export function useTranslations() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getDictionary(locale).then((dict) => {
-      setDictionary(dict);
-      setLoading(false);
-    });
+    let isCancelled = false;
+
+    const loadDictionary = async () => {
+      try {
+        const dict = await getDictionary(locale);
+        if (!isCancelled) {
+          setDictionary(dict);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error("Failed to load dictionary:", error);
+          setLoading(false);
+        }
+      }
+    };
+
+    loadDictionary();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [locale]);
 
-  const t = (key: string) => {
-    if (!dictionary) return key;
+  const t = useCallback(
+    (key: string) => {
+      if (!dictionary) return key;
 
-    const keys = key.split(".");
-    let value = dictionary;
+      const keys = key.split(".");
+      let value = dictionary;
 
-    for (const k of keys) {
-      value = value?.[k];
-      if (value === undefined) return key;
-    }
+      for (const k of keys) {
+        value = value?.[k];
+        if (value === undefined) return key;
+      }
 
-    return value;
-  };
+      return value;
+    },
+    [dictionary],
+  );
 
   return { t, loading, locale };
 }
