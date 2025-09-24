@@ -3,7 +3,8 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 
 import {
   Dialog,
@@ -25,6 +26,12 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ButtonPrimary } from "@/components/ui/button-primary";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import { useContentDialogStore } from "@/store/use-dialog-content-store";
 import { useTranslations } from "@/hooks/use-translations";
@@ -225,14 +232,39 @@ export function ContentDialog() {
               <Label htmlFor="dueDate">
                 {t("contents.dialog.form.dueDate")}
               </Label>
-              <Input
-                id="dueDate"
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) => updateFormData({ dueDate: e.target.value })}
-                disabled={isLoading}
-                className={errors.dueDate ? "border-red-500" : ""}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={`w-full justify-start text-left font-normal ${
+                      !formData.dueDate && "text-muted-foreground"
+                    } ${errors.dueDate ? "border-red-500" : ""}`}
+                    disabled={isLoading}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.dueDate ? (
+                      format(new Date(formData.dueDate), "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={
+                      formData.dueDate ? new Date(formData.dueDate) : undefined
+                    }
+                    onSelect={(date) =>
+                      updateFormData({
+                        dueDate: date ? format(date, "yyyy-MM-dd") : "",
+                      })
+                    }
+                    disabled={(date) => date < new Date("1900-01-01")}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               {errors.dueDate && (
                 <p className="text-sm text-red-500">{errors.dueDate}</p>
               )}
