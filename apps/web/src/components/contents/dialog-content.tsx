@@ -54,10 +54,8 @@ export function ContentDialog() {
 
   // Get projects list for dropdown (only when projectId is not provided)
   const projects = useQuery(
-    api.queries.projects.list,
-    !projectId
-      ? { search: "", paginationOpts: { numItems: 50, cursor: null } }
-      : "skip",
+    api.queries.projects.getAll,
+    !projectId ? { search: "" } : "skip",
   );
 
   const createContent = useMutation(api.mutations.contents.create);
@@ -164,7 +162,7 @@ export function ContentDialog() {
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {projects?.page?.map((project) => (
+                    {projects?.map((project) => (
                       <SelectItem key={project._id} value={project._id}>
                         {project.title}
                       </SelectItem>

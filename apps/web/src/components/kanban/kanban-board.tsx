@@ -14,7 +14,8 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import { KanbanColumn } from "./kanban-column";
 import { KanbanCard } from "./kanban-card";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache/hooks";
+import { useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 
 interface Content {
@@ -184,17 +185,24 @@ export function KanbanBoard({ projectId, userId }: KanbanBoardProps) {
     });
   };
 
+  const handleAddContent = (
+    status: "draft" | "in_progress" | "scheduled" | "published",
+  ) => {
+    // TODO: Open create content dialog with pre-selected status
+    console.log(`Add content to ${status} column`);
+  };
+
   const activeContent = contents.find((content) => content._id === activeId);
 
   return (
-    <div className="w-full h-full bg-gray-100 p-6">
+    <div className="w-full">
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-6 overflow-x-auto pb-4">
+        <div className="flex gap-4 overflow-x-auto pb-4 min-w-0">
           {columns.map((column) => (
             <KanbanColumn
               key={column.id}
@@ -203,6 +211,7 @@ export function KanbanBoard({ projectId, userId }: KanbanBoardProps) {
               status={column.status}
               contents={column.contents}
               color={column.color}
+              onAddContent={handleAddContent}
             />
           ))}
         </div>

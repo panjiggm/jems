@@ -2,29 +2,27 @@
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Kanban, Table, List } from "lucide-react";
-import { KanbanBoard } from "@/components/kanban";
+import KanbanView from "./views/kanban-view";
+import TableView from "./views/table-view";
+import ListView from "./views/list-view";
 
 interface TabsContentsProps {
   className?: string;
-  defaultValue?: string;
-  onValueChange?: (value: string) => void;
+  activeTab: string;
+  onTabChange: (value: string) => void;
   projectId?: string;
   userId?: string;
 }
 
 const TabsContents = ({
   className,
-  defaultValue = "kanban",
-  onValueChange,
+  activeTab,
+  onTabChange,
   projectId,
   userId,
 }: TabsContentsProps) => {
   return (
-    <Tabs
-      defaultValue={defaultValue}
-      onValueChange={onValueChange}
-      className={className}
-    >
+    <Tabs value={activeTab} onValueChange={onTabChange} className={className}>
       <TabsList className="inline-flex w-fit rounded-sm">
         <TabsTrigger
           value="kanban"
@@ -50,37 +48,15 @@ const TabsContents = ({
       </TabsList>
 
       <TabsContent value="kanban" className="mt-4">
-        {projectId && userId ? (
-          <KanbanBoard projectId={projectId} userId={userId} />
-        ) : (
-          <div className="p-4">
-            <h3 className="text-lg font-semibold mb-2">Kanban View</h3>
-            <p className="text-muted-foreground">
-              Drag and drop your content across different columns to manage your
-              workflow.
-            </p>
-          </div>
-        )}
+        <KanbanView projectId={projectId} userId={userId} />
       </TabsContent>
 
       <TabsContent value="table" className="mt-4">
-        <div className="p-4">
-          <h3 className="text-lg font-semibold mb-2">Table View</h3>
-          <p className="text-muted-foreground">
-            View your data in a structured table format with sorting and
-            filtering options.
-          </p>
-        </div>
+        <TableView projectId={projectId} userId={userId} />
       </TabsContent>
 
       <TabsContent value="list" className="mt-4">
-        <div className="p-4">
-          <h3 className="text-lg font-semibold mb-2">List View</h3>
-          <p className="text-muted-foreground">
-            Browse your items in a simple list format for quick scanning and
-            selection.
-          </p>
-        </div>
+        <ListView projectId={projectId} userId={userId} />
       </TabsContent>
     </Tabs>
   );

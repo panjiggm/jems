@@ -22,6 +22,33 @@ export const list = query({
   },
 });
 
+// Get all projects for dropdown (no pagination)
+export const getAll = query({
+  args: {
+    search: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    let query = ctx.db
+      .query("projects")
+      .withIndex("by_user_createdAt", (q) => q.eq("userId", userId))
+      .order("desc");
+
+    const projects = await query.collect();
+
+    // Filter by search if provided
+    if (args.search) {
+      return projects.filter((project) =>
+        project.title.toLowerCase().includes(args.search!.toLowerCase()),
+      );
+    }
+
+    return projects;
+  },
+});
+
 // Get project statistics
 export const getStats = query({
   args: {},

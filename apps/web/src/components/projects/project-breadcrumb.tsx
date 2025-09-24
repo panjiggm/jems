@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
@@ -9,7 +10,6 @@ import {
   Breadcrumb,
   BreadcrumbList,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
@@ -83,12 +83,12 @@ const ProjectBreadcrumb: React.FC<ProjectBreadcrumbProps> = ({ className }) => {
                     {item.label}
                   </BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink
+                  <Link
                     href={item.href}
                     className="flex items-center gap-1.5 hover:text-foreground"
                   >
                     {item.label}
-                  </BreadcrumbLink>
+                  </Link>
                 )}
               </BreadcrumbItem>
               {!isLast && <BreadcrumbSeparator />}

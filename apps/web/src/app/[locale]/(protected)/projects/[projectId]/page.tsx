@@ -1,11 +1,14 @@
-import ProjectDetailsComponent from "@/components/project";
-import { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Holobiont | Project Details",
-  description: "Project details",
-};
+import ProjectDetailsComponent from "@/components/project";
+import { useParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 export default function ProjectDetailsPage() {
-  return <ProjectDetailsComponent />;
+  const params = useParams();
+  const { user } = useUser();
+  const projectId = params.projectId as string;
+  const userId = user?.id;
+
+  return <ProjectDetailsComponent projectId={projectId} userId={userId} />;
 }
