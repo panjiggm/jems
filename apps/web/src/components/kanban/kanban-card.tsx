@@ -3,8 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, MessageSquare, Paperclip, CheckSquare } from "lucide-react";
+import { Calendar, Paperclip, CheckSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface KanbanCardProps {
@@ -37,13 +36,6 @@ const platformColors = {
   facebook: "bg-blue-100 text-blue-800",
   threads: "bg-gray-100 text-gray-800",
   other: "bg-gray-100 text-gray-800",
-};
-
-const statusColors = {
-  draft: "bg-gray-100 text-gray-800",
-  in_progress: "bg-blue-100 text-blue-800",
-  scheduled: "bg-yellow-100 text-yellow-800",
-  published: "bg-green-100 text-green-800",
 };
 
 export function KanbanCard({
@@ -126,14 +118,6 @@ export function KanbanCard({
         )}
       </div>
 
-      {/* Subtasks placeholder */}
-      <div className="mb-3">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <CheckSquare className="h-3 w-3" />
-          <span>0 subtasks</span>
-        </div>
-      </div>
-
       {/* Attachments */}
       {assetIds && assetIds.length > 0 && (
         <div className="mb-3">
@@ -145,12 +129,13 @@ export function KanbanCard({
       )}
 
       {/* Metrics */}
-      <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-        <div className="flex items-center gap-4">
-          <span>0</span>
-          <span>0</span>
-          <span>0</span>
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        {/* Subtasks */}
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <CheckSquare className="h-3 w-3" />
+          <span>0 subtasks</span>
         </div>
+        {/* Due date */}
         <div className="flex items-center gap-1">
           <Calendar className="h-3 w-3" />
           <span>
@@ -160,24 +145,6 @@ export function KanbanCard({
                 ? new Date(scheduledAt).toLocaleDateString()
                 : "No date"}
           </span>
-        </div>
-      </div>
-
-      {/* Assigned users placeholder */}
-      <div className="flex items-center justify-between">
-        <div className="flex -space-x-2">
-          <Avatar className="h-6 w-6 border-2 border-white">
-            <AvatarImage src="/placeholder-avatar.jpg" />
-            <AvatarFallback className="text-xs">U</AvatarFallback>
-          </Avatar>
-          <Avatar className="h-6 w-6 border-2 border-white">
-            <AvatarImage src="/placeholder-avatar.jpg" />
-            <AvatarFallback className="text-xs">M</AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <MessageSquare className="h-3 w-3" />
-          <span>0</span>
         </div>
       </div>
     </div>

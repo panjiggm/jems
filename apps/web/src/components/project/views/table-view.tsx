@@ -1,24 +1,26 @@
+import { EditableTable } from "@/components/table";
+import { Id } from "@packages/backend/convex/_generated/dataModel";
+
 interface TableViewProps {
-  projectId?: string;
+  projectId?: Id<"projects">;
   userId?: string;
 }
 
 export default function TableView({ projectId, userId }: TableViewProps) {
+  if (!projectId || !userId) {
+    return (
+      <div className="p-4">
+        <h3 className="text-lg font-semibold mb-2">Table View</h3>
+        <p className="text-muted-foreground">
+          Please select a project to view contents in table format.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4">
-      <h3 className="text-lg font-semibold mb-2">Table View</h3>
-      <p className="text-muted-foreground">
-        View your data in a structured table format with sorting and filtering
-        options.
-      </p>
-      {/* TODO: Implement table view with projectId and userId data */}
-      {projectId && userId && (
-        <div className="mt-4 p-2 bg-muted rounded">
-          <p className="text-sm">
-            Project ID: {projectId} | User ID: {userId}
-          </p>
-        </div>
-      )}
+    <div>
+      <EditableTable projectId={projectId} userId={userId} />
     </div>
   );
 }

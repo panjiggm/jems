@@ -19,11 +19,7 @@ export default function ProjectsComponent() {
     results: projects,
     status,
     loadMore,
-  } = usePaginatedQuery(
-    api.queries.projects.list,
-    { search: undefined },
-    { initialNumItems: 12 },
-  );
+  } = usePaginatedQuery(api.queries.projects.list, {}, { initialNumItems: 12 });
 
   return (
     <>
