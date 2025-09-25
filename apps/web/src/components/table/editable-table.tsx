@@ -26,10 +26,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { EditableStatusCell } from "./editable-status-cell";
 import { EditableDateCell } from "./editable-date-cell";
@@ -61,6 +59,7 @@ type Content = {
     | "threads"
     | "other";
   status: "draft" | "in_progress" | "scheduled" | "published";
+  priority: "low" | "medium" | "high";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;

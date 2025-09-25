@@ -64,6 +64,7 @@ export default defineSchema({
       v.literal("scheduled"),
       v.literal("published"),
     ),
+    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
     dueDate: v.optional(v.string()),
     scheduledAt: v.optional(v.string()),
     publishedAt: v.optional(v.string()),
@@ -77,7 +78,8 @@ export default defineSchema({
     .index("by_user_project", ["userId", "projectId"])
     .index("by_user_status", ["userId", "status"])
     .index("by_user_platform", ["userId", "platform"])
-    .index("by_user_dueDate", ["userId", "dueDate"]),
+    .index("by_user_dueDate", ["userId", "dueDate"])
+    .index("by_user_priority", ["userId", "priority"]),
 
   tasks: defineTable({
     userId: v.string(),
