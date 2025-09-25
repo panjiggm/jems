@@ -3,6 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
+import { FilterState } from "../search-filter-content";
 import { StatusSection } from "./status-section";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,12 +11,25 @@ import { Button } from "@/components/ui/button";
 interface ListViewProps {
   projectId?: Id<"projects">;
   userId?: string;
+  filters: FilterState;
 }
 
-export default function ListView({ projectId, userId }: ListViewProps) {
+export default function ListView({
+  projectId,
+  userId,
+  filters,
+}: ListViewProps) {
   const contents = useQuery(
     api.queries.contents.getByProject,
-    projectId ? { projectId } : "skip",
+    projectId
+      ? {
+          projectId,
+          search: filters.search || undefined,
+          status: filters.status.length > 0 ? filters.status : undefined,
+          priority: filters.priority.length > 0 ? filters.priority : undefined,
+          platform: filters.platform.length > 0 ? filters.platform : undefined,
+        }
+      : "skip",
   );
 
   if (!projectId || !userId) {

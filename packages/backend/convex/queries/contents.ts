@@ -202,17 +202,40 @@ export const getByIdWithStats = query({
 export const getByProject = query({
   args: {
     projectId: v.id("projects"),
+    search: v.optional(v.string()),
+    status: v.optional(v.array(v.string())),
+    priority: v.optional(v.array(v.string())),
+    platform: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) return [];
 
-    const contents = await ctx.db
+    let contents = await ctx.db
       .query("contents")
       .withIndex("by_user_project", (q) =>
         q.eq("userId", userId).eq("projectId", args.projectId),
       )
       .collect();
+
+    // Apply filters
+    if (args.search) {
+      contents = contents.filter((c) =>
+        c.title.toLowerCase().includes(args.search!.toLowerCase()),
+      );
+    }
+
+    if (args.status?.length) {
+      contents = contents.filter((c) => args.status!.includes(c.status));
+    }
+
+    if (args.priority?.length) {
+      contents = contents.filter((c) => args.priority!.includes(c.priority));
+    }
+
+    if (args.platform?.length) {
+      contents = contents.filter((c) => args.platform!.includes(c.platform));
+    }
 
     return contents;
   },

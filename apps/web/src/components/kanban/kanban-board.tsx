@@ -16,6 +16,7 @@ import { KanbanCard } from "./kanban-card";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
+import { FilterState } from "../project/search-filter-content";
 
 interface Content {
   _id: string;
@@ -42,6 +43,8 @@ interface Content {
 
 interface KanbanBoardProps {
   projectId: Id<"projects">;
+  userId: string;
+  filters: FilterState;
 }
 
 const statusColumns = [
@@ -51,7 +54,7 @@ const statusColumns = [
   { id: "published", title: "Published", color: "bg-green-300" },
 ];
 
-export function KanbanBoard({ projectId }: KanbanBoardProps) {
+export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [contents, setContents] = useState<Content[]>([]);
 
@@ -66,6 +69,10 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   // Fetch contents
   const fetchedContents = useQuery(api.queries.contents.getByProject, {
     projectId,
+    search: filters.search || undefined,
+    status: filters.status.length > 0 ? filters.status : undefined,
+    priority: filters.priority.length > 0 ? filters.priority : undefined,
+    platform: filters.platform.length > 0 ? filters.platform : undefined,
   });
 
   const updateContentStatus = useMutation(api.mutations.contents.setStatus);

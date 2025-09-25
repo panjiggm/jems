@@ -1,13 +1,21 @@
 import { KanbanBoard } from "@/components/kanban";
+import { FilterState } from "../search-filter-content";
 
 interface KanbanViewProps {
   projectId?: string;
   userId?: string;
+  filters: FilterState;
 }
 
-export default function KanbanView({ projectId, userId }: KanbanViewProps) {
+export default function KanbanView({
+  projectId,
+  userId,
+  filters,
+}: KanbanViewProps) {
   if (projectId && userId) {
-    return <KanbanBoard projectId={projectId} userId={userId} />;
+    return (
+      <KanbanBoard projectId={projectId} userId={userId} filters={filters} />
+    );
   }
 
   return (

@@ -16,6 +16,7 @@ import {
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
+import { FilterState } from "../project/search-filter-content";
 
 import {
   Table,
@@ -76,9 +77,14 @@ const columnHelper = createColumnHelper<Content>();
 interface EditableTableProps {
   projectId: Id<"projects">;
   userId: string;
+  filters: FilterState;
 }
 
-export function EditableTable({ projectId, userId }: EditableTableProps) {
+export function EditableTable({
+  projectId,
+  userId,
+  filters,
+}: EditableTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -86,7 +92,13 @@ export function EditableTable({ projectId, userId }: EditableTableProps) {
   const [globalFilter, setGlobalFilter] = useState("");
 
   // Fetch data
-  const contents = useQuery(api.queries.contents.getByProject, { projectId });
+  const contents = useQuery(api.queries.contents.getByProject, {
+    projectId,
+    search: filters.search || undefined,
+    status: filters.status.length > 0 ? filters.status : undefined,
+    priority: filters.priority.length > 0 ? filters.priority : undefined,
+    platform: filters.platform.length > 0 ? filters.platform : undefined,
+  });
   const updateContent = useMutation(api.mutations.contents.update);
   const setStatus = useMutation(api.mutations.contents.setStatus);
 
