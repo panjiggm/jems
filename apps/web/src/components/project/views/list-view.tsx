@@ -77,15 +77,7 @@ export default function ListView({ projectId, userId }: ListViewProps) {
   ];
 
   return (
-    <div className="p-4 space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Content List</h3>
-        <Button className="h-9">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Content
-        </Button>
-      </div>
-
+    <div className="space-y-6">
       <div className="space-y-4">
         {statusConfig.map((status) => (
           <StatusSection

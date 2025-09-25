@@ -180,7 +180,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 px-2 min-w-0">
+    <div className="flex gap-4 overflow-x-auto pb-4 min-w-0">
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}

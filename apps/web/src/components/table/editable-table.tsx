@@ -250,29 +250,6 @@ export function EditableTable({ projectId, userId }: EditableTableProps) {
 
   return (
     <div className="w-full space-y-4">
-      {/* Header with search and filters */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search contents..."
-              value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              className="pl-10 w-72 h-9"
-            />
-          </div>
-          <Button variant="outline" size="sm" className="h-9">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-        </div>
-        <Button className="h-9">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Content
-        </Button>
-      </div>
-
       {/* Table */}
       <div className="rounded-lg border bg-white">
         <Table>

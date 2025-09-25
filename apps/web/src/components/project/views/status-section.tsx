@@ -52,9 +52,9 @@ export function StatusSection({
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div className="bg-white rounded-lg border shadow-sm">
+    <div className="bg-white rounded-lg border">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-2">
         <div className="flex items-center gap-3">
           <div className={`w-1 h-6 rounded-full ${color}`} />
           <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ export function StatusSection({
               ) : (
                 <ChevronUp className="h-4 w-4" />
               )}
-              <h4 className="font-semibold text-foreground">{title}</h4>
+              <h4 className="font-semibold text-foreground text-sm">{title}</h4>
               <span className="text-sm text-muted-foreground">({count})</span>
             </button>
           </div>
