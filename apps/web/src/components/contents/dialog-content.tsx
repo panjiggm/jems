@@ -89,6 +89,7 @@ export function ContentDialog() {
         projectId: projectId as any,
         title: formData.title.trim(),
         platform: formData.platform,
+        priority: formData.priority,
         dueDate: formData.dueDate || undefined,
         notes: formData.notes.trim() || undefined,
       });
@@ -124,6 +125,12 @@ export function ContentDialog() {
     { value: "facebook", label: "Facebook" },
     { value: "threads", label: "Threads" },
     { value: "other", label: "Other" },
+  ];
+
+  const priorityOptions = [
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
   ];
 
   return (
@@ -222,6 +229,37 @@ export function ContentDialog() {
               </Select>
               {errors.platform && (
                 <p className="text-sm text-red-500">{errors.platform}</p>
+              )}
+            </div>
+
+            {/* Priority Selection */}
+            <div className="grid gap-2">
+              <Label htmlFor="priority">
+                {t("contents.dialog.form.priority")}{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.priority}
+                onValueChange={(value: any) =>
+                  updateFormData({ priority: value })
+                }
+                disabled={isLoading}
+              >
+                <SelectTrigger
+                  className={errors.priority ? "border-red-500" : ""}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {priorityOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.priority && (
+                <p className="text-sm text-red-500">{errors.priority}</p>
               )}
             </div>
 

@@ -16,6 +16,7 @@ export const create = mutation({
       v.literal("threads"),
       v.literal("other"),
     ),
+    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
     dueDate: v.optional(v.string()),
     notes: v.optional(v.string()),
   },
@@ -44,6 +45,7 @@ export const create = mutation({
         description: `Content "${args.title}" was created`,
         metadata: {
           platform: args.platform,
+          priority: args.priority,
           hasDueDate: !!args.dueDate,
           hasNotes: !!args.notes,
         },
@@ -70,6 +72,9 @@ export const update = mutation({
           v.literal("other"),
         ),
       ),
+      priority: v.optional(
+        v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+      ),
       dueDate: v.optional(v.string()),
       notes: v.optional(v.string()),
     }),
@@ -83,6 +88,7 @@ export const update = mutation({
     const oldValues = {
       title: doc.title,
       platform: doc.platform,
+      priority: doc.priority,
       dueDate: doc.dueDate,
       notes: doc.notes,
     };
@@ -201,6 +207,7 @@ export const remove = mutation({
             title: doc.title,
             platform: doc.platform,
             status: doc.status,
+            priority: doc.priority,
           },
         },
       },

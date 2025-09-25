@@ -51,24 +51,6 @@ export function ContentCard({ content, projectId, userId }: ContentCardProps) {
     });
   };
 
-  const getPriority = (content: Content) => {
-    // Simple priority logic based on due date and status
-    if (!content.dueDate) return "low";
-
-    const dueDate = new Date(content.dueDate);
-    const today = new Date();
-    const diffDays = Math.ceil(
-      (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-    );
-
-    if (diffDays < 0) return "high"; // Overdue
-    if (diffDays <= 3) return "high"; // Due soon
-    if (diffDays <= 7) return "medium";
-    return "low";
-  };
-
-  const priority = getPriority(content);
-
   return (
     <div className="flex items-center gap-4 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
       {/* Checkbox */}
@@ -97,9 +79,9 @@ export function ContentCard({ content, projectId, userId }: ContentCardProps) {
         </div>
       </div>
 
-      {/* Priority Badge */}
+      {/* Priority Badge - Use priority from database */}
       <div className="flex-shrink-0">
-        <PriorityBadge priority={priority} />
+        <PriorityBadge priority={content.priority} />
       </div>
 
       {/* Actions */}

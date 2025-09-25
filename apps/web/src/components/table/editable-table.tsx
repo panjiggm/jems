@@ -34,6 +34,7 @@ import { EditableDateCell } from "./editable-date-cell";
 import { EditablePlatformCell } from "./editable-platform-cell";
 import { EditableTitleCell } from "./editable-title-cell";
 import { EditableNotesCell } from "./editable-notes-cell";
+import { EditablePriorityCell } from "./editable-priority-cell";
 
 import {
   ChevronDown,
@@ -151,6 +152,23 @@ export function EditableTable({ projectId, userId }: EditableTableProps) {
           contentId={row.original._id}
           onUpdate={(newStatus) =>
             setStatus({ id: row.original._id, status: newStatus })
+          }
+        />
+      ),
+    }),
+
+    // Priority column
+    columnHelper.accessor("priority", {
+      header: "Priority",
+      cell: ({ row, getValue }) => (
+        <EditablePriorityCell
+          value={getValue()}
+          contentId={row.original._id}
+          onUpdate={(newPriority) =>
+            updateContent({
+              id: row.original._id,
+              patch: { priority: newPriority },
+            })
           }
         />
       ),

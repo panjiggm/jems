@@ -11,12 +11,11 @@ import {
   useSensors,
   DragOverlay,
 } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
 import { KanbanColumn } from "./kanban-column";
 import { KanbanCard } from "./kanban-card";
-import { useQuery } from "convex-helpers/react/cache/hooks";
-import { useMutation } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
+import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 interface Content {
   _id: string;
@@ -31,6 +30,7 @@ interface Content {
     | "threads"
     | "other";
   status: "draft" | "in_progress" | "scheduled" | "published";
+  priority: "low" | "medium" | "high";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;
@@ -41,27 +41,19 @@ interface Content {
 }
 
 interface KanbanBoardProps {
-  projectId: string;
-  userId: string;
+  projectId: Id<"projects">;
 }
 
-export function KanbanBoard({ projectId, userId }: KanbanBoardProps) {
+const statusColumns = [
+  { id: "draft", title: "To Do", color: "bg-gray-300" },
+  { id: "in_progress", title: "In Progress", color: "bg-blue-300" },
+  { id: "scheduled", title: "Scheduled", color: "bg-yellow-300" },
+  { id: "published", title: "Published", color: "bg-green-300" },
+];
+
+export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [contents, setContents] = useState<Content[]>([]);
-
-  // Fetch contents from Convex
-  const contentsData = useQuery(api.queries.contents.getByProject, {
-    projectId: projectId as any,
-  });
-
-  // Mutation to update content status
-  const updateContentStatus = useMutation(api.mutations.contents.setStatus);
-
-  useEffect(() => {
-    if (contentsData) {
-      setContents(contentsData);
-    }
-  }, [contentsData]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -71,55 +63,21 @@ export function KanbanBoard({ projectId, userId }: KanbanBoardProps) {
     }),
   );
 
-  // Group contents by status
-  const contentsByStatus = contents.reduce(
-    (acc, content) => {
-      if (!acc[content.status]) {
-        acc[content.status] = [];
-      }
-      acc[content.status].push(content);
-      return acc;
-    },
-    {} as Record<string, Content[]>,
-  );
+  // Fetch contents
+  const fetchedContents = useQuery(api.queries.contents.getByProject, {
+    projectId,
+  });
 
-  const columns = [
-    {
-      id: "draft",
-      title: "To-do",
-      status: "draft" as const,
-      contents: contentsByStatus.draft || [],
-      color: "bg-blue-100",
-    },
-    {
-      id: "in_progress",
-      title: "On Progress",
-      status: "in_progress" as const,
-      contents: contentsByStatus.in_progress || [],
-      color: "bg-purple-100",
-    },
-    {
-      id: "scheduled",
-      title: "Scheduled",
-      status: "scheduled" as const,
-      contents: contentsByStatus.scheduled || [],
-      color: "bg-yellow-100",
-    },
-    {
-      id: "published",
-      title: "Completed",
-      status: "published" as const,
-      contents: contentsByStatus.published || [],
-      color: "bg-green-100",
-    },
-  ];
+  const updateContentStatus = useMutation(api.mutations.contents.setStatus);
+
+  useEffect(() => {
+    if (fetchedContents) {
+      setContents(fetchedContents);
+    }
+  }, [fetchedContents]);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    // Handle drag over logic if needed
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -131,109 +89,130 @@ export function KanbanBoard({ projectId, userId }: KanbanBoardProps) {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Find the active content
+    // Find the content being dragged
     const activeContent = contents.find((content) => content._id === activeId);
     if (!activeContent) return;
 
-    // Find the target column
-    const targetColumn = columns.find((column) => column.id === overId);
-    if (!targetColumn) return;
-
-    // If the content is already in the target column, just reorder
-    if (activeContent.status === targetColumn.status) {
-      const columnContents = contentsByStatus[targetColumn.status] || [];
-      const oldIndex = columnContents.findIndex(
-        (item) => item._id === activeId,
-      );
-      const newIndex = columnContents.length - 1; // Move to end for now
-
-      if (oldIndex !== newIndex) {
-        const newContents = arrayMove(columnContents, oldIndex, newIndex);
-        // Update local state
+    // Check if dropped on a column
+    const overColumn = statusColumns.find((col) => col.id === overId);
+    if (overColumn) {
+      const newStatus = overColumn.id as Content["status"];
+      if (activeContent.status !== newStatus) {
+        // Update local state immediately for better UX
         setContents((prev) =>
-          prev.map((content) => {
-            if (content.status === targetColumn.status) {
-              const newIndex = newContents.findIndex(
-                (item) => item._id === content._id,
-              );
-              return { ...content, updatedAt: Date.now() };
-            }
-            return content;
-          }),
+          prev.map((content) =>
+            content._id === activeId
+              ? { ...content, status: newStatus }
+              : content,
+          ),
         );
+
+        // Update in database
+        updateContentStatus({
+          id: activeId as any,
+          status: newStatus,
+        }).catch((error) => {
+          console.error("Failed to update content status:", error);
+          // Revert local state on error
+          setContents((prev) =>
+            prev.map((content) =>
+              content._id === activeId
+                ? { ...content, status: activeContent.status }
+                : content,
+            ),
+          );
+        });
       }
       return;
     }
 
-    // Move content to different column (status change)
-    setContents((prev) =>
-      prev.map((content) =>
-        content._id === activeId
-          ? {
-              ...content,
-              status: targetColumn.status,
-              updatedAt: Date.now(),
-            }
-          : content,
-      ),
+    // Check if dropped on another content (reordering within same column)
+    const overContent = contents.find((content) => content._id === overId);
+    if (overContent && activeContent.status === overContent.status) {
+      // For now, we'll just update the status if it's different
+      // In a full implementation, you might want to handle reordering
+      return;
+    }
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Find the content being dragged
+    const activeContent = contents.find((content) => content._id === activeId);
+    if (!activeContent) return;
+
+    // Check if hovering over a column
+    const overColumn = statusColumns.find((col) => col.id === overId);
+    if (overColumn) {
+      const newStatus = overColumn.id as Content["status"];
+      if (activeContent.status !== newStatus) {
+        // Update local state for visual feedback
+        setContents((prev) =>
+          prev.map((content) =>
+            content._id === activeId
+              ? { ...content, status: newStatus }
+              : content,
+          ),
+        );
+      }
+    }
+  };
+
+  const getContentsByStatus = (status: Content["status"]) => {
+    return contents.filter((content) => content.status === status);
+  };
+
+  const activeContent = activeId
+    ? contents.find((content) => content._id === activeId)
+    : null;
+
+  if (fetchedContents === undefined) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
     );
-
-    // Call Convex mutation to update the content status
-    updateContentStatus({
-      id: activeId as any,
-      status: targetColumn.status,
-    });
-  };
-
-  const handleAddContent = (
-    status: "draft" | "in_progress" | "scheduled" | "published",
-  ) => {
-    // TODO: Open create content dialog with pre-selected status
-    console.log(`Add content to ${status} column`);
-  };
-
-  const activeContent = contents.find((content) => content._id === activeId);
+  }
 
   return (
-    <div className="w-full">
+    <div className="flex gap-4 overflow-x-auto pb-4 px-2 min-w-0">
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4 min-w-0">
-          {columns.map((column) => (
-            <KanbanColumn
-              key={column.id}
-              id={column.id}
-              title={column.title}
-              status={column.status}
-              contents={column.contents}
-              color={column.color}
-              onAddContent={handleAddContent}
-            />
-          ))}
-        </div>
-
+        {statusColumns.map((column) => (
+          <KanbanColumn
+            key={column.id}
+            id={column.id}
+            title={column.title}
+            color={column.color}
+            contents={getContentsByStatus(column.id as Content["status"])}
+          />
+        ))}
         <DragOverlay>
           {activeContent ? (
-            <div className="rotate-3 opacity-90">
-              <KanbanCard
-                id={activeContent._id}
-                title={activeContent.title}
-                description={activeContent.notes}
-                platform={activeContent.platform}
-                status={activeContent.status}
-                dueDate={activeContent.dueDate}
-                scheduledAt={activeContent.scheduledAt}
-                publishedAt={activeContent.publishedAt}
-                notes={activeContent.notes}
-                assetIds={activeContent.assetIds}
-                createdAt={activeContent.createdAt}
-                updatedAt={activeContent.updatedAt}
-              />
-            </div>
+            <KanbanCard
+              id={activeContent._id}
+              title={activeContent.title}
+              description={activeContent.description}
+              platform={activeContent.platform}
+              status={activeContent.status}
+              priority={activeContent.priority}
+              dueDate={activeContent.dueDate}
+              scheduledAt={activeContent.scheduledAt}
+              publishedAt={activeContent.publishedAt}
+              notes={activeContent.notes}
+              assetIds={activeContent.assetIds}
+              createdAt={activeContent.createdAt}
+              updatedAt={activeContent.updatedAt}
+            />
           ) : null}
         </DragOverlay>
       </DndContext>

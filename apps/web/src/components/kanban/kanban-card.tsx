@@ -5,6 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Paperclip, CheckSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PriorityBadge } from "@/components/project/views/priority-badge";
 
 interface KanbanCardProps {
   id: string;
@@ -19,6 +20,7 @@ interface KanbanCardProps {
     | "threads"
     | "other";
   status: "draft" | "in_progress" | "scheduled" | "published";
+  priority: "low" | "medium" | "high";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;
@@ -44,6 +46,7 @@ export function KanbanCard({
   description,
   platform,
   status,
+  priority,
   dueDate,
   scheduledAt,
   publishedAt,
@@ -66,14 +69,14 @@ export function KanbanCard({
     transition,
   };
 
-  const getPriorityColor = () => {
+  const getStatusColor = () => {
     if (status === "published") return "bg-green-100 text-green-800";
     if (status === "scheduled") return "bg-yellow-100 text-yellow-800";
     if (status === "in_progress") return "bg-blue-100 text-blue-800";
     return "bg-gray-100 text-gray-800";
   };
 
-  const getPriorityLabel = () => {
+  const getStatusLabel = () => {
     if (status === "published") return "Published";
     if (status === "scheduled") return "Scheduled";
     if (status === "in_progress") return "In Progress";
@@ -87,17 +90,17 @@ export function KanbanCard({
       {...attributes}
       {...listeners}
       className={cn(
-        "bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing",
+        "w-full bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing",
         isDragging && "opacity-50 rotate-2 scale-105",
       )}
     >
-      {/* Header with title and priority */}
+      {/* Header with title and status */}
       <div className="flex items-start justify-between mb-3">
         <h4 className="font-semibold text-sm text-gray-900 line-clamp-2">
           {title}
         </h4>
-        <Badge className={cn("text-xs", getPriorityColor())}>
-          {getPriorityLabel()}
+        <Badge className={cn("text-xs", getStatusColor())}>
+          {getStatusLabel()}
         </Badge>
       </div>
 
@@ -111,6 +114,7 @@ export function KanbanCard({
         <Badge className={cn("text-xs", platformColors[platform])}>
           {platform.charAt(0).toUpperCase() + platform.slice(1)}
         </Badge>
+        <PriorityBadge priority={priority} />
         {notes && (
           <Badge variant="secondary" className="text-xs">
             Notes

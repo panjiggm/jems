@@ -7,6 +7,7 @@ export const list = query({
     projectId: v.optional(v.id("projects")),
     status: v.optional(v.array(v.string())),
     platform: v.optional(v.array(v.string())),
+    priority: v.optional(v.array(v.string())),
     dateFrom: v.optional(v.string()),
     dateTo: v.optional(v.string()),
     search: v.optional(v.string()),
@@ -42,6 +43,10 @@ export const list = query({
     if (args.platform?.length)
       items = items.filter((c) =>
         (args.platform as string[]).includes(c.platform),
+      );
+    if (args.priority?.length)
+      items = items.filter((c) =>
+        (args.priority as string[]).includes(c.priority),
       );
     if (args.dateFrom)
       items = items.filter(
@@ -88,6 +93,11 @@ export const getStats = query({
         published: 0,
       },
       byPlatform: {} as Record<string, number>,
+      byPriority: {
+        low: 0,
+        medium: 0,
+        high: 0,
+      },
       withNotes: 0,
       withDueDate: 0,
       withScheduledDate: 0,
@@ -111,6 +121,9 @@ export const getStats = query({
       // Count by platform
       stats.byPlatform[content.platform] =
         (stats.byPlatform[content.platform] || 0) + 1;
+
+      // Count by priority
+      stats.byPriority[content.priority]++;
 
       // Count with optional fields
       if (content.notes) stats.withNotes++;
@@ -230,12 +243,18 @@ export const getByProjectWithStats = query({
         published: 0,
       },
       byPlatform: {} as Record<string, number>,
+      byPriority: {
+        low: 0,
+        medium: 0,
+        high: 0,
+      },
     };
 
     contents.forEach((content) => {
       stats.byStatus[content.status]++;
       stats.byPlatform[content.platform] =
         (stats.byPlatform[content.platform] || 0) + 1;
+      stats.byPriority[content.priority]++;
     });
 
     return {

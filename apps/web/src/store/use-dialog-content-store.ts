@@ -15,6 +15,7 @@ export interface ContentDialogState {
       | "facebook"
       | "threads"
       | "other";
+    priority: "low" | "medium" | "high";
     dueDate: string;
     notes: string;
   };
@@ -23,6 +24,7 @@ export interface ContentDialogState {
     platform?: string;
     projectId?: string;
     dueDate?: string;
+    priority?: string;
   };
 }
 
@@ -43,6 +45,7 @@ const initialFormData = {
   projectId: undefined,
   title: "",
   platform: "tiktok" as const,
+  priority: "low" as const,
   dueDate: "",
   notes: "",
 };
@@ -51,6 +54,7 @@ const initialErrors = {
   title: undefined,
   platform: undefined,
   projectId: undefined,
+  priority: undefined,
   dueDate: undefined,
 };
 
