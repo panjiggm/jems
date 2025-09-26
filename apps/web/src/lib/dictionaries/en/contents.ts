@@ -14,9 +14,11 @@ export const contents = {
       titleRequired: "Content title is required",
       platform: "Platform",
       dueDate: "Due Date",
+      publishedAt: "Published At",
       notes: "Notes",
       notesPlaceholder: "Add any additional notes...",
       createButton: "Create Content",
+      priority: "Priority",
     },
     messages: {
       success: "Content created successfully",

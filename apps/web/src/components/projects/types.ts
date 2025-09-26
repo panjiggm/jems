@@ -11,4 +11,5 @@ export interface Project {
   userId: string;
   createdAt: number;
   updatedAt: number;
+  contentCount?: number;
 }

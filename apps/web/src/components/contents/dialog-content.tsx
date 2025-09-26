@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { toast } from "sonner";
 import { Loader2, CalendarIcon } from "lucide-react";
+import Image from "next/image";
 import { format } from "date-fns";
 
 import {
@@ -91,6 +92,7 @@ export function ContentDialog() {
         platform: formData.platform,
         priority: formData.priority,
         dueDate: formData.dueDate || undefined,
+        publishedAt: formData.publishedAt || undefined,
         notes: formData.notes.trim() || undefined,
       });
 
@@ -118,19 +120,34 @@ export function ContentDialog() {
   };
 
   const platformOptions = [
-    { value: "tiktok", label: "TikTok" },
-    { value: "instagram", label: "Instagram" },
-    { value: "youtube", label: "YouTube" },
-    { value: "x", label: "X (Twitter)" },
-    { value: "facebook", label: "Facebook" },
-    { value: "threads", label: "Threads" },
-    { value: "other", label: "Other" },
+    { value: "tiktok", label: "TikTok", icon: "/icons/tiktok.svg" },
+    { value: "instagram", label: "Instagram", icon: "/icons/instagram.svg" },
+    { value: "youtube", label: "YouTube", icon: "/icons/youtube.svg" },
+    { value: "x", label: "X (Twitter)", icon: "/icons/x.svg" },
+    { value: "facebook", label: "Facebook", icon: "/icons/facebook.svg" },
+    { value: "threads", label: "Threads", icon: "/icons/thread.svg" },
+    { value: "other", label: "Other", icon: null },
   ];
 
   const priorityOptions = [
-    { value: "low", label: "Low" },
-    { value: "medium", label: "Medium" },
-    { value: "high", label: "High" },
+    {
+      value: "low",
+      label: "Low",
+      color: "bg-blue-100 text-blue-800 border-blue-200",
+      dotColor: "bg-blue-500",
+    },
+    {
+      value: "medium",
+      label: "Medium",
+      color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+      dotColor: "bg-yellow-500",
+    },
+    {
+      value: "high",
+      label: "High",
+      color: "bg-red-100 text-red-800 border-red-200",
+      dotColor: "bg-red-500",
+    },
   ];
 
   return (
@@ -201,109 +218,178 @@ export function ContentDialog() {
               )}
             </div>
 
-            {/* Platform Selection */}
-            <div className="grid gap-2">
-              <Label htmlFor="platform">
-                {t("contents.dialog.form.platform")}{" "}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.platform}
-                onValueChange={(value: any) =>
-                  updateFormData({ platform: value })
-                }
-                disabled={isLoading}
-              >
-                <SelectTrigger
-                  className={errors.platform ? "border-red-500" : ""}
+            {/* Platform and Priority Selection - Side by Side */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Platform Selection */}
+              <div className="grid gap-2">
+                <Label htmlFor="platform">
+                  {t("contents.dialog.form.platform")}{" "}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.platform}
+                  onValueChange={(value: any) =>
+                    updateFormData({ platform: value })
+                  }
+                  disabled={isLoading}
                 >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {platformOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.platform && (
-                <p className="text-sm text-red-500">{errors.platform}</p>
-              )}
-            </div>
-
-            {/* Priority Selection */}
-            <div className="grid gap-2">
-              <Label htmlFor="priority">
-                {t("contents.dialog.form.priority")}{" "}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.priority}
-                onValueChange={(value: any) =>
-                  updateFormData({ priority: value })
-                }
-                disabled={isLoading}
-              >
-                <SelectTrigger
-                  className={errors.priority ? "border-red-500" : ""}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {priorityOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.priority && (
-                <p className="text-sm text-red-500">{errors.priority}</p>
-              )}
-            </div>
-
-            {/* Due Date */}
-            <div className="grid gap-2">
-              <Label htmlFor="dueDate">
-                {t("contents.dialog.form.dueDate")}
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={`w-full justify-start text-left font-normal ${
-                      !formData.dueDate && "text-muted-foreground"
-                    } ${errors.dueDate ? "border-red-500" : ""}`}
-                    disabled={isLoading}
+                  <SelectTrigger
+                    className={errors.platform ? "border-red-500" : ""}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.dueDate ? (
-                      format(new Date(formData.dueDate), "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={
-                      formData.dueDate ? new Date(formData.dueDate) : undefined
-                    }
-                    onSelect={(date) =>
-                      updateFormData({
-                        dueDate: date ? format(date, "yyyy-MM-dd") : "",
-                      })
-                    }
-                    disabled={(date) => date < new Date("1900-01-01")}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              {errors.dueDate && (
-                <p className="text-sm text-red-500">{errors.dueDate}</p>
-              )}
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {platformOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex items-center gap-2">
+                          {option.icon && (
+                            <Image
+                              src={option.icon}
+                              alt={option.label}
+                              width={16}
+                              height={16}
+                              className="w-4 h-4"
+                            />
+                          )}
+                          {option.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.platform && (
+                  <p className="text-sm text-red-500">{errors.platform}</p>
+                )}
+              </div>
+
+              {/* Priority Selection */}
+              <div className="grid gap-2">
+                <Label htmlFor="priority">
+                  {t("contents.dialog.form.priority")}{" "}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.priority}
+                  onValueChange={(value: any) =>
+                    updateFormData({ priority: value })
+                  }
+                  disabled={isLoading}
+                >
+                  <SelectTrigger
+                    className={errors.priority ? "border-red-500" : ""}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {priorityOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-2 h-2 rounded-full ${option.dotColor}`}
+                          />
+                          {option.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.priority && (
+                  <p className="text-sm text-red-500">{errors.priority}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Due Date and Published At - Side by Side */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Due Date */}
+              <div className="grid gap-2">
+                <Label htmlFor="dueDate">
+                  {t("contents.dialog.form.dueDate")}
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left font-normal ${
+                        !formData.dueDate && "text-muted-foreground"
+                      } ${errors.dueDate ? "border-red-500" : ""}`}
+                      disabled={isLoading}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.dueDate ? (
+                        format(new Date(formData.dueDate), "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={
+                        formData.dueDate
+                          ? new Date(formData.dueDate)
+                          : undefined
+                      }
+                      onSelect={(date) =>
+                        updateFormData({
+                          dueDate: date ? format(date, "yyyy-MM-dd") : "",
+                        })
+                      }
+                      disabled={(date) => date < new Date("1900-01-01")}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                {errors.dueDate && (
+                  <p className="text-sm text-red-500">{errors.dueDate}</p>
+                )}
+              </div>
+
+              {/* Published At */}
+              <div className="grid gap-2">
+                <Label htmlFor="publishedAt">
+                  {t("contents.dialog.form.publishedAt")}
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left font-normal ${
+                        !formData.publishedAt && "text-muted-foreground"
+                      } ${errors.publishedAt ? "border-red-500" : ""}`}
+                      disabled={isLoading}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.publishedAt ? (
+                        format(new Date(formData.publishedAt), "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={
+                        formData.publishedAt
+                          ? new Date(formData.publishedAt)
+                          : undefined
+                      }
+                      onSelect={(date) =>
+                        updateFormData({
+                          publishedAt: date ? format(date, "yyyy-MM-dd") : "",
+                        })
+                      }
+                      disabled={(date) => date < new Date("1900-01-01")}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                {errors.publishedAt && (
+                  <p className="text-sm text-red-500">{errors.publishedAt}</p>
+                )}
+              </div>
             </div>
 
             {/* Notes */}

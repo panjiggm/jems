@@ -17,7 +17,28 @@ export const list = query({
       .order("desc")
       .paginate(args.paginationOpts);
 
-    return projects;
+    // Get content count for each project
+    const projectsWithContentCount = await Promise.all(
+      projects.page.map(async (project) => {
+        const contentCount = await ctx.db
+          .query("contents")
+          .withIndex("by_user_project", (q) =>
+            q.eq("userId", userId!).eq("projectId", project._id),
+          )
+          .collect()
+          .then((contents) => contents.length);
+
+        return {
+          ...project,
+          contentCount,
+        };
+      }),
+    );
+
+    return {
+      ...projects,
+      page: projectsWithContentCount,
+    };
   },
 });
 

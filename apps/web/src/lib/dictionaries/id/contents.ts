@@ -14,9 +14,11 @@ export const contents = {
       titleRequired: "Judul konten wajib diisi",
       platform: "Platform",
       dueDate: "Tanggal Jatuh Tempo",
+      publishedAt: "Tanggal Publikasi",
       notes: "Catatan",
       notesPlaceholder: "Tambahkan catatan tambahan...",
       createButton: "Buat Konten",
+      priority: "Prioritas",
     },
     messages: {
       success: "Konten berhasil dibuat",

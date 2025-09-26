@@ -17,6 +17,7 @@ export interface ContentDialogState {
       | "other";
     priority: "low" | "medium" | "high";
     dueDate: string;
+    publishedAt: string;
     notes: string;
   };
   errors: {
@@ -24,6 +25,7 @@ export interface ContentDialogState {
     platform?: string;
     projectId?: string;
     dueDate?: string;
+    publishedAt?: string;
     priority?: string;
   };
 }
@@ -47,6 +49,7 @@ const initialFormData = {
   platform: "tiktok" as const,
   priority: "low" as const,
   dueDate: "",
+  publishedAt: "",
   notes: "",
 };
 
@@ -56,6 +59,7 @@ const initialErrors = {
   projectId: undefined,
   priority: undefined,
   dueDate: undefined,
+  publishedAt: undefined,
 };
 
 export const useContentDialogStore = create<

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Paperclip, CheckSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PriorityBadge } from "@/components/project/views/priority-badge";
+import Image from "next/image";
 
 interface KanbanCardProps {
   id: string;
@@ -38,6 +39,16 @@ const platformColors = {
   facebook: "bg-blue-100 text-blue-800",
   threads: "bg-gray-100 text-gray-800",
   other: "bg-gray-100 text-gray-800",
+};
+
+const platformIcons = {
+  tiktok: "/icons/tiktok.svg",
+  instagram: "/icons/instagram.svg",
+  youtube: "/icons/youtube.svg",
+  x: "/icons/x.svg",
+  facebook: "/icons/facebook.svg",
+  threads: "/icons/thread.svg",
+  other: null,
 };
 
 export function KanbanCard({
@@ -111,15 +122,24 @@ export function KanbanCard({
 
       {/* Tags */}
       <div className="flex flex-wrap gap-1 mb-3">
-        <Badge className={cn("text-xs", platformColors[platform])}>
+        <Badge
+          className={cn(
+            "text-xs flex items-center gap-1",
+            platformColors[platform],
+          )}
+        >
+          {platformIcons[platform] && (
+            <Image
+              src={platformIcons[platform]}
+              alt={platform}
+              width={12}
+              height={12}
+              className="w-3 h-3"
+            />
+          )}
           {platform.charAt(0).toUpperCase() + platform.slice(1)}
         </Badge>
         <PriorityBadge priority={priority} />
-        {notes && (
-          <Badge variant="secondary" className="text-xs">
-            Notes
-          </Badge>
-        )}
       </div>
 
       {/* Attachments */}

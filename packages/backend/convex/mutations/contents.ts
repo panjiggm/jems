@@ -18,6 +18,7 @@ export const create = mutation({
     ),
     priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
     dueDate: v.optional(v.string()),
+    publishedAt: v.optional(v.string()),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -76,6 +77,7 @@ export const update = mutation({
         v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
       ),
       dueDate: v.optional(v.string()),
+      publishedAt: v.optional(v.string()),
       notes: v.optional(v.string()),
     }),
   },
@@ -90,6 +92,7 @@ export const update = mutation({
       platform: doc.platform,
       priority: doc.priority,
       dueDate: doc.dueDate,
+      publishedAt: doc.publishedAt,
       notes: doc.notes,
     };
 
