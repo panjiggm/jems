@@ -83,11 +83,6 @@ export const getStats = query({
 
     const stats = {
       total: projects.length,
-      byType: {
-        campaign: 0,
-        series: 0,
-        routine: 0,
-      },
       withDescription: 0,
       withStartDate: 0,
       withEndDate: 0,
@@ -98,9 +93,6 @@ export const getStats = query({
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
     projects.forEach((project) => {
-      // Count by type
-      stats.byType[project.type]++;
-
       // Count with optional fields
       if (project.description) stats.withDescription++;
       if (project.startDate) stats.withStartDate++;
@@ -144,21 +136,23 @@ export const getByIdWithStats = query({
       .collect();
 
     // Calculate content stats
-    const contentStats = {
+    const contentPhase = {
       total: contents.length,
-      byStatus: {
-        draft: 0,
-        in_progress: 0,
+      byPhase: {
+        plan: 0,
+        production: 0,
+        review: 0,
         scheduled: 0,
         published: 0,
+        done: 0,
       },
       byPlatform: {} as Record<string, number>,
     };
 
     contents.forEach((content) => {
-      contentStats.byStatus[content.status]++;
-      contentStats.byPlatform[content.platform] =
-        (contentStats.byPlatform[content.platform] || 0) + 1;
+      contentPhase.byPhase[content.phase]++;
+      contentPhase.byPlatform[content.platform] =
+        (contentPhase.byPlatform[content.platform] || 0) + 1;
     });
 
     // Calculate task stats
@@ -168,6 +162,7 @@ export const getByIdWithStats = query({
         todo: 0,
         doing: 0,
         done: 0,
+        skipped: 0,
       },
       withContent: 0,
       withDueDate: 0,
@@ -189,7 +184,7 @@ export const getByIdWithStats = query({
 
     return {
       project,
-      contentStats,
+      contentPhase,
       taskStats,
     };
   },

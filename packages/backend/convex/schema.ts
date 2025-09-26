@@ -13,29 +13,28 @@ export default defineSchema({
     phone: v.string(),
     avatar_url: v.string(),
     is_onboarding_completed: v.boolean(),
-  }),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_unique", ["userId"]),
   niches: defineTable({
     slug: v.string(),
     label: v.string(),
     category: v.string(),
     emoji: v.optional(v.string()),
-  }),
+  }).index("by_slug", ["slug"]),
   persona: defineTable({
     userId: v.string(),
     nicheIds: v.array(v.id("niches")),
     bio: v.string(),
     ai_prompt: v.string(),
-  }),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_unique", ["userId"]),
 
   // Feature #1 - Projects & Content Planning
   projects: defineTable({
     userId: v.string(),
     title: v.string(),
-    type: v.union(
-      v.literal("campaign"),
-      v.literal("series"),
-      v.literal("routine"),
-    ),
     description: v.optional(v.string()),
     startDate: v.optional(v.string()),
     endDate: v.optional(v.string()),
@@ -58,13 +57,37 @@ export default defineSchema({
       v.literal("threads"),
       v.literal("other"),
     ),
+    type: v.union(
+      v.literal("campaign"),
+      v.literal("series"),
+      v.literal("routine"),
+    ),
     status: v.union(
-      v.literal("draft"),
-      v.literal("in_progress"),
+      v.literal("confirmed"),
+      v.literal("shipped"),
+      v.literal("received"),
+      v.literal("shooting"),
+      v.literal("drafting"),
+      v.literal("editing"),
+      v.literal("done"),
+      v.literal("pending payment"),
+      v.literal("paid"),
+      v.literal("canceled"),
+      v.literal("ideation"),
+      v.literal("scripting"),
       v.literal("scheduled"),
       v.literal("published"),
+      v.literal("archived"),
+      v.literal("planned"),
+      v.literal("skipped"),
     ),
-    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+    phase: v.union(
+      v.literal("plan"),
+      v.literal("production"),
+      v.literal("review"),
+      v.literal("published"),
+      v.literal("done"),
+    ),
     dueDate: v.optional(v.string()),
     scheduledAt: v.optional(v.string()),
     publishedAt: v.optional(v.string()),
@@ -78,15 +101,19 @@ export default defineSchema({
     .index("by_user_project", ["userId", "projectId"])
     .index("by_user_status", ["userId", "status"])
     .index("by_user_platform", ["userId", "platform"])
-    .index("by_user_dueDate", ["userId", "dueDate"])
-    .index("by_user_priority", ["userId", "priority"]),
+    .index("by_user_dueDate", ["userId", "dueDate"]),
 
   tasks: defineTable({
     userId: v.string(),
     projectId: v.id("projects"),
     contentId: v.optional(v.id("contents")),
     title: v.string(),
-    status: v.union(v.literal("todo"), v.literal("doing"), v.literal("done")),
+    status: v.union(
+      v.literal("todo"),
+      v.literal("doing"),
+      v.literal("done"),
+      v.literal("skipped"),
+    ),
     dueDate: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),

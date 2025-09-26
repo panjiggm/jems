@@ -6,11 +6,6 @@ import { internal } from "../_generated/api";
 export const create = mutation({
   args: {
     title: v.string(),
-    type: v.union(
-      v.literal("campaign"),
-      v.literal("series"),
-      v.literal("routine"),
-    ),
     description: v.optional(v.string()),
     startDate: v.optional(v.string()),
     endDate: v.optional(v.string()),
@@ -38,7 +33,6 @@ export const create = mutation({
         action: "created" as const,
         description: `Project "${args.title}" was created`,
         metadata: {
-          type: args.type,
           hasDescription: !!args.description,
           hasStartDate: !!args.startDate,
           hasEndDate: !!args.endDate,
@@ -55,13 +49,6 @@ export const update = mutation({
     id: v.id("projects"),
     patch: v.object({
       title: v.optional(v.string()),
-      type: v.optional(
-        v.union(
-          v.literal("campaign"),
-          v.literal("series"),
-          v.literal("routine"),
-        ),
-      ),
       description: v.optional(v.string()),
       startDate: v.optional(v.string()),
       endDate: v.optional(v.string()),
@@ -75,7 +62,6 @@ export const update = mutation({
     // Store old values for logging
     const oldValues = {
       title: doc.title,
-      type: doc.type,
       description: doc.description,
       startDate: doc.startDate,
       endDate: doc.endDate,
@@ -136,7 +122,6 @@ export const remove = mutation({
         metadata: {
           deletedProject: {
             title: doc.title,
-            type: doc.type,
             description: doc.description,
           },
         },

@@ -45,9 +45,7 @@ export const list = query({
         (args.platform as string[]).includes(c.platform),
       );
     if (args.priority?.length)
-      items = items.filter((c) =>
-        (args.priority as string[]).includes(c.priority),
-      );
+      items = items.filter((c) => (args.priority as string[]).includes(c.type));
     if (args.dateFrom)
       items = items.filter(
         (c) => !c.dueDate || c.dueDate >= (args.dateFrom as string),
@@ -87,16 +85,29 @@ export const getStats = query({
     const stats = {
       total: contents.length,
       byStatus: {
-        draft: 0,
-        in_progress: 0,
+        confirmed: 0,
+        shipped: 0,
+        received: 0,
+        shooting: 0,
+        drafting: 0,
+        editing: 0,
+        done: 0,
+        pending_payment: 0,
+        paid: 0,
+        canceled: 0,
+        ideation: 0,
+        scripting: 0,
         scheduled: 0,
         published: 0,
+        archived: 0,
+        planned: 0,
+        skipped: 0,
       },
       byPlatform: {} as Record<string, number>,
-      byPriority: {
-        low: 0,
-        medium: 0,
-        high: 0,
+      byType: {
+        campaign: 0,
+        series: 0,
+        routine: 0,
       },
       withNotes: 0,
       withDueDate: 0,
@@ -116,14 +127,18 @@ export const getStats = query({
 
     contents.forEach((content) => {
       // Count by status
-      stats.byStatus[content.status]++;
+      const statusKey =
+        content.status === "pending payment"
+          ? "pending_payment"
+          : content.status;
+      stats.byStatus[statusKey as keyof typeof stats.byStatus]++;
 
       // Count by platform
       stats.byPlatform[content.platform] =
         (stats.byPlatform[content.platform] || 0) + 1;
 
-      // Count by priority
-      stats.byPriority[content.priority]++;
+      // Count by type
+      stats.byType[content.type]++;
 
       // Count with optional fields
       if (content.notes) stats.withNotes++;
@@ -174,6 +189,7 @@ export const getByIdWithStats = query({
         todo: 0,
         doing: 0,
         done: 0,
+        skipped: 0,
       },
       withDueDate: 0,
       overdue: 0,
@@ -230,7 +246,7 @@ export const getByProject = query({
     }
 
     if (args.priority?.length) {
-      contents = contents.filter((c) => args.priority!.includes(c.priority));
+      contents = contents.filter((c) => args.priority!.includes(c.type));
     }
 
     if (args.platform?.length) {
@@ -260,24 +276,41 @@ export const getByProjectWithStats = query({
     const stats = {
       total: contents.length,
       byStatus: {
-        draft: 0,
-        in_progress: 0,
+        confirmed: 0,
+        shipped: 0,
+        received: 0,
+        shooting: 0,
+        drafting: 0,
+        editing: 0,
+        done: 0,
+        pending_payment: 0,
+        paid: 0,
+        canceled: 0,
+        ideation: 0,
+        scripting: 0,
         scheduled: 0,
         published: 0,
+        archived: 0,
+        planned: 0,
+        skipped: 0,
       },
       byPlatform: {} as Record<string, number>,
-      byPriority: {
-        low: 0,
-        medium: 0,
-        high: 0,
+      byType: {
+        campaign: 0,
+        series: 0,
+        routine: 0,
       },
     };
 
     contents.forEach((content) => {
-      stats.byStatus[content.status]++;
+      const statusKey =
+        content.status === "pending payment"
+          ? "pending_payment"
+          : content.status;
+      stats.byStatus[statusKey as keyof typeof stats.byStatus]++;
       stats.byPlatform[content.platform] =
         (stats.byPlatform[content.platform] || 0) + 1;
-      stats.byPriority[content.priority]++;
+      stats.byType[content.type]++;
     });
 
     return {
