@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight, FileText, Calendar1 } from "lucide-react";
 import { Project } from "./types";
 import {
@@ -45,37 +44,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
     }
   };
 
-  const formatProjectType = (type: string) => {
-    return t(`projects.types.${type}`);
-  };
-
-  const getProjectTypeClassName = (type: string) => {
-    const baseClass = "text-xs ml-2 flex-shrink-0 capitalize";
-    switch (type) {
-      case "campaign":
-        return `${baseClass} bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800`;
-      case "series":
-        return `${baseClass} bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800`;
-      case "routine":
-        return `${baseClass} bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800`;
-      default:
-        return `${baseClass}`;
-    }
-  };
-
   return (
     <Card className="shadow-none border rounded-lg hover:shadow-sm transition-shadow pb-4">
       <CardContent className="px-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <h4 className="font-bold text-sm leading-tight">{project.title}</h4>
-            <Badge
-              variant="outline"
-              className={getProjectTypeClassName(project.type)}
-            >
-              {formatProjectType(project.type)}
-            </Badge>
-          </div>
+          <h4 className="font-bold text-sm leading-tight mb-2">
+            {project.title}
+          </h4>
+
           {project.description && (
             <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
               {project.description}

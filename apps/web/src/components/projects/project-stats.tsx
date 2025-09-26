@@ -281,7 +281,6 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
       {/* Additional Info for specific routes */}
       {isProjectDetail && projectStats && (
         <div className="mt-4 flex flex-wrap gap-2">
-          <Badge variant="outline">{projectStats.project.type}</Badge>
           {projectStats.health.overdueItems > 0 && (
             <Badge variant="destructive">
               {projectStats.health.overdueItems} {t("projects.stats.overdue")}

@@ -60,11 +60,6 @@ export function CreateProjectDialog() {
       hasErrors = true;
     }
 
-    if (!formData.type) {
-      setError("type", t("projects.dialog.form.typeRequired"));
-      hasErrors = true;
-    }
-
     if (
       formData.startDate &&
       formData.endDate &&
@@ -83,7 +78,6 @@ export function CreateProjectDialog() {
 
       await createProject({
         title: formData.title.trim(),
-        type: formData.type,
         description: formData.description.trim() || undefined,
         startDate: formData.startDate?.toISOString().split("T")[0],
         endDate: formData.endDate?.toISOString().split("T")[0],
@@ -146,41 +140,6 @@ export function CreateProjectDialog() {
               />
               {errors.title && (
                 <p className="text-sm text-red-500">{errors.title}</p>
-              )}
-            </div>
-
-            {/* Project Type */}
-            <div className="grid gap-2">
-              <Label htmlFor="type">
-                {t("projects.dialog.form.type")}{" "}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value: "campaign" | "series" | "routine") =>
-                  updateFormData({ type: value })
-                }
-                disabled={isLoading}
-              >
-                <SelectTrigger className={errors.type ? "border-red-500" : ""}>
-                  <SelectValue
-                    placeholder={t("projects.dialog.form.typePlaceholder")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="campaign">
-                    {t("projects.types.campaign")}
-                  </SelectItem>
-                  <SelectItem value="series">
-                    {t("projects.types.series")}
-                  </SelectItem>
-                  <SelectItem value="routine">
-                    {t("projects.types.routine")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.type && (
-                <p className="text-sm text-red-500">{errors.type}</p>
               )}
             </div>
 
