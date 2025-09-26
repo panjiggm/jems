@@ -195,12 +195,23 @@ export const setStatus = mutation({
     if (!doc || doc.userId !== userId) throw new Error("NOT_FOUND");
 
     const oldStatus = doc.status;
+    const oldPhase = doc.phase;
     const patch: any = { status, updatedAt: Date.now() };
+    const changedFields = ["status"];
 
-    if (status === "scheduled")
+    if (status === "scheduled") {
       patch.scheduledAt = scheduledAt || new Date().toISOString();
-    if (status === "published" && !doc.publishedAt)
-      patch.publishedAt = new Date().toISOString();
+      changedFields.push("scheduledAt");
+    }
+
+    // If status is "published", also update phase to "published" and set publishedAt
+    if (status === "published") {
+      patch.phase = "published";
+      if (!doc.publishedAt) {
+        patch.publishedAt = new Date().toISOString();
+      }
+      changedFields.push("phase", "publishedAt");
+    }
 
     await ctx.db.patch(id, patch);
 
@@ -226,9 +237,11 @@ export const setStatus = mutation({
 
     const action = getActionFromStatus(status);
     const description =
-      action === "status_changed"
-        ? `Content "${doc.title}" status changed from "${oldStatus}" to "${status}"`
-        : `Content "${doc.title}" was ${action}`;
+      status === "published" && oldPhase !== "published"
+        ? `Content "${doc.title}" status changed to "published" and phase updated to "published"`
+        : action === "status_changed"
+          ? `Content "${doc.title}" status changed from "${oldStatus}" to "${status}"`
+          : `Content "${doc.title}" was ${action}`;
 
     await ctx.scheduler.runAfter(
       0,
@@ -241,9 +254,9 @@ export const setStatus = mutation({
         action: action as any,
         description,
         metadata: {
-          changedFields: ["status"],
-          oldValues: { status: oldStatus },
-          newValues: { status },
+          changedFields,
+          oldValues: { status: oldStatus, phase: oldPhase },
+          newValues: { status, phase: patch.phase },
           scheduledAt: patch.scheduledAt,
           publishedAt: patch.publishedAt,
         },
@@ -271,9 +284,27 @@ export const setPhase = mutation({
     if (!doc || doc.userId !== userId) throw new Error("NOT_FOUND");
 
     const oldPhase = doc.phase;
-    await ctx.db.patch(id, { phase, updatedAt: Date.now() });
+    const oldStatus = doc.status;
+    const patch: any = { phase, updatedAt: Date.now() };
+    const changedFields = ["phase"];
+
+    // If phase is "published", also update status to "published" and set publishedAt
+    if (phase === "published") {
+      patch.status = "published";
+      if (!doc.publishedAt) {
+        patch.publishedAt = new Date().toISOString();
+      }
+      changedFields.push("status", "publishedAt");
+    }
+
+    await ctx.db.patch(id, patch);
 
     // Log activity
+    const description =
+      phase === "published" && oldStatus !== "published"
+        ? `Content "${doc.title}" phase changed to "published" and status updated to "published"`
+        : `Content "${doc.title}" phase changed from "${oldPhase}" to "${phase}"`;
+
     await ctx.scheduler.runAfter(
       0,
       internal.mutations.projectActivities.logActivity,
@@ -283,11 +314,11 @@ export const setPhase = mutation({
         entityType: "content" as const,
         entityId: id,
         action: "updated" as const,
-        description: `Content "${doc.title}" phase changed from "${oldPhase}" to "${phase}"`,
+        description,
         metadata: {
-          changedFields: ["phase"],
-          oldValues: { phase: oldPhase },
-          newValues: { phase },
+          changedFields,
+          oldValues: { phase: oldPhase, status: oldStatus },
+          newValues: { phase, status: patch.status },
         },
       },
     );
