@@ -189,3 +189,87 @@ export const getByIdWithStats = query({
     };
   },
 });
+
+// Get projects by year from startDate and endDate
+export const getByYear = query({
+  args: {
+    year: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    // Filter projects that have the specified year in either startDate or endDate
+    const filteredProjects = projects.filter((project) => {
+      const startYear = project.startDate
+        ? new Date(project.startDate).getFullYear()
+        : null;
+      const endYear = project.endDate
+        ? new Date(project.endDate).getFullYear()
+        : null;
+
+      // Include project if it appears in the specified year
+      return startYear === args.year || endYear === args.year;
+    });
+
+    // Get content count for each filtered project
+    const projectsWithContentCount = await Promise.all(
+      filteredProjects.map(async (project) => {
+        const contentCount = await ctx.db
+          .query("contents")
+          .withIndex("by_user_project", (q) =>
+            q.eq("userId", userId).eq("projectId", project._id),
+          )
+          .collect()
+          .then((contents) => contents.length);
+
+        return {
+          ...project,
+          contentCount,
+        };
+      }),
+    );
+
+    return projectsWithContentCount;
+  },
+});
+
+// Get list of years from all user's projects
+export const listYear = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    // Extract unique years from startDate and endDate
+    const years = new Set<number>();
+
+    projects.forEach((project) => {
+      if (project.startDate) {
+        const startYear = new Date(project.startDate).getFullYear();
+        years.add(startYear);
+      }
+      if (project.endDate) {
+        const endYear = new Date(project.endDate).getFullYear();
+        years.add(endYear);
+      }
+    });
+
+    // Convert to array of objects and sort descending
+    const yearList = Array.from(years)
+      .map((year) => ({ year }))
+      .sort((a, b) => b.year - a.year);
+
+    return yearList;
+  },
+});
