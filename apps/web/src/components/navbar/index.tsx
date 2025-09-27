@@ -8,13 +8,16 @@ import { ThemeToggle } from "./theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ButtonPrimary } from "../ui/button-primary";
 import { LogIn } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { useTranslations } from "@/hooks/use-translations";
 import { useUser, UserButton } from "@clerk/nextjs";
+import { Locale } from "@/lib/i18n";
 
 const Navbar = () => {
   const { t } = useTranslations();
   const pathname = usePathname();
+  const params = useParams();
+  const locale = params.locale as Locale;
   const isSignIn = pathname.includes("/sign-in");
   const { isSignedIn } = useUser();
 
@@ -22,7 +25,7 @@ const Navbar = () => {
     <nav className="h-16">
       <div className="h-full flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/">
+          <Link href={`/${locale}`}>
             <div className="flex items-center gap-2">
               <Logo2 />
               <h2 className="text-xl font-black text-[#4a2e1a] dark:text-[#f8e9b0]">
@@ -44,10 +47,10 @@ const Navbar = () => {
                 size={"sm"}
                 className="hidden sm:inline-flex"
               >
-                <Link href="/dashboard">{t("nav.dashboard")}</Link>
+                <Link href={`/${locale}/dashboard`}>{t("nav.dashboard")}</Link>
               </ButtonPrimary>
               <UserButton
-                afterSwitchSessionUrl="/"
+                afterSwitchSessionUrl={`/${locale}`}
                 appearance={{
                   elements: {
                     avatarBox: "h-8 w-8",
@@ -61,7 +64,7 @@ const Navbar = () => {
               size={"sm"}
               className="hidden sm:inline-flex"
             >
-              <Link href="/sign-up">{t("nav.gettingStarted")}</Link>
+              <Link href={`/${locale}/sign-up`}>{t("nav.gettingStarted")}</Link>
             </ButtonPrimary>
           ) : (
             <ButtonPrimary
@@ -70,7 +73,7 @@ const Navbar = () => {
               tone={"outline"}
               className="hidden sm:inline-flex"
             >
-              <Link href="/sign-in">
+              <Link href={`/${locale}/sign-in`}>
                 <LogIn />
                 {t("nav.signIn")}
               </Link>

@@ -24,28 +24,30 @@ import {
 } from "@/components/ui/sidebar";
 import { NavUser } from "./nav-user";
 import { NavMobileApp } from "./nav-mobile-app";
+import { useParams } from "next/navigation";
+import { Locale } from "@/lib/i18n";
 
 // This is sample data.
-const data = {
+const getNavData = (locale: Locale) => ({
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: `/${locale}/dashboard`,
       icon: Home,
     },
     {
       title: "Ask AI",
-      url: "/ai",
+      url: `/${locale}/ai`,
       icon: Sparkles,
     },
     {
       title: "Projects",
-      url: "/projects",
+      url: `/${locale}/projects`,
       icon: Laptop2,
     },
     {
       title: "Schedules",
-      url: "/schedules",
+      url: `/${locale}/schedules`,
       icon: Calendar,
     },
   ],
@@ -76,11 +78,15 @@ const data = {
       emoji: "🌱",
     },
   ],
-};
+});
 
 export function SidebarLeft({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const params = useParams();
+  const locale = params.locale as Locale;
+  const data = getNavData(locale);
+
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
