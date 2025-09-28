@@ -15,9 +15,11 @@ import {
 export function DatePicker({
   label,
   onSelectDate,
+  className,
 }: {
   label: string;
   onSelectDate: (date: Date | undefined) => void;
+  className?: string;
 }) {
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState<Date | undefined>(undefined);
@@ -38,7 +40,7 @@ export function DatePicker({
           <Button
             variant="outline"
             id="date"
-            className="w-48 justify-between font-normal"
+            className={`w-48 justify-between font-normal ${className}`}
           >
             {date ? date.toLocaleDateString() : "Select date"}
             <ChevronDownIcon />
