@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useParams, usePathname } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, ChevronDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, ChevronDown, Search, X } from "lucide-react";
 import { ButtonPrimary } from "../ui/button-primary";
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
 import { ProjectCard } from "./card-project";
@@ -15,25 +16,67 @@ import { useTranslations } from "@/hooks/use-translations";
 export default function ProjectsComponent() {
   const { openDialog } = useCreateProjectDialogStore();
   const { t } = useTranslations();
+  const [searchTerm, setSearchTerm] = useState("");
+  const params = useParams();
+  const pathname = usePathname();
+
+  // Extract year from URL params or pathname
+  const getYearFromUrl = () => {
+    // Check if year is in params (from [year] dynamic route)
+    if (params?.year) {
+      return parseInt(params.year as string);
+    }
+
+    // Fallback: extract year from pathname pattern /projects/2025
+    const yearMatch = pathname.match(/\/projects\/(\d{4})$/);
+    if (yearMatch) {
+      return parseInt(yearMatch[1]);
+    }
+
+    return undefined; // No year filter for base /projects route
+  };
+
+  const year = getYearFromUrl();
+
   const {
     results: projects,
     status,
     loadMore,
-  } = usePaginatedQuery(api.queries.projects.list, {}, { initialNumItems: 12 });
+  } = usePaginatedQuery(
+    api.queries.projects.list,
+    {
+      search: searchTerm || undefined,
+      year: year || undefined,
+    },
+    { initialNumItems: 12 },
+  );
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+  };
 
   return (
     <>
-      {/* Header with Create Project Button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">{t("projects.title")}</h2>
-          {projects && (
-            <Badge variant="secondary" className="text-xs">
-              {projects.length}{" "}
-              {projects.length === 1
-                ? t("projects.project")
-                : t("projects.projects")}
-            </Badge>
+      {/* Search */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            type="text"
+            placeholder={t("projects.searchPlaceholder")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-10 bg-white"
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+              onClick={handleClearSearch}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           )}
         </div>
       </div>

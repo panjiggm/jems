@@ -1,24 +1,19 @@
 "use client";
 
 import React from "react";
-import {
-  Plus,
-  FolderOpen,
-  FileText,
-  CheckSquare,
-  Calendar,
-} from "lucide-react";
+import { Plus, Calendar, Kanban, Table, List } from "lucide-react";
 import ProjectStats from "@/components/projects/project-stats";
 import RecentActivity from "@/components/projects/recent-activity";
 import { ButtonPrimary } from "@/components/ui/button-primary";
 import { CreateProjectDialog } from "@/components/projects/dialog-create-project";
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
 import { useTranslations } from "@/hooks/use-translations";
-import TabsCustom from "@/components/tabs-custom";
-import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
+import TabsCustom from "@/components/tabs/tabs-custom";
+// import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
 import { useParams, usePathname } from "next/navigation";
 import { useContentDialogStore } from "@/store/use-dialog-content-store";
 import { ContentDialog } from "@/components/contents/dialog-content";
+import { TabsYear } from "@/components/tabs";
 
 export default function ProjectsLayout({
   children,
@@ -35,20 +30,20 @@ export default function ProjectsLayout({
   const projectsTabs = [
     {
       id: "info",
-      label: "Projects",
-      icon: FolderOpen,
+      label: "Table",
+      icon: Table,
       href: `/${locale}/projects`,
     },
     {
       id: "activity",
-      label: "Contents",
-      icon: FileText,
+      label: "Kanban",
+      icon: Kanban,
       href: `/${locale}/projects/contents`,
     },
     {
       id: "content",
-      label: "Tasks",
-      icon: CheckSquare,
+      label: "List",
+      icon: List,
       href: `/${locale}/projects/tasks`,
     },
     {
@@ -106,7 +101,7 @@ export default function ProjectsLayout({
       <div className="bg-white border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center justify-between w-full px-2">
-            <ProjectBreadcrumb />
+            {/* <ProjectBreadcrumb /> */}
             <div></div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ButtonPrimary size="sm" onClick={buttonAction}>
@@ -123,12 +118,13 @@ export default function ProjectsLayout({
         <div className="flex-1">
           {/* Tabs */}
           <div className="bg-white border-b">
-            <TabsCustom
+            <TabsYear useUrlNavigation={true} locale={locale} />
+            {/* <TabsCustom
               tabs={projectsTabs}
               defaultValue="info"
               useUrlNavigation={true}
               className="font-black"
-            />
+            /> */}
           </div>
 
           {/* Content Area - This is where children will be rendered */}

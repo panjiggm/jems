@@ -13,9 +13,7 @@ export default defineSchema({
     phone: v.string(),
     avatar_url: v.string(),
     is_onboarding_completed: v.boolean(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_unique", ["userId"]),
+  }).index("by_user", ["userId"]),
   niches: defineTable({
     slug: v.string(),
     label: v.string(),
@@ -27,9 +25,7 @@ export default defineSchema({
     nicheIds: v.array(v.id("niches")),
     bio: v.string(),
     ai_prompt: v.string(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_unique", ["userId"]),
+  }).index("by_user", ["userId"]),
 
   // Feature #1 - Projects & Content Planning
   projects: defineTable({

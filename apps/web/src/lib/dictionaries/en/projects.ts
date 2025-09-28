@@ -13,6 +13,8 @@ export const projects = {
   start: "Start",
   end: "End",
   created: "Created",
+  allYears: "All Projects",
+  searchPlaceholder: "Search projects...",
   types: {
     campaign: "Campaign",
     series: "Series",
