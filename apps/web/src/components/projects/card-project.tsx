@@ -1,7 +1,12 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Clock, ArrowRight, FileText, Calendar1 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
+import { Clock, FileText, Calendar1, Folder } from "lucide-react";
 import { Project } from "./types";
 import {
   format,
@@ -10,10 +15,10 @@ import {
   isTomorrow,
   isYesterday,
 } from "date-fns";
-import { id } from "date-fns/locale";
+import { id, enUS } from "date-fns/locale";
 import { useTranslations } from "@/hooks/use-translations";
-import { ButtonPrimary } from "../ui/button-primary";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useParams } from "next/navigation";
+import { CardHeader } from "../ui/card";
 
 interface ProjectCardProps {
   project: Project;
@@ -21,10 +26,33 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const params = useParams();
   const { t, locale } = useTranslations();
 
+  const getYearFromContext = () => {
+    if (params?.year) {
+      return params.year as string;
+    }
+
+    const yearMatch = pathname.match(/\/projects\/(\d{4})/);
+    if (yearMatch) {
+      return yearMatch[1];
+    }
+
+    if (project.startDate) {
+      return new Date(project.startDate).getFullYear().toString();
+    }
+    if (project.endDate) {
+      return new Date(project.endDate).getFullYear().toString();
+    }
+
+    return new Date().getFullYear().toString();
+  };
+
   const handleViewDetails = () => {
-    router.push(`/projects/${project._id}`);
+    const year = getYearFromContext();
+    router.push(`/${locale}/projects/${year}/${project._id}?view=table`);
   };
 
   const formatDate = (dateString: string) => {
@@ -39,24 +67,29 @@ export function ProjectCard({ project }: ProjectCardProps) {
     } else {
       // Use locale-specific date formatting
       const formatString = locale === "id" ? "dd MMM yyyy" : "MMM dd, yyyy";
-      const localeConfig = locale === "id" ? { locale: id } : {};
+      const localeConfig = locale === "id" ? { locale: id } : { locale: enUS };
       return format(date, formatString, localeConfig);
     }
   };
 
   return (
-    <Card className="shadow-none border rounded-lg hover:shadow-sm transition-shadow pb-4">
-      <CardContent className="px-4">
+    <Card
+      className="shadow-none border rounded-lg hover:shadow-sm cursor-pointer transition-shadow"
+      onClick={handleViewDetails}
+    >
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Folder className="h-4 w-4 text-muted-foreground" />
+          <CardTitle>{project.title}</CardTitle>
+        </div>
+        {project.description && (
+          <CardDescription className="text-xs">
+            {project.description}
+          </CardDescription>
+        )}
+      </CardHeader>
+      <CardContent className="px-6">
         <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-sm leading-tight mb-2">
-            {project.title}
-          </h4>
-
-          {project.description && (
-            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-              {project.description}
-            </p>
-          )}
           <div className="flex justify-between items-center text-xs text-accent-foreground/90">
             {project.startDate && (
               <div className="flex items-center gap-1">
@@ -84,7 +117,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 {t("projects.created")}{" "}
                 {formatDistanceToNow(new Date(project.createdAt), {
                   addSuffix: true,
-                  locale: locale === "id" ? id : undefined,
+                  locale: locale === "id" ? id : enUS,
                 })}
               </span>
             </div>
@@ -101,18 +134,6 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 </span>
               </div>
             )}
-          </div>
-
-          <div className="mt-3 pt-3 border-t">
-            <ButtonPrimary
-              tone="ghost"
-              size="sm"
-              className="w-full justify-center"
-              onClick={handleViewDetails}
-            >
-              {t("projects.viewDetails")}
-              <ArrowRight className="h-4 w-4" />
-            </ButtonPrimary>
           </div>
         </div>
       </CardContent>
