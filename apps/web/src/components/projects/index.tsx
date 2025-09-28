@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,40 +20,30 @@ export default function ProjectsComponent() {
   const params = useParams();
   const pathname = usePathname();
 
-  // Extract year from URL params or pathname
-  const getYearFromUrl = () => {
-    // Check if year is in params (from [year] dynamic route)
-    if (params?.year) {
-      return parseInt(params.year as string);
-    }
-
-    // Fallback: extract year from pathname pattern /projects/2025
+  const year = useMemo(() => {
+    if (params?.year) return parseInt(params.year as string);
     const yearMatch = pathname.match(/\/projects\/(\d{4})$/);
-    if (yearMatch) {
-      return parseInt(yearMatch[1]);
-    }
+    if (yearMatch) return parseInt(yearMatch[1]);
+    return undefined;
+  }, [params?.year, pathname]);
 
-    return undefined; // No year filter for base /projects route
-  };
+  const queryArgs = useMemo(
+    () => ({
+      search: searchTerm || undefined,
+      year: year || undefined,
+    }),
+    [searchTerm, year],
+  );
 
-  const year = getYearFromUrl();
+  const options = useMemo(() => ({ initialNumItems: 12 }), []);
 
   const {
     results: projects,
     status,
     loadMore,
-  } = usePaginatedQuery(
-    api.queries.projects.list,
-    {
-      search: searchTerm || undefined,
-      year: year || undefined,
-    },
-    { initialNumItems: 12 },
-  );
+  } = usePaginatedQuery(api.queries.projects.list, queryArgs, options);
 
-  const handleClearSearch = () => {
-    setSearchTerm("");
-  };
+  const handleClearSearch = useCallback(() => setSearchTerm(""), []);
 
   return (
     <>

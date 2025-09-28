@@ -14,6 +14,7 @@ import { useParams, usePathname } from "next/navigation";
 import { useContentDialogStore } from "@/store/use-dialog-content-store";
 import { ContentDialog } from "@/components/contents/dialog-content";
 import { TabsYear } from "@/components/tabs";
+import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
 
 export default function ProjectsLayout({
   children,
@@ -27,73 +28,68 @@ export default function ProjectsLayout({
   const { openDialog: openContentDialog } = useContentDialogStore();
   const { t } = useTranslations();
 
-  const projectsTabs = [
-    {
-      id: "info",
-      label: "Table",
-      icon: Table,
-      href: `/${locale}/projects`,
-    },
-    {
-      id: "activity",
-      label: "Kanban",
-      icon: Kanban,
-      href: `/${locale}/projects/contents`,
-    },
-    {
-      id: "content",
-      label: "List",
-      icon: List,
-      href: `/${locale}/projects/tasks`,
-    },
-    {
-      id: "calendar",
-      label: "Calendar",
-      icon: Calendar,
-      href: `/${locale}/projects/calendar`,
-    },
-  ];
+  // Determine current route type
+  const getRouteInfo = () => {
+    const segments = pathname.split("/").filter(Boolean);
+    const isProjectsRoute = segments[1] === "projects";
 
-  const getCurrentTabAndButton = () => {
-    const projectDetailPattern = new RegExp(`^/${locale}/projects/[^/]+$`);
-    const isProjectDetail = projectDetailPattern.test(pathname);
+    // Check if we're on /projects/[year]/[projectId] route
+    const year =
+      segments[2] && /^\d{4}$/.test(segments[2]) ? segments[2] : null;
+    const projectId = year ? segments[3] : segments[2];
+    const isProjectDetail =
+      !!projectId &&
+      projectId !== "contents" &&
+      projectId !== "tasks" &&
+      projectId !== "calendar";
 
-    if (pathname.includes("/projects/contents")) {
-      return {
-        tabId: "activity",
-        buttonText: t("projects.createContent"),
-        buttonAction: () => {
-          openContentDialog();
-        },
-      };
-    } else if (pathname.includes("/projects/tasks")) {
-      return {
-        tabId: "content",
-        buttonText: t("projects.createTask"),
-        buttonAction: () => {
-          // TODO: Open create task dialog
-          console.log("Create task clicked");
-        },
-      };
-    } else if (isProjectDetail) {
-      const projectId = pathname.split("/").pop();
-      return {
-        tabId: "info",
-        buttonText: t("projects.createContent"),
-        buttonAction: () => {
-          openContentDialog(projectId);
-        },
-      };
-    } else {
-      return {
-        tabId: "info",
-        buttonText: t("projects.createProject"),
-        buttonAction: openDialog,
-      };
-    }
+    return {
+      isProjectsRoute,
+      year,
+      projectId,
+      isProjectDetail,
+      isBaseRoute: pathname === `/${locale}/projects`,
+      isYearRoute: year && !projectId,
+      isProjectRoute: isProjectDetail,
+    };
   };
 
-  const { buttonText, buttonAction } = getCurrentTabAndButton();
+  const routeInfo = getRouteInfo();
+
+  const getProjectsTabs = () => {
+    const basePath = routeInfo.year
+      ? `/${locale}/projects/${routeInfo.year}`
+      : `/${locale}/projects`;
+
+    return [
+      {
+        id: "info",
+        label: "Table",
+        icon: Table,
+        href: basePath,
+      },
+      {
+        id: "activity",
+        label: "Kanban",
+        icon: Kanban,
+        href: `${basePath}/contents`,
+      },
+      {
+        id: "content",
+        label: "List",
+        icon: List,
+        href: `${basePath}/tasks`,
+      },
+      {
+        id: "calendar",
+        label: "Calendar",
+        icon: Calendar,
+        href: `${basePath}/calendar`,
+      },
+    ];
+  };
+
+  const projectsTabs = getProjectsTabs();
 
   return (
     <div className="bg-gray-50">
@@ -101,12 +97,12 @@ export default function ProjectsLayout({
       <div className="bg-white border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center justify-between w-full px-2">
-            {/* <ProjectBreadcrumb /> */}
-            <div></div>
+            <ProjectBreadcrumb />
+            {/* <div></div> */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <ButtonPrimary size="sm" onClick={buttonAction}>
+              <ButtonPrimary size="sm" onClick={openDialog}>
                 <Plus className="h-4 w-4 mr-2" />
-                {buttonText}
+                {t("projects.createProject")}
               </ButtonPrimary>
             </div>
           </div>
@@ -118,13 +114,20 @@ export default function ProjectsLayout({
         <div className="flex-1">
           {/* Tabs */}
           <div className="bg-white border-b">
-            <TabsYear useUrlNavigation={true} locale={locale} />
-            {/* <TabsCustom
-              tabs={projectsTabs}
-              defaultValue="info"
-              useUrlNavigation={true}
-              className="font-black"
-            /> */}
+            {/* Show TabsYear for base route and year route */}
+            {(routeInfo.isBaseRoute || routeInfo.isYearRoute) && (
+              <TabsYear useUrlNavigation={true} locale={locale} />
+            )}
+
+            {/* Show TabsCustom for project detail routes */}
+            {routeInfo.isProjectRoute && (
+              <TabsCustom
+                tabs={projectsTabs}
+                defaultValue="info"
+                useUrlNavigation={true}
+                className="font-black"
+              />
+            )}
           </div>
 
           {/* Content Area - This is where children will be rendered */}
