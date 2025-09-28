@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
-import { Calendar } from "lucide-react";
+import { Calendar, FolderOpen } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 
 /**
@@ -133,14 +133,18 @@ const TabsYear = ({
         className="w-full"
       >
         <TabsList className={getTabsListClass()}>
-          {yearTabs.map(({ year, label, projectCount }) => (
+          {yearTabs.map(({ year, label, projectCount }, index) => (
             <TabsTrigger
               key={year}
               value={year}
               className={getTabsTriggerClass()}
             >
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
+                {index === 0 ? (
+                  <FolderOpen className="h-4 w-4" />
+                ) : (
+                  <Calendar className="h-4 w-4" />
+                )}
                 <span>{label}</span>
                 <span className="ml-1 px-1.5 py-0.5 text-xs bg-muted text-muted-foreground rounded-full">
                   {projectCount}

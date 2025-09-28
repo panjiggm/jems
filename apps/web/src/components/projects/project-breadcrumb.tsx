@@ -26,19 +26,15 @@ const ProjectBreadcrumb: React.FC<ProjectBreadcrumbProps> = ({ className }) => {
   const segments = pathname.split("/").filter(Boolean);
   const locale = segments[0];
   const isProjectsRoute = segments[1] === "projects";
-  const projectId = segments[2];
-  const contentId = segments[3];
+
+  // New URL structure: /projects/[year]/[projectId]
+  const year = segments[2] && /^\d{4}$/.test(segments[2]) ? segments[2] : null;
+  const projectId = year ? segments[3] : segments[2];
 
   // Fetch project data if we have a projectId
   const project = useQuery(
     api.queries.projects.getByIdWithStats,
     projectId ? { projectId: projectId as any } : "skip",
-  );
-
-  // Fetch content data if we have a contentId
-  const content = useQuery(
-    api.queries.contents.getByIdWithStats,
-    contentId ? { contentId: contentId as any } : "skip",
   );
 
   // Don't render breadcrumb if not on projects route
@@ -53,19 +49,23 @@ const ProjectBreadcrumb: React.FC<ProjectBreadcrumbProps> = ({ className }) => {
     },
   ];
 
-  // Add project level if we have projectId
-  if (projectId && project) {
+  // Add year level if we have year
+  if (year) {
     breadcrumbItems.push({
-      label: project.project.title,
-      href: `/${locale}/projects/${projectId}`,
+      label: year,
+      href: `/${locale}/projects/${year}`,
     });
   }
 
-  // Add content level if we have contentId
-  if (contentId && content) {
+  // Add project level if we have projectId
+  if (projectId && project) {
+    const projectHref = year
+      ? `/${locale}/projects/${year}/${projectId}`
+      : `/${locale}/projects/${projectId}`;
+
     breadcrumbItems.push({
-      label: content.content.title,
-      href: `/${locale}/projects/${projectId}/${contentId}`,
+      label: project.project.title,
+      href: projectHref,
     });
   }
 
