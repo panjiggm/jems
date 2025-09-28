@@ -16,13 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
@@ -167,6 +160,7 @@ export function CreateProjectDialog() {
             {/* Date Range */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DatePicker
+                className="w-full"
                 label={t("projects.dialog.form.startDate")}
                 onSelectDate={handleDateChange("startDate")}
               />
@@ -175,6 +169,7 @@ export function CreateProjectDialog() {
               )}
 
               <DatePicker
+                className="w-full"
                 label={t("projects.dialog.form.endDate")}
                 onSelectDate={handleDateChange("endDate")}
               />
