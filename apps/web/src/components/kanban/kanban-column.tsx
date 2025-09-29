@@ -30,7 +30,7 @@ interface Content {
     | "drafting"
     | "editing"
     | "done"
-    | "pending payment"
+    | "pending_payment"
     | "paid"
     | "canceled"
     | "ideation"

@@ -20,8 +20,26 @@ interface KanbanCardProps {
     | "facebook"
     | "threads"
     | "other";
-  status: "draft" | "in_progress" | "scheduled" | "published";
+  status:
+    | "confirmed"
+    | "shipped"
+    | "received"
+    | "shooting"
+    | "drafting"
+    | "editing"
+    | "done"
+    | "pending_payment"
+    | "paid"
+    | "canceled"
+    | "ideation"
+    | "scripting"
+    | "scheduled"
+    | "published"
+    | "archived"
+    | "planned"
+    | "skipped";
   type: "campaign" | "series" | "routine";
+  phase: "plan" | "production" | "review" | "published" | "done";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;
@@ -58,6 +76,7 @@ export function KanbanCard({
   platform,
   status,
   type,
+  phase,
   dueDate,
   scheduledAt,
   publishedAt,
@@ -80,18 +99,38 @@ export function KanbanCard({
     transition,
   };
 
-  const getStatusColor = () => {
-    if (status === "published") return "bg-green-100 text-green-800";
-    if (status === "scheduled") return "bg-yellow-100 text-yellow-800";
-    if (status === "in_progress") return "bg-blue-100 text-blue-800";
-    return "bg-gray-100 text-gray-800";
+  const getPhaseColor = (phase: string) => {
+    switch (phase) {
+      case "plan":
+        return "bg-gray-100 text-gray-800";
+      case "production":
+        return "bg-blue-100 text-blue-800";
+      case "review":
+        return "bg-yellow-100 text-yellow-800";
+      case "published":
+        return "bg-green-100 text-green-800";
+      case "done":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
-  const getStatusLabel = () => {
-    if (status === "published") return "Published";
-    if (status === "scheduled") return "Scheduled";
-    if (status === "in_progress") return "In Progress";
-    return "Draft";
+  const getPhaseLabel = (phase: string) => {
+    switch (phase) {
+      case "plan":
+        return "Plan";
+      case "production":
+        return "Production";
+      case "review":
+        return "Review";
+      case "published":
+        return "Published";
+      case "done":
+        return "Done";
+      default:
+        return "Plan";
+    }
   };
 
   return (
@@ -110,8 +149,8 @@ export function KanbanCard({
         <h4 className="font-semibold text-sm text-gray-900 line-clamp-2">
           {title}
         </h4>
-        <Badge className={cn("text-xs", getStatusColor())}>
-          {getStatusLabel()}
+        <Badge className={cn("text-xs", getPhaseColor(phase))}>
+          {getPhaseLabel(phase)}
         </Badge>
       </div>
 

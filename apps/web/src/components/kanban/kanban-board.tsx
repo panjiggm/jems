@@ -30,8 +30,26 @@ interface Content {
     | "facebook"
     | "threads"
     | "other";
-  status: "draft" | "in_progress" | "scheduled" | "published";
+  status:
+    | "confirmed"
+    | "shipped"
+    | "received"
+    | "shooting"
+    | "drafting"
+    | "editing"
+    | "done"
+    | "pending_payment"
+    | "paid"
+    | "canceled"
+    | "ideation"
+    | "scripting"
+    | "scheduled"
+    | "published"
+    | "archived"
+    | "planned"
+    | "skipped";
   type: "campaign" | "series" | "routine";
+  phase: "plan" | "production" | "review" | "published" | "done";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;
@@ -47,11 +65,12 @@ interface KanbanBoardProps {
   filters: FilterState;
 }
 
-const statusColumns = [
-  { id: "draft", title: "To Do", color: "bg-gray-300" },
-  { id: "in_progress", title: "In Progress", color: "bg-blue-300" },
-  { id: "scheduled", title: "Scheduled", color: "bg-yellow-300" },
+const phaseColumns = [
+  { id: "plan", title: "Plan", color: "bg-gray-300" },
+  { id: "production", title: "Production", color: "bg-blue-300" },
+  { id: "review", title: "Review", color: "bg-yellow-300" },
   { id: "published", title: "Published", color: "bg-green-300" },
+  { id: "done", title: "Done", color: "bg-purple-300" },
 ];
 
 export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
@@ -75,7 +94,7 @@ export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
     platform: filters.platform.length > 0 ? filters.platform : undefined,
   });
 
-  const updateContentStatus = useMutation(api.mutations.contents.setStatus);
+  const updateContentPhase = useMutation(api.mutations.contents.setPhase);
 
   useEffect(() => {
     if (fetchedContents) {
@@ -101,30 +120,30 @@ export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
     if (!activeContent) return;
 
     // Check if dropped on a column
-    const overColumn = statusColumns.find((col) => col.id === overId);
+    const overColumn = phaseColumns.find((col) => col.id === overId);
     if (overColumn) {
-      const newStatus = overColumn.id as Content["status"];
-      if (activeContent.status !== newStatus) {
+      const newPhase = overColumn.id as Content["phase"];
+      if (activeContent.phase !== newPhase) {
         // Update local state immediately for better UX
         setContents((prev) =>
           prev.map((content) =>
             content._id === activeId
-              ? { ...content, status: newStatus }
+              ? { ...content, phase: newPhase }
               : content,
           ),
         );
 
         // Update in database
-        updateContentStatus({
+        updateContentPhase({
           id: activeId as any,
-          status: newStatus,
+          phase: newPhase,
         }).catch((error) => {
-          console.error("Failed to update content status:", error);
+          console.error("Failed to update content phase:", error);
           // Revert local state on error
           setContents((prev) =>
             prev.map((content) =>
               content._id === activeId
-                ? { ...content, status: activeContent.status }
+                ? { ...content, phase: activeContent.phase }
                 : content,
             ),
           );
@@ -135,8 +154,8 @@ export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
 
     // Check if dropped on another content (reordering within same column)
     const overContent = contents.find((content) => content._id === overId);
-    if (overContent && activeContent.status === overContent.status) {
-      // For now, we'll just update the status if it's different
+    if (overContent && activeContent.phase === overContent.phase) {
+      // For now, we'll just update the phase if it's different
       // In a full implementation, you might want to handle reordering
       return;
     }
@@ -154,15 +173,15 @@ export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
     if (!activeContent) return;
 
     // Check if hovering over a column
-    const overColumn = statusColumns.find((col) => col.id === overId);
+    const overColumn = phaseColumns.find((col) => col.id === overId);
     if (overColumn) {
-      const newStatus = overColumn.id as Content["status"];
-      if (activeContent.status !== newStatus) {
+      const newPhase = overColumn.id as Content["phase"];
+      if (activeContent.phase !== newPhase) {
         // Update local state for visual feedback
         setContents((prev) =>
           prev.map((content) =>
             content._id === activeId
-              ? { ...content, status: newStatus }
+              ? { ...content, phase: newPhase }
               : content,
           ),
         );
@@ -170,8 +189,8 @@ export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
     }
   };
 
-  const getContentsByStatus = (status: Content["status"]) => {
-    return contents.filter((content) => content.status === status);
+  const getContentsByPhase = (phase: Content["phase"]) => {
+    return contents.filter((content) => content.phase === phase);
   };
 
   const activeContent = activeId
@@ -194,13 +213,13 @@ export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
       >
-        {statusColumns.map((column) => (
+        {phaseColumns.map((column) => (
           <KanbanColumn
             key={column.id}
             id={column.id}
             title={column.title}
             color={column.color}
-            contents={getContentsByStatus(column.id as Content["status"])}
+            contents={getContentsByPhase(column.id as Content["phase"])}
           />
         ))}
         <DragOverlay>
@@ -211,7 +230,8 @@ export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
               description={activeContent.description}
               platform={activeContent.platform}
               status={activeContent.status}
-              priority={activeContent.priority}
+              type={activeContent.type}
+              phase={activeContent.phase}
               dueDate={activeContent.dueDate}
               scheduledAt={activeContent.scheduledAt}
               publishedAt={activeContent.publishedAt}
