@@ -31,7 +31,7 @@ interface Content {
     | "threads"
     | "other";
   status: "draft" | "in_progress" | "scheduled" | "published";
-  priority: "low" | "medium" | "high";
+  type: "campaign" | "series" | "routine";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;

@@ -13,7 +13,6 @@ import { KanbanCard } from "./kanban-card";
 interface Content {
   _id: string;
   title: string;
-  description?: string;
   platform:
     | "tiktok"
     | "instagram"
@@ -22,8 +21,26 @@ interface Content {
     | "facebook"
     | "threads"
     | "other";
-  status: "draft" | "in_progress" | "scheduled" | "published";
-  priority: "low" | "medium" | "high";
+  type: "campaign" | "series" | "routine";
+  status:
+    | "confirmed"
+    | "shipped"
+    | "received"
+    | "shooting"
+    | "drafting"
+    | "editing"
+    | "done"
+    | "pending payment"
+    | "paid"
+    | "canceled"
+    | "ideation"
+    | "scripting"
+    | "scheduled"
+    | "published"
+    | "archived"
+    | "planned"
+    | "skipped";
+  phase: "plan" | "production" | "review" | "published" | "done";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;
@@ -51,7 +68,7 @@ export function KanbanColumn({
   });
 
   return (
-    <div className="flex flex-col w-72 min-w-72 max-w-80">
+    <div className="flex flex-col w-72 min-w-72 flex-shrink-0">
       {/* Column Header */}
       <button
         className="flex items-center justify-between mb-4 bg-gray-100 hover:bg-gray-200 p-2 rounded-lg w-full transition-colors cursor-pointer"
@@ -96,10 +113,10 @@ export function KanbanColumn({
                   key={content._id}
                   id={content._id}
                   title={content.title}
-                  description={content.description}
                   platform={content.platform}
+                  type={content.type}
                   status={content.status}
-                  priority={content.priority}
+                  phase={content.phase}
                   dueDate={content.dueDate}
                   scheduledAt={content.scheduledAt}
                   publishedAt={content.publishedAt}

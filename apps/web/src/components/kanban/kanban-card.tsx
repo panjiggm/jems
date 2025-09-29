@@ -5,7 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Paperclip, CheckSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PriorityBadge } from "@/components/project/views/priority-badge";
+import { TypeBadge } from "@/components/project/views/type-badge";
 import Image from "next/image";
 
 interface KanbanCardProps {
@@ -21,7 +21,7 @@ interface KanbanCardProps {
     | "threads"
     | "other";
   status: "draft" | "in_progress" | "scheduled" | "published";
-  priority: "low" | "medium" | "high";
+  type: "campaign" | "series" | "routine";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;
@@ -57,7 +57,7 @@ export function KanbanCard({
   description,
   platform,
   status,
-  priority,
+  type,
   dueDate,
   scheduledAt,
   publishedAt,
@@ -139,7 +139,7 @@ export function KanbanCard({
           )}
           {platform.charAt(0).toUpperCase() + platform.slice(1)}
         </Badge>
-        <PriorityBadge priority={priority} />
+        <TypeBadge type={type} />
       </div>
 
       {/* Attachments */}
