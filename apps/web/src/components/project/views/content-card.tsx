@@ -7,7 +7,7 @@ import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { PlatformBadge } from "./platform-badge";
-import { PriorityBadge } from "./priority-badge";
+import { TypeBadge } from "./type-badge";
 
 interface Content {
   _id: Id<"contents">;
@@ -24,7 +24,7 @@ interface Content {
     | "threads"
     | "other";
   status: "draft" | "in_progress" | "scheduled" | "published";
-  priority: "low" | "medium" | "high";
+  type: "campaign" | "series" | "routine";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;
@@ -81,7 +81,7 @@ export function ContentCard({ content, projectId, userId }: ContentCardProps) {
 
       {/* Priority Badge - Use priority from database */}
       <div className="flex-shrink-0">
-        <PriorityBadge priority={content.priority} />
+        <TypeBadge type={content.type} />
       </div>
 
       {/* Actions */}
