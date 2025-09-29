@@ -9,9 +9,7 @@ import { CreateProjectDialog } from "@/components/projects/dialog-create-project
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
 import { useTranslations } from "@/hooks/use-translations";
 import TabsCustom from "@/components/tabs/tabs-custom";
-// import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
 import { useParams, usePathname } from "next/navigation";
-import { useContentDialogStore } from "@/store/use-dialog-content-store";
 import { ContentDialog } from "@/components/contents/dialog-content";
 import { TabsYear } from "@/components/tabs";
 import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
@@ -25,7 +23,6 @@ export default function ProjectsLayout({
   const pathname = usePathname();
   const locale = params.locale as string;
   const { openDialog } = useCreateProjectDialogStore();
-  const { openDialog: openContentDialog } = useContentDialogStore();
   const { t } = useTranslations();
 
   // Determine current route type
@@ -33,7 +30,6 @@ export default function ProjectsLayout({
     const segments = pathname.split("/").filter(Boolean);
     const isProjectsRoute = segments[1] === "projects";
 
-    // Check if we're on /projects/[year]/[projectId] route
     const year =
       segments[2] && /^\d{4}$/.test(segments[2]) ? segments[2] : null;
     const projectId = year ? segments[3] : segments[2];
@@ -98,7 +94,6 @@ export default function ProjectsLayout({
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center justify-between w-full px-2">
             <ProjectBreadcrumb />
-            {/* <div></div> */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ButtonPrimary size="sm" onClick={openDialog}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -109,9 +104,9 @@ export default function ProjectsLayout({
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row">
+      <div className="flex flex-col lg:grid lg:grid-cols-12">
         {/* Main Content */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0 lg:col-span-10">
           {/* Tabs */}
           <div className="bg-white border-b">
             {/* Show TabsYear for base route and year route */}
@@ -131,11 +126,11 @@ export default function ProjectsLayout({
           </div>
 
           {/* Content Area - This is where children will be rendered */}
-          <div className="p-6 space-y-6">{children}</div>
+          <div className="p-6 space-y-6 overflow-x-auto">{children}</div>
         </div>
 
         {/* Left Sidebar - User Info */}
-        <div className="w-full lg:w-80 bg-white border-l lg:min-h-screen">
+        <div className="w-full lg:col-span-2 bg-white border-l lg:min-h-screen">
           {/* User Header */}
           <ProjectStats />
 
