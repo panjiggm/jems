@@ -18,7 +18,7 @@ export const contents = {
       notes: "Catatan",
       notesPlaceholder: "Tambahkan catatan tambahan...",
       createButton: "Buat Konten",
-      priority: "Prioritas",
+      type: "Tipe",
     },
     messages: {
       success: "Konten berhasil dibuat",

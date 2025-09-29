@@ -35,7 +35,7 @@ import { EditableDateCell } from "./editable-date-cell";
 import { EditablePlatformCell } from "./editable-platform-cell";
 import { EditableTitleCell } from "./editable-title-cell";
 import { EditableNotesCell } from "./editable-notes-cell";
-import { EditablePriorityCell } from "./editable-priority-cell";
+import { EditableTypeCell } from "./editable-type-cell";
 
 import {
   ChevronDown,
@@ -60,8 +60,26 @@ type Content = {
     | "facebook"
     | "threads"
     | "other";
-  status: "draft" | "in_progress" | "scheduled" | "published";
-  priority: "low" | "medium" | "high";
+  status:
+    | "confirmed"
+    | "shipped"
+    | "received"
+    | "shooting"
+    | "drafting"
+    | "editing"
+    | "done"
+    | "pending_payment"
+    | "paid"
+    | "canceled"
+    | "ideation"
+    | "scripting"
+    | "scheduled"
+    | "published"
+    | "archived"
+    | "planned"
+    | "skipped";
+  type: "campaign" | "series" | "routine";
+  phase: "plan" | "production" | "review" | "published" | "done";
   dueDate?: string;
   scheduledAt?: string;
   publishedAt?: string;
@@ -156,30 +174,30 @@ export function EditableTable({
     }),
 
     // Status column
-    columnHelper.accessor("status", {
-      header: "Status",
-      cell: ({ row, getValue }) => (
-        <EditableStatusCell
-          value={getValue()}
-          contentId={row.original._id}
-          onUpdate={(newStatus) =>
-            setStatus({ id: row.original._id, status: newStatus })
-          }
-        />
-      ),
-    }),
+    // columnHelper.accessor("status", {
+    //   header: "Status",
+    //   cell: ({ row, getValue }) => (
+    //     <EditableStatusCell
+    //       value={getValue()}
+    //       contentId={row.original._id}
+    //       onUpdate={(newStatus) =>
+    //         setStatus({ id: row.original._id, status: newStatus })
+    //       }
+    //     />
+    //   ),
+    // }),
 
-    // Priority column
-    columnHelper.accessor("priority", {
-      header: "Priority",
+    // Type column
+    columnHelper.accessor("type", {
+      header: "Type",
       cell: ({ row, getValue }) => (
-        <EditablePriorityCell
+        <EditableTypeCell
           value={getValue()}
           contentId={row.original._id}
-          onUpdate={(newPriority) =>
+          onUpdate={(newType) =>
             updateContent({
               id: row.original._id,
-              patch: { priority: newPriority },
+              patch: { type: newType },
             })
           }
         />

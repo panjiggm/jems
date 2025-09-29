@@ -18,7 +18,7 @@ export const contents = {
       notes: "Notes",
       notesPlaceholder: "Add any additional notes...",
       createButton: "Create Content",
-      priority: "Priority",
+      type: "Type",
     },
     messages: {
       success: "Content created successfully",

@@ -59,9 +59,6 @@ export const create = mutation({
     if (args.dueDate && new Date(args.dueDate) < new Date()) {
       throw new Error("Due date cannot be in the past");
     }
-    if (args.publishedAt && new Date(args.publishedAt) > new Date()) {
-      throw new Error("Published date cannot be in the future");
-    }
 
     const contentId = await ctx.db.insert("contents", {
       ...args,
@@ -132,9 +129,6 @@ export const update = mutation({
     // Validate dates
     if (patch.dueDate && new Date(patch.dueDate) < new Date()) {
       throw new Error("Due date cannot be in the past");
-    }
-    if (patch.publishedAt && new Date(patch.publishedAt) > new Date()) {
-      throw new Error("Published date cannot be in the future");
     }
 
     // Store old values for logging
