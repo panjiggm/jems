@@ -4,9 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { FilterState } from "../search-filter-content";
-import { StatusSection } from "./status-section";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { StatusSection } from "./index";
 
 interface ListViewProps {
   projectId?: Id<"projects">;

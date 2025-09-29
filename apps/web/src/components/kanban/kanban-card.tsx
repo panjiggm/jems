@@ -5,7 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Paperclip, CheckSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TypeBadge } from "@/components/project/views/type-badge";
+import { TypeBadge } from "@/components/list/type-badge";
 import Image from "next/image";
 
 interface KanbanCardProps {

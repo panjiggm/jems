@@ -1,7 +1,6 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";

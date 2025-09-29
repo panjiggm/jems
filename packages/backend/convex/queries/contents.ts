@@ -256,6 +256,7 @@ export const getByProject = query({
     projectId: v.id("projects"),
     search: v.optional(v.string()),
     status: v.optional(v.array(v.string())),
+    phase: v.optional(v.array(v.string())),
     priority: v.optional(v.array(v.string())),
     platform: v.optional(v.array(v.string())),
   },
@@ -279,6 +280,10 @@ export const getByProject = query({
 
     if (args.status?.length) {
       contents = contents.filter((c) => args.status!.includes(c.status));
+    }
+
+    if (args.phase?.length) {
+      contents = contents.filter((c) => args.phase!.includes(c.phase));
     }
 
     if (args.priority?.length) {

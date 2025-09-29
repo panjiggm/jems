@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 export interface FilterState {
   search: string;
   status: string[];
+  phase: string[];
   priority: string[];
   platform: string[];
 }
@@ -31,10 +32,31 @@ interface SearchFilterContentProps {
 }
 
 const statusOptions = [
-  { value: "draft", label: "Draft" },
-  { value: "in_progress", label: "In Progress" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "shipped", label: "Shipped" },
+  { value: "received", label: "Received" },
+  { value: "shooting", label: "Shooting" },
+  { value: "drafting", label: "Drafting" },
+  { value: "editing", label: "Editing" },
+  { value: "done", label: "Done" },
+  { value: "pending_payment", label: "Pending Payment" },
+  { value: "paid", label: "Paid" },
+  { value: "canceled", label: "Canceled" },
+  { value: "ideation", label: "Ideation" },
+  { value: "scripting", label: "Scripting" },
   { value: "scheduled", label: "Scheduled" },
   { value: "published", label: "Published" },
+  { value: "archived", label: "Archived" },
+  { value: "planned", label: "Planned" },
+  { value: "skipped", label: "Skipped" },
+];
+
+const phaseOptions = [
+  { value: "plan", label: "Plan" },
+  { value: "production", label: "Production" },
+  { value: "review", label: "Review" },
+  { value: "published", label: "Published" },
+  { value: "done", label: "Done" },
 ];
 
 const priorityOptions = [
@@ -64,23 +86,34 @@ export default function SearchFilterContent({
   };
 
   const handleStatusChange = (value: string) => {
-    const newStatus = filters.status.includes(value)
-      ? filters.status.filter((s) => s !== value)
-      : [...filters.status, value];
+    const currentStatus = filters.status || [];
+    const newStatus = currentStatus.includes(value)
+      ? currentStatus.filter((s) => s !== value)
+      : [...currentStatus, value];
     onFiltersChange({ ...filters, status: newStatus });
   };
 
+  const handlePhaseChange = (value: string) => {
+    const currentPhase = filters.phase || [];
+    const newPhase = currentPhase.includes(value)
+      ? currentPhase.filter((p) => p !== value)
+      : [...currentPhase, value];
+    onFiltersChange({ ...filters, phase: newPhase });
+  };
+
   const handlePriorityChange = (value: string) => {
-    const newPriority = filters.priority.includes(value)
-      ? filters.priority.filter((p) => p !== value)
-      : [...filters.priority, value];
+    const currentPriority = filters.priority || [];
+    const newPriority = currentPriority.includes(value)
+      ? currentPriority.filter((p) => p !== value)
+      : [...currentPriority, value];
     onFiltersChange({ ...filters, priority: newPriority });
   };
 
   const handlePlatformChange = (value: string) => {
-    const newPlatform = filters.platform.includes(value)
-      ? filters.platform.filter((p) => p !== value)
-      : [...filters.platform, value];
+    const currentPlatform = filters.platform || [];
+    const newPlatform = currentPlatform.includes(value)
+      ? currentPlatform.filter((p) => p !== value)
+      : [...currentPlatform, value];
     onFiltersChange({ ...filters, platform: newPlatform });
   };
 
@@ -88,6 +121,7 @@ export default function SearchFilterContent({
     onFiltersChange({
       search: "",
       status: [],
+      phase: [],
       priority: [],
       platform: [],
     });
@@ -96,9 +130,10 @@ export default function SearchFilterContent({
   const getActiveFiltersCount = () => {
     return (
       (filters.search ? 1 : 0) +
-      filters.status.length +
-      filters.priority.length +
-      filters.platform.length
+      (filters.status?.length || 0) +
+      (filters.phase?.length || 0) +
+      (filters.priority?.length || 0) +
+      (filters.platform?.length || 0)
     );
   };
 
@@ -157,12 +192,34 @@ export default function SearchFilterContent({
                   <Button
                     key={option.value}
                     variant={
-                      filters.status.includes(option.value)
+                      (filters.status || []).includes(option.value)
                         ? "default"
                         : "outline"
                     }
                     size="sm"
                     onClick={() => handleStatusChange(option.value)}
+                    className="text-xs"
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Phase Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Phase</label>
+              <div className="flex flex-wrap gap-2">
+                {phaseOptions.map((option) => (
+                  <Button
+                    key={option.value}
+                    variant={
+                      (filters.phase || []).includes(option.value)
+                        ? "default"
+                        : "outline"
+                    }
+                    size="sm"
+                    onClick={() => handlePhaseChange(option.value)}
                     className="text-xs"
                   >
                     {option.label}
@@ -179,7 +236,7 @@ export default function SearchFilterContent({
                   <Button
                     key={option.value}
                     variant={
-                      filters.priority.includes(option.value)
+                      (filters.priority || []).includes(option.value)
                         ? "default"
                         : "outline"
                     }
@@ -201,7 +258,7 @@ export default function SearchFilterContent({
                   <Button
                     key={option.value}
                     variant={
-                      filters.platform.includes(option.value)
+                      (filters.platform || []).includes(option.value)
                         ? "default"
                         : "outline"
                     }
@@ -221,7 +278,7 @@ export default function SearchFilterContent({
       {/* Active Filters Display */}
       {activeFiltersCount > 0 && (
         <div className="flex items-center gap-2">
-          {filters.status.map((status) => (
+          {(filters.status || []).map((status) => (
             <Badge key={status} variant="secondary" className="text-xs">
               {statusOptions.find((s) => s.value === status)?.label}
               <button
@@ -232,7 +289,18 @@ export default function SearchFilterContent({
               </button>
             </Badge>
           ))}
-          {filters.priority.map((priority) => (
+          {(filters.phase || []).map((phase) => (
+            <Badge key={phase} variant="secondary" className="text-xs">
+              {phaseOptions.find((p) => p.value === phase)?.label}
+              <button
+                onClick={() => handlePhaseChange(phase)}
+                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+          {(filters.priority || []).map((priority) => (
             <Badge key={priority} variant="secondary" className="text-xs">
               {priorityOptions.find((p) => p.value === priority)?.label}
               <button
@@ -243,7 +311,7 @@ export default function SearchFilterContent({
               </button>
             </Badge>
           ))}
-          {filters.platform.map((platform) => (
+          {(filters.platform || []).map((platform) => (
             <Badge key={platform} variant="secondary" className="text-xs">
               {platformOptions.find((p) => p.value === platform)?.label}
               <button

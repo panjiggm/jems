@@ -27,6 +27,7 @@ export default function ProjectComponent({
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     status: [],
+    phase: [],
     priority: [],
     platform: [],
   });

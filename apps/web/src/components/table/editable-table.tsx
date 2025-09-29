@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { EditableStatusCell } from "./editable-status-cell";
+import { EditablePhaseCell } from "./editable-phase-cell";
 import { EditableDateCell } from "./editable-date-cell";
 import { EditablePlatformCell } from "./editable-platform-cell";
 import { EditableTitleCell } from "./editable-title-cell";
@@ -114,11 +115,13 @@ export function EditableTable({
     projectId,
     search: filters.search || undefined,
     status: filters.status.length > 0 ? filters.status : undefined,
+    phase: filters.phase.length > 0 ? filters.phase : undefined,
     priority: filters.priority.length > 0 ? filters.priority : undefined,
     platform: filters.platform.length > 0 ? filters.platform : undefined,
   });
   const updateContent = useMutation(api.mutations.contents.update);
   const setStatus = useMutation(api.mutations.contents.setStatus);
+  const setPhase = useMutation(api.mutations.contents.setPhase);
 
   const columns = [
     // Selection column
@@ -174,18 +177,33 @@ export function EditableTable({
     }),
 
     // Status column
-    // columnHelper.accessor("status", {
-    //   header: "Status",
-    //   cell: ({ row, getValue }) => (
-    //     <EditableStatusCell
-    //       value={getValue()}
-    //       contentId={row.original._id}
-    //       onUpdate={(newStatus) =>
-    //         setStatus({ id: row.original._id, status: newStatus })
-    //       }
-    //     />
-    //   ),
-    // }),
+    columnHelper.accessor("status", {
+      header: "Status",
+      cell: ({ row, getValue }) => (
+        <EditableStatusCell
+          value={getValue()}
+          contentId={row.original._id}
+          contentType={row.original.type}
+          onUpdate={(newStatus) =>
+            setStatus({ id: row.original._id, status: newStatus })
+          }
+        />
+      ),
+    }),
+
+    // Phase column
+    columnHelper.accessor("phase", {
+      header: "Phase",
+      cell: ({ row, getValue }) => (
+        <EditablePhaseCell
+          value={getValue()}
+          contentId={row.original._id}
+          onUpdate={(newPhase) =>
+            setPhase({ id: row.original._id, phase: newPhase })
+          }
+        />
+      ),
+    }),
 
     // Type column
     columnHelper.accessor("type", {
