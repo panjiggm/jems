@@ -58,33 +58,33 @@ export default function ProjectsLayout({
 
   const getProjectsTabs = () => {
     const basePath = routeInfo.year
-      ? `/${locale}/projects/${routeInfo.year}`
+      ? `/${locale}/projects/${routeInfo.year}/${routeInfo.projectId}`
       : `/${locale}/projects`;
 
     return [
       {
-        id: "info",
+        id: "table",
         label: "Table",
         icon: Table,
-        href: basePath,
+        href: `${basePath}?view=table`,
       },
       {
-        id: "activity",
+        id: "kanban",
         label: "Kanban",
         icon: Kanban,
-        href: `${basePath}/contents`,
+        href: `${basePath}?view=kanban`,
       },
       {
-        id: "content",
+        id: "list",
         label: "List",
         icon: List,
-        href: `${basePath}/tasks`,
+        href: `${basePath}?view=list`,
       },
       {
         id: "calendar",
         label: "Calendar",
         icon: Calendar,
-        href: `${basePath}/calendar`,
+        href: `${basePath}?view=calendar`,
       },
     ];
   };
