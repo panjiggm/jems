@@ -51,55 +51,61 @@ export default function ListView({
     );
   }
 
-  // Group contents by status
-  const contentsByStatus = contents.reduce(
+  // Group contents by phase
+  const contentsByPhase = contents.reduce(
     (acc, content) => {
-      if (!acc[content.status]) {
-        acc[content.status] = [];
+      if (!acc[content.phase]) {
+        acc[content.phase] = [];
       }
-      acc[content.status].push(content);
+      acc[content.phase].push(content);
       return acc;
     },
     {} as Record<string, typeof contents>,
   );
 
-  const statusConfig = [
+  const phaseConfig = [
     {
-      key: "draft",
-      title: "To-do",
+      key: "plan",
+      title: "Plan",
       color: "bg-gray-200",
-      count: contentsByStatus.draft?.length || 0,
+      count: contentsByPhase.plan?.length || 0,
     },
     {
-      key: "in_progress",
-      title: "On Progress",
+      key: "production",
+      title: "Production",
       color: "bg-blue-200",
-      count: contentsByStatus.in_progress?.length || 0,
+      count: contentsByPhase.production?.length || 0,
     },
     {
-      key: "scheduled",
-      title: "In Review",
-      color: "bg-orange-200",
-      count: contentsByStatus.scheduled?.length || 0,
+      key: "review",
+      title: "Review",
+      color: "bg-yellow-200",
+      count: contentsByPhase.review?.length || 0,
     },
     {
       key: "published",
       title: "Published",
       color: "bg-green-200",
-      count: contentsByStatus.published?.length || 0,
+      count: contentsByPhase.published?.length || 0,
+    },
+    {
+      key: "done",
+      title: "Done",
+      color: "bg-purple-200",
+      count: contentsByPhase.done?.length || 0,
     },
   ];
 
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        {statusConfig.map((status) => (
+        {phaseConfig.map((phase) => (
           <StatusSection
-            key={status.key}
-            title={status.title}
-            color={status.color}
-            count={status.count}
-            contents={contentsByStatus[status.key] || []}
+            key={phase.key}
+            title={phase.title}
+            color={phase.color}
+            count={phase.count}
+            contents={contentsByPhase[phase.key] || []}
             projectId={projectId}
             userId={userId}
           />

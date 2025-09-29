@@ -23,7 +23,25 @@ interface Content {
     | "facebook"
     | "threads"
     | "other";
-  status: "draft" | "in_progress" | "scheduled" | "published";
+  status:
+    | "confirmed"
+    | "shipped"
+    | "received"
+    | "shooting"
+    | "drafting"
+    | "editing"
+    | "done"
+    | "pending_payment"
+    | "paid"
+    | "canceled"
+    | "ideation"
+    | "scripting"
+    | "scheduled"
+    | "published"
+    | "archived"
+    | "planned"
+    | "skipped";
+  phase: "plan" | "production" | "review" | "published" | "done";
   type: "campaign" | "series" | "routine";
   dueDate?: string;
   scheduledAt?: string;
