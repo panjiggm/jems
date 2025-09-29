@@ -66,7 +66,7 @@ export default defineSchema({
       v.literal("drafting"),
       v.literal("editing"),
       v.literal("done"),
-      v.literal("pending payment"),
+      v.literal("pending_payment"),
       v.literal("paid"),
       v.literal("canceled"),
       v.literal("ideation"),
@@ -97,7 +97,8 @@ export default defineSchema({
     .index("by_user_project", ["userId", "projectId"])
     .index("by_user_status", ["userId", "status"])
     .index("by_user_platform", ["userId", "platform"])
-    .index("by_user_dueDate", ["userId", "dueDate"]),
+    .index("by_user_dueDate", ["userId", "dueDate"])
+    .index("by_user_scheduledAt", ["userId", "scheduledAt"]),
 
   tasks: defineTable({
     userId: v.string(),

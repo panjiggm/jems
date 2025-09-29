@@ -18,48 +18,87 @@ export const list = query({
     const userId = await getUserId(ctx);
     const pageSize = Math.min(args.pageSize ?? 20, 100);
 
-    let q = ctx.db
-      .query("contents")
-      .filter((q) => q.eq(q.field("userId"), userId))
-      .order("desc");
-
+    // Start with base query - use appropriate index based on filters
+    let q;
     if (args.projectId) {
       q = ctx.db
         .query("contents")
         .withIndex("by_user_project", (q) =>
           q.eq("userId", userId!).eq("projectId", args.projectId!),
         );
+    } else if (args.status?.length === 1) {
+      q = ctx.db
+        .query("contents")
+        .withIndex("by_user_status", (q) =>
+          q.eq("userId", userId!).eq("status", args.status![0] as any),
+        );
+    } else if (args.platform?.length === 1) {
+      q = ctx.db
+        .query("contents")
+        .withIndex("by_user_platform", (q) =>
+          q.eq("userId", userId!).eq("platform", args.platform![0] as any),
+        );
+    } else {
+      q = ctx.db
+        .query("contents")
+        .withIndex("by_user", (q) => q.eq("userId", userId!));
     }
 
-    const { page, isDone, continueCursor } = await q.paginate({
+    // Apply additional filters at database level where possible
+    if (args.status?.length) {
+      q = q.filter((q) =>
+        q.or(...args.status!.map((status) => q.eq(q.field("status"), status))),
+      );
+    }
+
+    if (args.platform?.length) {
+      q = q.filter((q) =>
+        q.or(
+          ...args.platform!.map((platform) =>
+            q.eq(q.field("platform"), platform),
+          ),
+        ),
+      );
+    }
+
+    if (args.priority?.length) {
+      q = q.filter((q) =>
+        q.or(...args.priority!.map((type) => q.eq(q.field("type"), type))),
+      );
+    }
+
+    if (args.dateFrom) {
+      q = q.filter((q) =>
+        q.or(
+          q.eq(q.field("dueDate"), undefined),
+          q.gte(q.field("dueDate"), args.dateFrom!),
+        ),
+      );
+    }
+
+    if (args.dateTo) {
+      q = q.filter((q) =>
+        q.or(
+          q.eq(q.field("dueDate"), undefined),
+          q.lte(q.field("dueDate"), args.dateTo!),
+        ),
+      );
+    }
+
+    if (args.search) {
+      q = q.filter(
+        (q) =>
+          q.gte(q.field("title"), args.search!.toLowerCase()) &&
+          q.lt(q.field("title"), args.search!.toLowerCase() + "\uffff"),
+      );
+    }
+
+    const { page, isDone, continueCursor } = await q.order("desc").paginate({
       cursor: args.cursor ?? null,
       numItems: pageSize,
     });
 
-    let items = page;
-
-    if (args.status?.length)
-      items = items.filter((c) => (args.status as string[]).includes(c.status));
-    if (args.platform?.length)
-      items = items.filter((c) =>
-        (args.platform as string[]).includes(c.platform),
-      );
-    if (args.priority?.length)
-      items = items.filter((c) => (args.priority as string[]).includes(c.type));
-    if (args.dateFrom)
-      items = items.filter(
-        (c) => !c.dueDate || c.dueDate >= (args.dateFrom as string),
-      );
-    if (args.dateTo)
-      items = items.filter(
-        (c) => !c.dueDate || c.dueDate <= (args.dateTo as string),
-      );
-    if (args.search)
-      items = items.filter((c) =>
-        c.title.toLowerCase().includes((args.search as string).toLowerCase()),
-      );
-
-    return { items, cursor: continueCursor, isDone };
+    return { items: page, cursor: continueCursor, isDone };
   },
 });
 
@@ -127,10 +166,7 @@ export const getStats = query({
 
     contents.forEach((content) => {
       // Count by status
-      const statusKey =
-        content.status === "pending payment"
-          ? "pending_payment"
-          : content.status;
+      const statusKey = content.status;
       stats.byStatus[statusKey as keyof typeof stats.byStatus]++;
 
       // Count by platform
@@ -303,10 +339,7 @@ export const getByProjectWithStats = query({
     };
 
     contents.forEach((content) => {
-      const statusKey =
-        content.status === "pending payment"
-          ? "pending_payment"
-          : content.status;
+      const statusKey = content.status;
       stats.byStatus[statusKey as keyof typeof stats.byStatus]++;
       stats.byPlatform[content.platform] =
         (stats.byPlatform[content.platform] || 0) + 1;

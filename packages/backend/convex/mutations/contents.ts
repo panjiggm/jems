@@ -29,7 +29,7 @@ export const create = mutation({
       v.literal("drafting"),
       v.literal("editing"),
       v.literal("done"),
-      v.literal("pending payment"),
+      v.literal("pending_payment"),
       v.literal("paid"),
       v.literal("canceled"),
       v.literal("ideation"),
@@ -54,6 +54,14 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const userId = await currentUserId(ctx);
     const now = Date.now();
+
+    // Validate dates
+    if (args.dueDate && new Date(args.dueDate) < new Date()) {
+      throw new Error("Due date cannot be in the past");
+    }
+    if (args.publishedAt && new Date(args.publishedAt) > new Date()) {
+      throw new Error("Published date cannot be in the future");
+    }
 
     const contentId = await ctx.db.insert("contents", {
       ...args,
@@ -121,6 +129,14 @@ export const update = mutation({
     const doc = await ctx.db.get(id);
     if (!doc || doc.userId !== userId) throw new Error("NOT_FOUND");
 
+    // Validate dates
+    if (patch.dueDate && new Date(patch.dueDate) < new Date()) {
+      throw new Error("Due date cannot be in the past");
+    }
+    if (patch.publishedAt && new Date(patch.publishedAt) > new Date()) {
+      throw new Error("Published date cannot be in the future");
+    }
+
     // Store old values for logging
     const oldValues = {
       title: doc.title,
@@ -176,7 +192,7 @@ export const setStatus = mutation({
       v.literal("drafting"),
       v.literal("editing"),
       v.literal("done"),
-      v.literal("pending payment"),
+      v.literal("pending_payment"),
       v.literal("paid"),
       v.literal("canceled"),
       v.literal("ideation"),
@@ -193,6 +209,11 @@ export const setStatus = mutation({
     const userId = await currentUserId(ctx);
     const doc = await ctx.db.get(id);
     if (!doc || doc.userId !== userId) throw new Error("NOT_FOUND");
+
+    // Validate scheduledAt if provided
+    if (scheduledAt && new Date(scheduledAt) < new Date()) {
+      throw new Error("Scheduled date cannot be in the past");
+    }
 
     const oldStatus = doc.status;
     const oldPhase = doc.phase;
