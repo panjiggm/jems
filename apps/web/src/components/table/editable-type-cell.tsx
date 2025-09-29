@@ -16,38 +16,38 @@ import { useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { cn } from "@/lib/utils";
 
-interface EditablePriorityCellProps {
-  value: "low" | "medium" | "high";
+interface EditableTypeCellProps {
+  value: "campaign" | "series" | "routine";
   contentId: Id<"contents">;
-  onUpdate?: (newPriority: "low" | "medium" | "high") => void;
+  onUpdate?: (newType: "campaign" | "series" | "routine") => void;
 }
 
-const priorityOptions = [
+const typeOptions = [
   {
-    value: "low",
-    label: "Low",
+    value: "campaign",
+    label: "Campaign",
+    color: "bg-purple-100 text-purple-800 border-purple-200",
+    dotColor: "bg-purple-500",
+  },
+  {
+    value: "series",
+    label: "Series",
+    color: "bg-green-100 text-green-800 border-green-200",
+    dotColor: "bg-green-500",
+  },
+  {
+    value: "routine",
+    label: "Routine",
     color: "bg-blue-100 text-blue-800 border-blue-200",
     dotColor: "bg-blue-500",
   },
-  {
-    value: "medium",
-    label: "Medium",
-    color: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    dotColor: "bg-yellow-500",
-  },
-  {
-    value: "high",
-    label: "High",
-    color: "bg-red-100 text-red-800 border-red-200",
-    dotColor: "bg-red-500",
-  },
 ];
 
-export function EditablePriorityCell({
+export function EditableTypeCell({
   value,
   contentId,
   onUpdate,
-}: EditablePriorityCellProps) {
+}: EditableTypeCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,12 +64,12 @@ export function EditablePriorityCell({
       setIsLoading(true);
       await updateContent({
         id: contentId,
-        patch: { priority: editValue },
+        patch: { type: editValue },
       });
       onUpdate?.(editValue);
       setIsEditing(false);
     } catch (error) {
-      console.error("Failed to update priority:", error);
+      console.error("Failed to update type:", error);
       setEditValue(value); // Reset on error
     } finally {
       setIsLoading(false);
@@ -101,7 +101,7 @@ export function EditablePriorityCell({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {priorityOptions.map((option) => (
+            {typeOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${option.dotColor}`} />
@@ -133,9 +133,7 @@ export function EditablePriorityCell({
     );
   }
 
-  const currentConfig = priorityOptions.find(
-    (option) => option.value === value,
-  );
+  const currentConfig = typeOptions.find((option) => option.value === value);
 
   return (
     <div

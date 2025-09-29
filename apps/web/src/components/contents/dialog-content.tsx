@@ -36,6 +36,7 @@ import {
 
 import { useContentDialogStore } from "@/store/use-dialog-content-store";
 import { useTranslations } from "@/hooks/use-translations";
+import { ContentType } from "@/types/status";
 
 export function ContentDialog() {
   const { t } = useTranslations();
@@ -74,6 +75,16 @@ export function ContentDialog() {
       hasErrors = true;
     }
 
+    if (!formData.platform) {
+      setError("platform", t("contents.dialog.form.platformRequired"));
+      hasErrors = true;
+    }
+
+    if (!formData.type) {
+      setError("type", t("contents.dialog.form.typeRequired"));
+      hasErrors = true;
+    }
+
     if (!projectId) {
       setError("projectId", t("contents.dialog.form.projectRequired"));
       hasErrors = true;
@@ -90,7 +101,9 @@ export function ContentDialog() {
         projectId: projectId as any,
         title: formData.title.trim(),
         platform: formData.platform,
-        priority: formData.priority,
+        type: formData.type,
+        status: getDefaultStatus(formData.type),
+        phase: "plan",
         dueDate: formData.dueDate || undefined,
         publishedAt: formData.publishedAt || undefined,
         notes: formData.notes.trim() || undefined,
@@ -129,26 +142,42 @@ export function ContentDialog() {
     { value: "other", label: "Other", icon: null },
   ];
 
-  const priorityOptions = [
+  const typeOptions = [
     {
-      value: "low",
-      label: "Low",
+      value: "campaign",
+      label: "Campaign",
+      color: "bg-purple-100 text-purple-800 border-purple-200",
+      dotColor: "bg-purple-500",
+    },
+    {
+      value: "series",
+      label: "Series",
+      color: "bg-green-100 text-green-800 border-green-200",
+      dotColor: "bg-green-500",
+    },
+    {
+      value: "routine",
+      label: "Routine",
       color: "bg-blue-100 text-blue-800 border-blue-200",
       dotColor: "bg-blue-500",
     },
-    {
-      value: "medium",
-      label: "Medium",
-      color: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      dotColor: "bg-yellow-500",
-    },
-    {
-      value: "high",
-      label: "High",
-      color: "bg-red-100 text-red-800 border-red-200",
-      dotColor: "bg-red-500",
-    },
   ];
+
+  // Get default status based on content type
+  const getDefaultStatus = (
+    type: ContentType,
+  ): "confirmed" | "ideation" | "planned" => {
+    switch (type) {
+      case "campaign":
+        return "confirmed";
+      case "series":
+        return "ideation";
+      case "routine":
+        return "planned";
+      default:
+        return "confirmed";
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -218,7 +247,7 @@ export function ContentDialog() {
               )}
             </div>
 
-            {/* Platform and Priority Selection - Side by Side */}
+            {/* Platform and Type Selection - Side by Side */}
             <div className="grid grid-cols-2 gap-4">
               {/* Platform Selection */}
               <div className="grid gap-2">
@@ -262,26 +291,26 @@ export function ContentDialog() {
                 )}
               </div>
 
-              {/* Priority Selection */}
+              {/* Type Selection */}
               <div className="grid gap-2">
-                <Label htmlFor="priority">
-                  {t("contents.dialog.form.priority")}{" "}
+                <Label htmlFor="type">
+                  {t("contents.dialog.form.type")}{" "}
                   <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  value={formData.priority}
+                  value={formData.type}
                   onValueChange={(value: any) =>
-                    updateFormData({ priority: value })
+                    updateFormData({ type: value })
                   }
                   disabled={isLoading}
                 >
                   <SelectTrigger
-                    className={errors.priority ? "border-red-500" : ""}
+                    className={errors.type ? "border-red-500" : ""}
                   >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {priorityOptions.map((option) => (
+                    {typeOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         <div className="flex items-center gap-2">
                           <div
@@ -293,8 +322,8 @@ export function ContentDialog() {
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.priority && (
-                  <p className="text-sm text-red-500">{errors.priority}</p>
+                {errors.type && (
+                  <p className="text-sm text-red-500">{errors.type}</p>
                 )}
               </div>
             </div>
