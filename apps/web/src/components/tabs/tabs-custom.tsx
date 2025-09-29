@@ -197,30 +197,37 @@ const TabsCustom = ({
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <TabsList className={getTabsListClass()}>
-          {tabs.map((tab) => {
-            const IconComponent =
-              tab.icon ||
-              (autoAssignIcons ? getDefaultIcon(tab.id) : undefined);
-            return (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className={getTabsTriggerClass()}
-              >
-                <div className="flex items-center gap-2">
-                  {IconComponent && <IconComponent className="h-4 w-4" />}
-                  {tab.label}
-                  {tab.badge && (
-                    <Badge variant="secondary" className="ml-2 h-5 text-xs">
-                      {tab.badge}
-                    </Badge>
-                  )}
-                </div>
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList
+            className={cn(
+              getTabsListClass(),
+              "flex-nowrap gap-1 overflow-x-auto",
+            )}
+          >
+            {tabs.map((tab) => {
+              const IconComponent =
+                tab.icon ||
+                (autoAssignIcons ? getDefaultIcon(tab.id) : undefined);
+              return (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className={getTabsTriggerClass()}
+                >
+                  <div className="flex items-center gap-2">
+                    {IconComponent && <IconComponent className="h-4 w-4" />}
+                    {tab.label}
+                    {tab.badge && (
+                      <Badge variant="secondary" className="ml-2 h-5 text-xs">
+                        {tab.badge}
+                      </Badge>
+                    )}
+                  </div>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </div>
 
         {tabs.some((tab) => tab.content) && (
           <>

@@ -132,27 +132,34 @@ const TabsYear = ({
         onValueChange={handleYearChange}
         className="w-full"
       >
-        <TabsList className={getTabsListClass()}>
-          {yearTabs.map(({ year, label, projectCount }, index) => (
-            <TabsTrigger
-              key={year}
-              value={year}
-              className={getTabsTriggerClass()}
-            >
-              <div className="flex items-center gap-2">
-                {index === 0 ? (
-                  <FolderOpen className="h-4 w-4" />
-                ) : (
-                  <Calendar className="h-4 w-4" />
-                )}
-                <span>{label}</span>
-                <span className="ml-1 px-1.5 py-0.5 text-xs bg-muted text-muted-foreground rounded-full">
-                  {projectCount}
-                </span>
-              </div>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList
+            className={cn(
+              getTabsListClass(),
+              "flex-nowrap gap-1 overflow-x-auto scrollbar-thin",
+            )}
+          >
+            {yearTabs.map(({ year, label, projectCount }, index) => (
+              <TabsTrigger
+                key={year}
+                value={year}
+                className={getTabsTriggerClass()}
+              >
+                <div className="flex items-center gap-2">
+                  {index === 0 ? (
+                    <FolderOpen className="h-4 w-4" />
+                  ) : (
+                    <Calendar className="h-4 w-4" />
+                  )}
+                  <span>{label}</span>
+                  <span className="ml-1 px-1.5 py-0.5 text-xs bg-muted text-muted-foreground rounded-full">
+                    {projectCount}
+                  </span>
+                </div>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
       </Tabs>
     </div>
   );
