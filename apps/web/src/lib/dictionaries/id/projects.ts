@@ -61,6 +61,8 @@ export const projects = {
   stats: {
     dashboardOverview: "Ringkasan Dashboard",
     dashboardSubtitle: "Semua project, konten, dan tugas Kamu",
+    yearOverview: "Ringkasan Tahun",
+    projectsInYear: "Project di tahun",
     contentCreator: "Content Creator",
     created: "Dibuat",
     platform: "Platform",
@@ -68,6 +70,11 @@ export const projects = {
     due: "Jatuh Tempo",
     overdue: "Terlambat",
     upcoming: "Mendatang",
+    summary: {
+      totalItems: "Total item",
+      completionRate: "Tingkat penyelesaian",
+      productivity: "Produktivitas",
+    },
     labels: {
       projects: "Project",
       contents: "Konten",

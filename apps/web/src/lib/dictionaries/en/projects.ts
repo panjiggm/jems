@@ -61,6 +61,8 @@ export const projects = {
   stats: {
     dashboardOverview: "Dashboard Overview",
     dashboardSubtitle: "All your projects, contents, and tasks",
+    yearOverview: "Year Overview",
+    projectsInYear: "Projects in",
     contentCreator: "Content Creator",
     created: "Created",
     platform: "Platform",
@@ -68,6 +70,11 @@ export const projects = {
     due: "Due",
     overdue: "Overdue",
     upcoming: "Upcoming",
+    summary: {
+      totalItems: "Total items",
+      completionRate: "Completion rate",
+      productivity: "Productivity",
+    },
     labels: {
       projects: "Projects",
       contents: "Contents",

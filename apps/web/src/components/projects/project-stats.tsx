@@ -23,12 +23,14 @@ interface ProjectStatsProps {
   projectId?: string;
   contentId?: string;
   taskId?: string;
+  year?: string;
 }
 
 const ProjectStats: React.FC<ProjectStatsProps> = ({
   projectId: propProjectId,
   contentId: propContentId,
   taskId: propTaskId,
+  year: propYear,
 }) => {
   const { t } = useTranslations();
   const pathname = usePathname();
@@ -38,20 +40,26 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   const projectId = propProjectId || (params.projectId as string);
   const contentId = propContentId || (params.contentId as string);
   const taskId = propTaskId || (params.taskId as string);
+  const year = propYear || (params.year as string);
 
   // Fetch user profile
   const profile = useQuery(api.queries.profile.getProfile);
 
   // Determine which stats to fetch based on URL pattern
-  const isProjectsList = pathname.includes("/projects") && !projectId;
+  const isProjectsList = pathname.includes("/projects") && !projectId && !year;
+  const isYearList = pathname.includes("/projects") && year && !projectId;
   const isProjectDetail = projectId && !contentId;
-  const isContentDetail = projectId && contentId && !taskId;
-  // const isTaskDetail = projectId && contentId && taskId;
 
   // Fetch dashboard stats (all projects, contents, tasks)
   const dashboardStats = useQuery(
     api.queries.stats.getDashboardStats,
     isProjectsList ? {} : "skip",
+  );
+
+  // Fetch year-specific stats
+  const yearStats = useQuery(
+    api.queries.stats.getYearStats,
+    isYearList && year ? { year: parseInt(year) } : "skip",
   );
 
   // Fetch project-specific stats
@@ -60,10 +68,15 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
     isProjectDetail && projectId ? { projectId: projectId as any } : "skip",
   );
 
-  // Fetch content-specific stats
-  const contentStats = useQuery(
-    api.queries.stats.getContentStats,
-    isContentDetail && contentId ? { contentId: contentId as any } : "skip",
+  // Fetch project-year-specific stats
+  const projectYearStats = useQuery(
+    api.queries.stats.getProjectYearStats,
+    isProjectDetail && projectId && year
+      ? {
+          projectId: projectId as any,
+          year: parseInt(year),
+        }
+      : "skip",
   );
 
   // Fetch individual stats for specific entities
@@ -85,8 +98,10 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   // Loading state
   if (
     (isProjectsList && dashboardStats === undefined) ||
-    (isProjectDetail && projectStats === undefined) ||
-    (isContentDetail && contentStats === undefined)
+    (isYearList && yearStats === undefined) ||
+    (isProjectDetail &&
+      projectStats === undefined &&
+      projectYearStats === undefined)
   ) {
     return (
       <div className="p-6 border-b">
@@ -148,53 +163,56 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
           icon: AlertTriangle,
         },
       ];
-    } else if (isProjectDetail && projectStats) {
+    } else if (isYearList && yearStats) {
       items = [
         {
+          label: t("projects.stats.labels.projects"),
+          value: yearStats.summary.totalProjects,
+          icon: FolderOpen,
+        },
+        {
           label: t("projects.stats.labels.contents"),
-          value: projectStats.summary.totalContents,
+          value: yearStats.summary.totalContents,
           icon: FileText,
         },
         {
           label: t("projects.stats.labels.tasks"),
-          value: projectStats.summary.totalTasks,
+          value: yearStats.summary.totalTasks,
           icon: CheckSquare,
-        },
-        {
-          label: t("projects.stats.labels.published"),
-          value: projectStats.contents.byStatus.published,
-          icon: Rocket,
-        },
-        {
-          label: t("projects.stats.labels.completion"),
-          value: `${projectStats.health.taskCompletionRate}%`,
-          icon: BarChart3,
-        },
-      ];
-    } else if (isContentDetail && contentStats) {
-      items = [
-        {
-          label: t("projects.stats.labels.tasks"),
-          value: contentStats.summary.totalTasks,
-          icon: CheckSquare,
-        },
-        {
-          label: t("projects.stats.labels.completed"),
-          value: contentStats.summary.completedTasks,
-          icon: CheckCircle2,
         },
         {
           label: t("projects.stats.labels.overdue"),
-          value: contentStats.summary.overdueTasks,
+          value: yearStats.summary.totalOverdue,
           tone: "critical",
           icon: AlertTriangle,
         },
-        {
-          label: t("projects.stats.labels.progress"),
-          value: `${contentStats.summary.completionRate}%`,
-          icon: BarChart3,
-        },
       ];
+    } else if (isProjectDetail && (projectStats || projectYearStats)) {
+      const stats = projectYearStats || projectStats;
+      if (stats) {
+        items = [
+          {
+            label: t("projects.stats.labels.contents"),
+            value: stats.summary.totalContents,
+            icon: FileText,
+          },
+          {
+            label: t("projects.stats.labels.tasks"),
+            value: stats.summary.totalTasks,
+            icon: CheckSquare,
+          },
+          {
+            label: t("projects.stats.labels.published"),
+            value: stats.contents.byStatus.published,
+            icon: Rocket,
+          },
+          {
+            label: t("projects.stats.labels.completion"),
+            value: `${stats.health.taskCompletionRate}%`,
+            icon: BarChart3,
+          },
+        ];
+      }
     }
 
     if (!items.length) {
@@ -230,22 +248,37 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   // Get title and subtitle based on current route
   const getTitleInfo = () => {
     if (isProjectsList) {
+      const projectCount = dashboardStats?.summary.totalProjects || 0;
+      const contentCount = dashboardStats?.summary.totalContents || 0;
+      const taskCount = dashboardStats?.summary.totalTasks || 0;
+
       return {
         title: t("projects.stats.dashboardOverview"),
-        subtitle: t("projects.stats.dashboardSubtitle"),
+        subtitle: `${projectCount} ${t("projects.stats.labels.projects").toLowerCase()}, ${contentCount} ${t("projects.stats.labels.contents").toLowerCase()}, ${taskCount} ${t("projects.stats.labels.tasks").toLowerCase()}`,
       };
     }
-    if (isProjectDetail && projectStats) {
+    if (isYearList && yearStats) {
+      const projectCount = yearStats.summary.totalProjects;
+      const contentCount = yearStats.summary.totalContents;
+      const taskCount = yearStats.summary.totalTasks;
+
       return {
-        title: projectStats.project.title,
-        subtitle: `${t("projects.stats.created")} ${format(new Date(projectStats.project.createdAt), "MMM dd, yyyy")}`,
+        title: `${t("projects.stats.yearOverview")} ${year}`,
+        subtitle: `${projectCount} ${t("projects.stats.labels.projects").toLowerCase()}, ${contentCount} ${t("projects.stats.labels.contents").toLowerCase()}, ${taskCount} ${t("projects.stats.labels.tasks").toLowerCase()}`,
       };
     }
-    if (isContentDetail && contentStats) {
-      return {
-        title: contentStats.content.title,
-        subtitle: `${t("projects.stats.platform")}: ${contentStats.content.platform} • ${t("projects.stats.status")}: ${contentStats.content.status}`,
-      };
+    if (isProjectDetail && (projectStats || projectYearStats)) {
+      const stats = projectYearStats || projectStats;
+      if (stats) {
+        const contentCount = stats.summary.totalContents;
+        const taskCount = stats.summary.totalTasks;
+        const completionRate = stats.health.taskCompletionRate;
+
+        return {
+          title: stats.project.title,
+          subtitle: `${contentCount} ${t("projects.stats.labels.contents").toLowerCase()}, ${taskCount} ${t("projects.stats.labels.tasks").toLowerCase()} • ${completionRate}% ${t("projects.stats.labels.completion").toLowerCase()}`,
+        };
+      }
     }
     return {
       title: userName,
@@ -261,10 +294,10 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
         <div className="relative bg-orange-50 rounded-lg p-4 text-orange-400">
           {isProjectsList ? (
             <FolderOpen className="h-7 w-7" />
-          ) : isProjectDetail && projectStats ? (
+          ) : isYearList ? (
+            <Calendar className="h-7 w-7" />
+          ) : isProjectDetail && (projectStats || projectYearStats) ? (
             <FolderOpen className="h-7 w-7" />
-          ) : isContentDetail && contentStats ? (
-            <FileText className="h-7 w-7" />
           ) : (
             <User className="h-7 w-7" />
           )}
@@ -279,40 +312,29 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
       {renderStats()}
 
       {/* Additional Info for specific routes */}
-      {isProjectDetail && projectStats && (
+      {isProjectDetail && (projectStats || projectYearStats) && (
         <div className="mt-4 flex flex-wrap gap-2">
-          {projectStats.health.overdueItems > 0 && (
-            <Badge variant="destructive">
-              {projectStats.health.overdueItems} {t("projects.stats.overdue")}
-            </Badge>
-          )}
-          {projectStats.health.upcomingItems > 0 && (
-            <Badge variant="secondary">
-              {projectStats.health.upcomingItems} {t("projects.stats.upcoming")}
-            </Badge>
-          )}
-        </div>
-      )}
-
-      {isContentDetail && contentStats && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Badge variant="outline">{contentStats.content.platform}</Badge>
-          <Badge
-            variant={
-              contentStats.content.status === "published"
-                ? "default"
-                : "secondary"
+          {(() => {
+            const stats = projectYearStats || projectStats;
+            if (stats) {
+              return (
+                <>
+                  {stats.health.overdueItems > 0 && (
+                    <Badge variant="destructive">
+                      {stats.health.overdueItems} {t("projects.stats.overdue")}
+                    </Badge>
+                  )}
+                  {stats.health.upcomingItems > 0 && (
+                    <Badge variant="secondary">
+                      {stats.health.upcomingItems}{" "}
+                      {t("projects.stats.upcoming")}
+                    </Badge>
+                  )}
+                </>
+              );
             }
-          >
-            {contentStats.content.status}
-          </Badge>
-          {contentStats.content.dueDate && (
-            <Badge variant="outline">
-              <Calendar className="h-3 w-3 mr-1" />
-              {t("projects.stats.due")}{" "}
-              {format(new Date(contentStats.content.dueDate), "MMM dd")}
-            </Badge>
-          )}
+            return null;
+          })()}
         </div>
       )}
     </div>
