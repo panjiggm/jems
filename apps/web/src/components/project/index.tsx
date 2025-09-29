@@ -70,7 +70,7 @@ export default function ProjectComponent({
         );
       default:
         return (
-          <KanbanView projectId={projectId} userId={userId} filters={filters} />
+          <TableView projectId={projectId} userId={userId} filters={filters} />
         );
     }
   };
@@ -79,6 +79,11 @@ export default function ProjectComponent({
     <div className="w-full space-y-4">
       {/* Header with Create Content Button and Search/Filter */}
       <div className="flex items-center justify-between">
+        <SearchFilterContent
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+        />
+
         <ButtonPrimary
           size="sm"
           onClick={handleCreateContent}
@@ -87,11 +92,6 @@ export default function ProjectComponent({
           <Plus className="h-4 w-4 mr-2" />
           {t("projects.createContent")}
         </ButtonPrimary>
-
-        <SearchFilterContent
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-        />
       </div>
 
       {/* View Content */}
