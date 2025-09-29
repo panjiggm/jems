@@ -76,6 +76,9 @@ const phaseColumns = [
 export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [contents, setContents] = useState<Content[]>([]);
+  const [activeContentOriginalPhase, setActiveContentOriginalPhase] = useState<
+    Content["phase"] | null
+  >(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -104,61 +107,100 @@ export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+    const draggedContent = contents.find(
+      (content) => content._id === (event.active.id as string),
+    );
+    setActiveContentOriginalPhase(draggedContent?.phase ?? null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    const activeContentId = active.id as string;
     setActiveId(null);
 
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    // Find the content being dragged
-    const activeContent = contents.find((content) => content._id === activeId);
-    if (!activeContent) return;
-
-    // Check if dropped on a column
-    const overColumn = phaseColumns.find((col) => col.id === overId);
-    if (overColumn) {
-      const newPhase = overColumn.id as Content["phase"];
-      if (activeContent.phase !== newPhase) {
-        // Update local state immediately for better UX
+    if (!over) {
+      if (activeContentOriginalPhase) {
         setContents((prev) =>
           prev.map((content) =>
-            content._id === activeId
-              ? { ...content, phase: newPhase }
+            content._id === activeContentId
+              ? { ...content, phase: activeContentOriginalPhase }
               : content,
           ),
         );
-
-        // Update in database
-        updateContentPhase({
-          id: activeId as any,
-          phase: newPhase,
-        }).catch((error) => {
-          console.error("Failed to update content phase:", error);
-          // Revert local state on error
-          setContents((prev) =>
-            prev.map((content) =>
-              content._id === activeId
-                ? { ...content, phase: activeContent.phase }
-                : content,
-            ),
-          );
-        });
       }
+      setActiveContentOriginalPhase(null);
       return;
     }
 
-    // Check if dropped on another content (reordering within same column)
-    const overContent = contents.find((content) => content._id === overId);
-    if (overContent && activeContent.phase === overContent.phase) {
-      // For now, we'll just update the phase if it's different
-      // In a full implementation, you might want to handle reordering
+    const overId = over.id as string;
+
+    const activeContent = contents.find(
+      (content) => content._id === activeContentId,
+    );
+    if (!activeContent) {
+      setActiveContentOriginalPhase(null);
       return;
     }
+
+    const originalPhase = activeContentOriginalPhase ?? activeContent.phase;
+
+    let targetPhase: Content["phase"] | null = null;
+
+    const overColumn = phaseColumns.find((col) => col.id === overId);
+    if (overColumn) {
+      targetPhase = overColumn.id as Content["phase"];
+    } else {
+      const overContent = contents.find((content) => content._id === overId);
+      if (overContent) {
+        targetPhase = overContent.phase;
+      }
+    }
+
+    if (!targetPhase) {
+      setContents((prev) =>
+        prev.map((content) =>
+          content._id === activeContentId
+            ? { ...content, phase: originalPhase }
+            : content,
+        ),
+      );
+      setActiveContentOriginalPhase(null);
+      return;
+    }
+
+    if (targetPhase !== originalPhase) {
+      setContents((prev) =>
+        prev.map((content) =>
+          content._id === activeContentId
+            ? { ...content, phase: targetPhase as Content["phase"] }
+            : content,
+        ),
+      );
+
+      updateContentPhase({
+        id: activeContentId as any,
+        phase: targetPhase,
+      }).catch((error) => {
+        console.error("Failed to update content phase:", error);
+        setContents((prev) =>
+          prev.map((content) =>
+            content._id === activeContentId
+              ? { ...content, phase: originalPhase }
+              : content,
+          ),
+        );
+      });
+    } else if (activeContent.phase !== originalPhase) {
+      setContents((prev) =>
+        prev.map((content) =>
+          content._id === activeContentId
+            ? { ...content, phase: originalPhase }
+            : content,
+        ),
+      );
+    }
+
+    setActiveContentOriginalPhase(null);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
