@@ -28,7 +28,7 @@ export default function ProjectComponent({
     search: "",
     status: [],
     phase: [],
-    priority: [],
+    types: [],
     platform: [],
   });
 

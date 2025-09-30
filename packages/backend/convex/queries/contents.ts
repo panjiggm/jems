@@ -7,7 +7,7 @@ export const list = query({
     projectId: v.optional(v.id("projects")),
     status: v.optional(v.array(v.string())),
     platform: v.optional(v.array(v.string())),
-    priority: v.optional(v.array(v.string())),
+    types: v.optional(v.array(v.string())),
     dateFrom: v.optional(v.string()),
     dateTo: v.optional(v.string()),
     search: v.optional(v.string()),
@@ -61,9 +61,9 @@ export const list = query({
       );
     }
 
-    if (args.priority?.length) {
+    if (args.types?.length) {
       q = q.filter((q) =>
-        q.or(...args.priority!.map((type) => q.eq(q.field("type"), type))),
+        q.or(...args.types!.map((type) => q.eq(q.field("type"), type))),
       );
     }
 
@@ -257,7 +257,7 @@ export const getByProject = query({
     search: v.optional(v.string()),
     status: v.optional(v.array(v.string())),
     phase: v.optional(v.array(v.string())),
-    priority: v.optional(v.array(v.string())),
+    types: v.optional(v.array(v.string())),
     platform: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
@@ -286,8 +286,8 @@ export const getByProject = query({
       contents = contents.filter((c) => args.phase!.includes(c.phase));
     }
 
-    if (args.priority?.length) {
-      contents = contents.filter((c) => args.priority!.includes(c.type));
+    if (args.types?.length) {
+      contents = contents.filter((c) => args.types!.includes(c.type));
     }
 
     if (args.platform?.length) {

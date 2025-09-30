@@ -93,7 +93,8 @@ export function KanbanBoard({ projectId, userId, filters }: KanbanBoardProps) {
     projectId,
     search: filters.search || undefined,
     status: filters.status.length > 0 ? filters.status : undefined,
-    priority: filters.priority.length > 0 ? filters.priority : undefined,
+    types: filters.types.length > 0 ? filters.types : undefined,
+    phase: filters.phase.length > 0 ? filters.phase : undefined,
     platform: filters.platform.length > 0 ? filters.platform : undefined,
   });
 

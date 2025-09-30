@@ -24,7 +24,8 @@ export default function ListView({
           projectId,
           search: filters.search || undefined,
           status: filters.status.length > 0 ? filters.status : undefined,
-          priority: filters.priority.length > 0 ? filters.priority : undefined,
+          phase: filters.phase.length > 0 ? filters.phase : undefined,
+          types: filters.types.length > 0 ? filters.types : undefined,
           platform: filters.platform.length > 0 ? filters.platform : undefined,
         }
       : "skip",
