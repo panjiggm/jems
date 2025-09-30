@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
 import { useTranslations } from "@/hooks/use-translations";
+import { ChevronRight } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -22,22 +23,18 @@ const ProjectBreadcrumb: React.FC<ProjectBreadcrumbProps> = ({ className }) => {
   const { t } = useTranslations();
   const pathname = usePathname();
 
-  // Extract segments from pathname
   const segments = pathname.split("/").filter(Boolean);
   const locale = segments[0];
   const isProjectsRoute = segments[1] === "projects";
 
-  // New URL structure: /projects/[year]/[projectId]
   const year = segments[2] && /^\d{4}$/.test(segments[2]) ? segments[2] : null;
   const projectId = year ? segments[3] : segments[2];
 
-  // Fetch project data if we have a projectId
   const project = useQuery(
     api.queries.projects.getByIdWithStats,
     projectId ? { projectId: projectId as any } : "skip",
   );
 
-  // Don't render breadcrumb if not on projects route
   if (!isProjectsRoute) {
     return null;
   }
@@ -49,7 +46,6 @@ const ProjectBreadcrumb: React.FC<ProjectBreadcrumbProps> = ({ className }) => {
     },
   ];
 
-  // Add year level if we have year
   if (year) {
     breadcrumbItems.push({
       label: year,
@@ -57,7 +53,6 @@ const ProjectBreadcrumb: React.FC<ProjectBreadcrumbProps> = ({ className }) => {
     });
   }
 
-  // Add project level if we have projectId
   if (projectId && project) {
     const projectHref = year
       ? `/${locale}/projects/${year}/${projectId}`
@@ -71,7 +66,7 @@ const ProjectBreadcrumb: React.FC<ProjectBreadcrumbProps> = ({ className }) => {
 
   return (
     <Breadcrumb className={className}>
-      <BreadcrumbList>
+      <BreadcrumbList className="flex items-center gap-1">
         {breadcrumbItems.map((item, index) => {
           const isLast = index === breadcrumbItems.length - 1;
 
@@ -79,19 +74,23 @@ const ProjectBreadcrumb: React.FC<ProjectBreadcrumbProps> = ({ className }) => {
             <React.Fragment key={item.href}>
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage className="flex items-center gap-1.5">
-                    {item.label}
+                  <BreadcrumbPage className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium bg-primary/5 text-primary">
+                    <span className="truncate max-w-[200px]">{item.label}</span>
                   </BreadcrumbPage>
                 ) : (
                   <Link
                     href={item.href}
-                    className="flex items-center gap-1.5 hover:text-foreground"
+                    className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
                   >
-                    {item.label}
+                    <span className="truncate max-w-[150px]">{item.label}</span>
                   </Link>
                 )}
               </BreadcrumbItem>
-              {!isLast && <BreadcrumbSeparator />}
+              {!isLast && (
+                <BreadcrumbSeparator>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+                </BreadcrumbSeparator>
+              )}
             </React.Fragment>
           );
         })}
