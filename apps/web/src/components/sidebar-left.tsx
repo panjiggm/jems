@@ -7,9 +7,6 @@ import {
   Home,
   Laptop2,
   MessageCircleQuestion,
-  Settings2,
-  Sparkles,
-  Trash2,
 } from "lucide-react";
 
 import { NavChats } from "@/components/nav-chats";
@@ -36,9 +33,9 @@ const getNavData = (locale: Locale) => ({
       icon: Home,
     },
     {
-      title: "Ask AI",
-      url: `/${locale}/ai`,
-      icon: Sparkles,
+      title: "Chat with AI",
+      url: `/${locale}/chats`,
+      icon: MessageCircleQuestion,
     },
     {
       title: "Projects",
