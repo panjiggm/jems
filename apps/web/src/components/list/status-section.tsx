@@ -67,7 +67,7 @@ export function StatusSection({
   projectId,
   userId,
 }: StatusSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(count > 0);
 
   return (
     <div className="bg-white rounded-lg border">
