@@ -227,13 +227,13 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
             className="flex flex-row justify-between items-center"
           >
             <div className="flex items-center gap-2">
-              <IconComponent className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium text-muted-foreground">
+              <IconComponent className="h-3.5 w-3.5 text-muted-foreground" />
+              <h4 className="text-xs font-medium text-muted-foreground">
                 {label}
               </h4>
             </div>
             <span
-              className={`font-medium leading-tight ${
+              className={`font-medium text-xs leading-tight ${
                 tone === "critical" ? "text-red-500" : "text-gray-600"
               }`}
             >
@@ -291,7 +291,7 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   return (
     <div className="p-6 border-b">
       <div className="flex items-center gap-3 mb-4">
-        <div className="relative bg-orange-50 rounded-lg p-4 text-orange-400">
+        <div className="bg-orange-50 rounded-lg p-4 text-orange-400">
           {isProjectsList ? (
             <FolderOpen className="h-7 w-7" />
           ) : isYearList ? (
@@ -303,7 +303,7 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
           )}
         </div>
         <div>
-          <h2 className="font-semibold text-md">{titleInfo.title}</h2>
+          <h2 className="font-semibold text-sm">{titleInfo.title}</h2>
           <p className="text-xs text-muted-foreground">{titleInfo.subtitle}</p>
         </div>
       </div>
