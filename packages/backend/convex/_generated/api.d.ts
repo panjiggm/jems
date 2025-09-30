@@ -20,6 +20,7 @@ import type * as mutations_profile from "../mutations/profile.js";
 import type * as mutations_projectActivities from "../mutations/projectActivities.js";
 import type * as mutations_projects from "../mutations/projects.js";
 import type * as mutations_tasks from "../mutations/tasks.js";
+import type * as mutations_templates from "../mutations/templates.js";
 import type * as openai from "../openai.js";
 import type * as queries_contents from "../queries/contents.js";
 import type * as queries_niches from "../queries/niches.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   "mutations/projectActivities": typeof mutations_projectActivities;
   "mutations/projects": typeof mutations_projects;
   "mutations/tasks": typeof mutations_tasks;
+  "mutations/templates": typeof mutations_templates;
   openai: typeof openai;
   "queries/contents": typeof queries_contents;
   "queries/niches": typeof queries_niches;
