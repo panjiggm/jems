@@ -655,7 +655,7 @@ function FilterSelect<T extends string>({
             </span>
           </div>
         </SelectTrigger>
-        <SelectContent className="shadow-none" align="start">
+        <SelectContent align="start">
           <div>
             {options.map((option) => (
               <SelectItem
