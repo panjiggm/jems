@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Check, X, Edit3 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface EditableTitleCellProps {
@@ -22,66 +20,62 @@ export function EditableTitleCell({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
 
-  const handleSave = () => {
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
+
+  const handleBlur = () => {
     const trimmedValue = editValue.trim();
     if (trimmedValue && trimmedValue !== value) {
       onUpdate(trimmedValue);
+    } else if (!trimmedValue) {
+      setEditValue(value);
     }
     setIsEditing(false);
   };
 
-  const handleCancel = () => {
-    setEditValue(value);
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleSave();
+      e.currentTarget.blur();
     } else if (e.key === "Escape") {
-      handleCancel();
+      setEditValue(value);
+      e.currentTarget.blur();
     }
+  };
+
+  const truncateText = (text: string) => {
+    if (!text) return "";
+
+    // Truncate by 20 characters
+    const truncated = text.slice(0, 20);
+
+    // Add ellipsis if text was truncated
+    return truncated.length < text.length ? truncated + "..." : truncated;
   };
 
   if (isEditing) {
     return (
-      <div className="flex items-center gap-2 w-full">
-        <Input
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="flex-1 h-8"
-          autoFocus
-        />
-        <div className="flex gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleSave}
-            className="h-6 w-6 p-0"
-          >
-            <Check className="h-3 w-3 text-green-600" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleCancel}
-            className="h-6 w-6 p-0"
-          >
-            <X className="h-3 w-3 text-red-600" />
-          </Button>
-        </div>
-      </div>
+      <Input
+        value={editValue}
+        onChange={(e) => setEditValue(e.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className="h-8 border-0 shadow-none focus-visible:ring-1 focus-visible:ring-ring"
+        autoFocus
+      />
     );
   }
 
   return (
     <div
-      className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1 rounded group"
+      className="h-8 px-3 py-2 cursor-pointer hover:bg-muted/50 rounded transition-colors flex items-center"
       onClick={() => setIsEditing(true)}
     >
-      <span className="font-medium text-sm flex-1 truncate">{value}</span>
-      <Edit3 className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+      <span
+        className={cn("text-sm font-bold", !value && "text-muted-foreground")}
+      >
+        {value ? truncateText(value) : "No title"}
+      </span>
     </div>
   );
 }

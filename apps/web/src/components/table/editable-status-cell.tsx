@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
-  Check,
-  ChevronDown,
   Wrench,
   Send,
   Package,
@@ -26,7 +24,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -104,17 +101,8 @@ export function EditableStatusCell({
   contentType,
   onUpdate,
 }: EditableStatusCellProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<Status>(value);
-
-  const handleSave = () => {
-    onUpdate(selectedStatus);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setSelectedStatus(value);
-    setIsEditing(false);
+  const handleChange = (newStatus: Status) => {
+    onUpdate(newStatus);
   };
 
   // Get available statuses for this content type
@@ -123,67 +111,47 @@ export function EditableStatusCell({
   const currentColor = statusColors[value];
   const currentLabel = STATUS_LABELS[value];
 
-  if (isEditing) {
-    return (
-      <div className="flex items-center gap-2">
-        <Select
-          value={selectedStatus}
-          onValueChange={(value: Status) => setSelectedStatus(value)}
-        >
-          <SelectTrigger className="w-32 h-8">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {availableStatuses.map((status) => {
-              const Icon = statusIcons[status];
-              const label = STATUS_LABELS[status];
-              return (
-                <SelectItem key={status} value={status}>
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" />
-                    {label}
-                  </div>
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
-        <div className="flex gap-1">
-          <button
-            onClick={handleSave}
-            className="p-1 hover:bg-green-100 rounded"
-            title="Save"
-          >
-            <Check className="h-3 w-3 text-green-600" />
-          </button>
-          <button
-            onClick={handleCancel}
-            className="p-1 hover:bg-red-100 rounded"
-            title="Cancel"
-          >
-            <ChevronDown className="h-3 w-3 text-red-600 rotate-45" />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div
-      className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors group"
-      onClick={() => setIsEditing(true)}
-    >
-      <Badge
-        variant="outline"
-        className={cn(
-          "flex items-center gap-1 px-2 py-1 text-xs font-medium transition-colors",
-          currentColor,
-        )}
-      >
-        {React.createElement(currentIcon, { className: "h-3 w-3" })}
-        {currentLabel}
-      </Badge>
-      <ChevronDown className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-    </div>
+    <Select value={value} onValueChange={handleChange}>
+      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-2">
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="text-xs text-muted-foreground">
+            <Badge
+              variant="outline"
+              className={cn(
+                "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium",
+                currentColor,
+              )}
+            >
+              {React.createElement(currentIcon, {
+                className: "h-3 w-3 shrink-0",
+              })}
+              {currentLabel}
+            </Badge>
+          </span>
+        </div>
+      </SelectTrigger>
+      <SelectContent>
+        {availableStatuses.map((status) => {
+          const Icon = statusIcons[status];
+          const label = STATUS_LABELS[status];
+          const color = statusColors[status];
+          return (
+            <SelectItem key={status} value={status}>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "inline-flex items-center gap-2 text-xs font-medium",
+                  color,
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </Badge>
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
+    </Select>
   );
 }

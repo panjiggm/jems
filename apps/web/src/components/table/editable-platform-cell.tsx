@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import Image from "next/image";
 
@@ -10,7 +8,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -74,94 +71,62 @@ export function EditablePlatformCell({
   contentId,
   onUpdate,
 }: EditablePlatformCellProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] = useState<Platform>(value);
-
-  const handleSave = () => {
-    onUpdate(selectedPlatform);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setSelectedPlatform(value);
-    setIsEditing(false);
+  const handleChange = (newPlatform: Platform) => {
+    onUpdate(newPlatform);
   };
 
   const currentConfig = platformConfig[value];
 
-  if (isEditing) {
-    return (
-      <div className="flex items-center gap-2">
-        <Select
-          value={selectedPlatform}
-          onValueChange={(value: Platform) => setSelectedPlatform(value)}
-        >
-          <SelectTrigger className="w-32 h-8">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(platformConfig).map(([key, config]) => (
-              <SelectItem key={key} value={key}>
-                <div className="flex items-center gap-2">
-                  {config.icon && (
-                    <Image
-                      src={config.icon}
-                      alt={config.label}
-                      width={16}
-                      height={16}
-                      className="w-4 h-4"
-                    />
-                  )}
-                  {config.label}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="flex gap-1">
-          <button
-            onClick={handleSave}
-            className="p-1 hover:bg-green-100 rounded"
-            title="Save"
-          >
-            <Check className="h-3 w-3 text-green-600" />
-          </button>
-          <button
-            onClick={handleCancel}
-            className="p-1 hover:bg-red-100 rounded"
-            title="Cancel"
-          >
-            <ChevronDown className="h-3 w-3 text-red-600 rotate-45" />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div
-      className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors group"
-      onClick={() => setIsEditing(true)}
-    >
-      <Badge
-        variant="outline"
-        className={cn(
-          "px-2 py-1 text-xs font-medium transition-colors flex items-center gap-1",
-          currentConfig.className,
-        )}
-      >
-        {currentConfig.icon && (
-          <Image
-            src={currentConfig.icon}
-            alt={currentConfig.label}
-            width={12}
-            height={12}
-            className="w-3 h-3"
-          />
-        )}
-        {currentConfig.label}
-      </Badge>
-      <ChevronDown className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-    </div>
+    <Select value={value} onValueChange={handleChange}>
+      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-2">
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="text-xs text-muted-foreground">
+            <Badge
+              variant="outline"
+              className={cn(
+                "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium",
+                currentConfig.className,
+              )}
+            >
+              {currentConfig.icon && (
+                <Image
+                  src={currentConfig.icon}
+                  alt={currentConfig.label}
+                  width={12}
+                  height={12}
+                  className="w-3 h-3 shrink-0"
+                />
+              )}
+              {currentConfig.label}
+            </Badge>
+          </span>
+        </div>
+      </SelectTrigger>
+      <SelectContent>
+        {Object.entries(platformConfig).map(([key, config]) => (
+          <SelectItem key={key} value={key}>
+            <Badge
+              variant="outline"
+              className={cn(
+                "inline-flex items-center gap-2 text-xs font-medium",
+                config.className,
+              )}
+            >
+              {config.icon && (
+                <Image
+                  src={config.icon}
+                  alt={config.label}
+                  width={14}
+                  height={14}
+                  className="w-3.5 h-3.5"
+                />
+              )}
+              {config.label}
+            </Badge>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

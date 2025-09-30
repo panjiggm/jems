@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Check, X, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface EditableNotesCellProps {
@@ -22,76 +20,60 @@ export function EditableNotesCell({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
 
-  const handleSave = () => {
-    const trimmedValue = editValue.trim();
-    onUpdate(trimmedValue);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
+  useEffect(() => {
     setEditValue(value);
+  }, [value]);
+
+  const handleBlur = () => {
+    const trimmedValue = editValue.trim();
+    if (trimmedValue !== value) {
+      onUpdate(trimmedValue);
+    }
     setIsEditing(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && e.ctrlKey) {
-      handleSave();
-    } else if (e.key === "Escape") {
-      handleCancel();
-    }
+  const truncateText = (text: string) => {
+    if (!text) return "";
+
+    // Split by words
+    const words = text.split(/\s+/);
+
+    // Truncate by 5 words
+    const wordsTruncated = words.slice(0, 5).join(" ");
+
+    // Truncate by 25 characters
+    const charTruncated = text.slice(0, 25);
+
+    // Use whichever is shorter
+    const result =
+      wordsTruncated.length < charTruncated.length
+        ? wordsTruncated
+        : charTruncated;
+
+    // Add ellipsis if text was truncated
+    return result.length < text.length ? result + "..." : result;
   };
 
   if (isEditing) {
     return (
-      <div className="flex flex-col gap-2 w-full">
-        <Textarea
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="min-h-16 resize-none"
-          placeholder="Add notes..."
-          autoFocus
-        />
-        <div className="flex gap-2 justify-end">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleCancel}
-            className="h-6 px-2"
-          >
-            <X className="h-3 w-3 mr-1" />
-            Cancel
-          </Button>
-          <Button size="sm" onClick={handleSave} className="h-6 px-2">
-            <Check className="h-3 w-3 mr-1" />
-            Save
-          </Button>
-        </div>
-      </div>
+      <Textarea
+        value={editValue}
+        onChange={(e) => setEditValue(e.target.value)}
+        onBlur={handleBlur}
+        className="min-h-20 resize-none border-0 shadow-none focus-visible:ring-1 focus-visible:ring-ring"
+        placeholder="Add notes..."
+        autoFocus
+      />
     );
   }
 
-  const displayValue = value || "No notes";
-  const hasNotes = value && value.trim().length > 0;
-
   return (
     <div
-      className="flex items-start gap-2 cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors group min-h-8"
+      className="min-h-8 px-3 py-2 cursor-pointer hover:bg-muted/50 rounded transition-colors flex items-center"
       onClick={() => setIsEditing(true)}
     >
-      <FileText
-        className={cn(
-          "h-4 w-4 mt-0.5 flex-shrink-0",
-          hasNotes ? "text-blue-600" : "text-muted-foreground",
-        )}
-      />
-      <span
-        className={cn(
-          "text-sm flex-1",
-          hasNotes ? "text-foreground" : "text-muted-foreground italic",
-        )}
-      >
-        {displayValue}
+      <span className={cn("text-sm", !value && "text-muted-foreground italic")}>
+        {value ? truncateText(value) : "No notes"}
       </span>
     </div>
   );
