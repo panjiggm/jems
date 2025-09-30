@@ -116,9 +116,6 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
     },
   );
 
-  // Fetch user profile for avatar
-  const profile = useQuery(api.queries.profile.getProfile);
-
   if (activities === undefined) {
     return (
       <div className="p-6">
@@ -171,7 +168,6 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
             color,
             bgColor,
           } = getActionIcon(activity.action, activity.entityType);
-          const userName = profile?.full_name || "User";
           const isLast = index === activities.length - 1;
 
           return (
@@ -191,13 +187,13 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">
-                      <span className="font-medium">{userName}</span>{" "}
-                      <span className="text-muted-foreground">
+                      <span className="text-gray-700 text-xs">
                         {activity.description ||
                           `${t(`projects.activity.actions.${activity.action}`)} ${t(`projects.activity.entities.${activity.entityType}`)}`}
                       </span>
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                      <Clock className="h-3 w-3" aria-hidden="true" />
                       {formatActivityTime(activity.timestamp)}
                     </p>
 
@@ -242,9 +238,6 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
                         </div>
                       )}
                   </div>
-
-                  {/* Arrow icon like in the image */}
-                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
             </div>
