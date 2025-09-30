@@ -12,16 +12,53 @@ export const list = query({
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
 
-    // Get all projects for the user with pagination
-    const projects = await ctx.db
+    // Get all projects for the user first (no pagination yet)
+    const allProjects = await ctx.db
       .query("projects")
       .withIndex("by_user_createdAt", (q) => q.eq("userId", userId!))
       .order("desc")
-      .paginate(args.paginationOpts);
+      .collect();
 
-    // Get content count for each project
-    let projectsWithContentCount = await Promise.all(
-      projects.page.map(async (project) => {
+    // Apply filters BEFORE pagination
+    let filteredProjects = allProjects;
+
+    // Apply search filter if provided
+    if (args.search && args.search.trim() !== "") {
+      const searchTerm = args.search.toLowerCase().trim();
+      filteredProjects = filteredProjects.filter(
+        (project) =>
+          project.title.toLowerCase().includes(searchTerm) ||
+          (project.description &&
+            project.description.toLowerCase().includes(searchTerm)),
+      );
+    }
+
+    // Apply year filter if provided
+    if (args.year) {
+      filteredProjects = filteredProjects.filter((project) => {
+        const startYear = project.startDate
+          ? new Date(project.startDate).getFullYear()
+          : null;
+        const endYear = project.endDate
+          ? new Date(project.endDate).getFullYear()
+          : null;
+
+        // Include project if it appears in the specified year
+        return startYear === args.year || endYear === args.year;
+      });
+    }
+
+    // Apply manual pagination
+    const { numItems, cursor } = args.paginationOpts;
+    const startIndex = cursor ? parseInt(cursor) : 0;
+    const endIndex = startIndex + numItems;
+    const page = filteredProjects.slice(startIndex, endIndex);
+    const hasMore = endIndex < filteredProjects.length;
+    const continueCursor = hasMore ? endIndex.toString() : null;
+
+    // Get content count for each project in the page
+    const projectsWithContentCount = await Promise.all(
+      page.map(async (project) => {
         const contentCount = await ctx.db
           .query("contents")
           .withIndex("by_user_project", (q) =>
@@ -37,35 +74,10 @@ export const list = query({
       }),
     );
 
-    // Apply search filter if provided
-    if (args.search && args.search.trim() !== "") {
-      const searchTerm = args.search.toLowerCase().trim();
-      projectsWithContentCount = projectsWithContentCount.filter(
-        (project) =>
-          project.title.toLowerCase().includes(searchTerm) ||
-          (project.description &&
-            project.description.toLowerCase().includes(searchTerm)),
-      );
-    }
-
-    // Apply year filter if provided
-    if (args.year) {
-      projectsWithContentCount = projectsWithContentCount.filter((project) => {
-        const startYear = project.startDate
-          ? new Date(project.startDate).getFullYear()
-          : null;
-        const endYear = project.endDate
-          ? new Date(project.endDate).getFullYear()
-          : null;
-
-        // Include project if it appears in the specified year
-        return startYear === args.year || endYear === args.year;
-      });
-    }
-
     return {
-      ...projects,
       page: projectsWithContentCount,
+      isDone: !hasMore,
+      continueCursor,
     };
   },
 });
