@@ -1,13 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  Blocks,
-  Calendar,
-  Home,
-  Laptop2,
-  MessageCircleQuestion,
-} from "lucide-react";
+import { HardDrive, Home, Laptop2, MessageCircleQuestion } from "lucide-react";
 
 import { NavChats } from "@/components/nav-chats";
 import { NavMain } from "@/components/nav-main";
@@ -43,9 +37,9 @@ const getNavData = (locale: Locale) => ({
       icon: Laptop2,
     },
     {
-      title: "Schedules",
-      url: `/${locale}/schedules`,
-      icon: Calendar,
+      title: "Drive",
+      url: `/${locale}/drive`,
+      icon: HardDrive,
     },
   ],
   chats: [
