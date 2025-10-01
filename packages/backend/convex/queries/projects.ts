@@ -54,7 +54,7 @@ export const list = query({
     const endIndex = startIndex + numItems;
     const page = filteredProjects.slice(startIndex, endIndex);
     const hasMore = endIndex < filteredProjects.length;
-    const continueCursor = hasMore ? endIndex.toString() : null;
+    const continueCursor = endIndex.toString();
 
     // Get content count for each project in the page
     const projectsWithContentCount = await Promise.all(

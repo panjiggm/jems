@@ -59,8 +59,8 @@ export default function ChatsComponent() {
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold">Start a conversation</h3>
                 <p className="text-muted-foreground text-xs max-w-md mx-auto">
-                  Ask me anything! I'm here to help you with your questions,
-                  brainstorm ideas, or have a friendly chat.
+                  Ask me anything! I&apos;m here to help you with your
+                  questions, brainstorm ideas, or have a friendly chat.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 justify-center pt-4">

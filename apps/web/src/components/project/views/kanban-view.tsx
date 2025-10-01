@@ -1,8 +1,9 @@
 import { KanbanBoard } from "@/components/kanban";
 import { FilterState } from "../search-filter-content";
+import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 interface KanbanViewProps {
-  projectId?: string;
+  projectId?: Id<"projects">;
   userId?: string;
   filters: FilterState;
 }

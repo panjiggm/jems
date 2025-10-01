@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useTranslations } from "@/hooks/use-translations";
+import Image from "next/image";
 
 export function NavMobileApp() {
   const { t } = useTranslations();
@@ -22,19 +23,23 @@ export function NavMobileApp() {
         <div className="flex flex-row items-center gap-3">
           {/* App Store Badge */}
           <div className="">
-            <img
+            <Image
               src="/images/app-store.svg"
               alt="Download on App Store"
-              className="w-full"
+              width={120}
+              height={40}
+              className="w-full h-auto"
             />
           </div>
 
           {/* Google Play Store Badge */}
           <div className="">
-            <img
+            <Image
               src="/images/play-store.svg"
               alt="Get it on Google Play"
-              className="w-full"
+              width={135}
+              height={40}
+              className="w-full h-auto"
             />
           </div>
         </div>
