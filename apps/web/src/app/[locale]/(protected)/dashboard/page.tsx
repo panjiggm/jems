@@ -25,8 +25,7 @@ export default function DashboardPage() {
 
   const handleCloseOnboarding = () => {
     setShowOnboarding(false);
-    // TODO: In the future, this will trigger the completion of onboarding
-    // when the user actually completes all the steps
+    // This will only be called when onboarding is successfully completed
   };
 
   // Show loading state while checking authentication and onboarding status

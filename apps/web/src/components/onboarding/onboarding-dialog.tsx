@@ -155,8 +155,13 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden">
+    <Dialog open={isOpen}>
+      <DialogContent
+        className="sm:max-w-lg max-h-[90vh] overflow-hidden"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{t("onboarding.title")}</DialogTitle>
         </DialogHeader>
