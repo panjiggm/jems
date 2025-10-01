@@ -7,6 +7,7 @@ import { NavigationSheet } from "./navigation-sheet";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ButtonPrimary } from "../ui/button-primary";
+import { Badge } from "../ui/badge";
 import { LogIn } from "lucide-react";
 import { usePathname, useParams } from "next/navigation";
 import { useTranslations } from "@/hooks/use-translations";
@@ -31,6 +32,9 @@ const Navbar = () => {
               <h2 className="text-xl font-black text-[#4a2e1a] dark:text-[#f8e9b0]">
                 {t("nav.title")}
               </h2>
+              <Badge className="bg-gradient-to-r from-[#f7a641] to-[#4a2e1a] text-white border-0 font-bold text-[10px] px-2 py-0.5 animate-pulse hover:animate-none hidden sm:inline-flex">
+                ✨ ALPHA
+              </Badge>
             </div>
           </Link>
 
