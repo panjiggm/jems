@@ -110,4 +110,36 @@ export const projects = {
       scheduledFor: "Dijadwalkan untuk",
     },
   },
+  templates: {
+    title: "Pilih Template Project",
+    description: "Pilih template untuk membuat project secara otomatis",
+    selectTemplate: "Pilih template untuk memulai",
+    monthly: {
+      title: "Template Bulanan Tahunan",
+      description:
+        "Buat project untuk setiap bulan tersisa di tahun ini. Setiap project berisi 5 konten dan 15 tugas yang siap digunakan.",
+      badge: "Paling Populer",
+    },
+    quarterly: {
+      title: "Template Per Kuartal",
+      description:
+        "Buat project untuk 3 bulan dalam satu kuartal. Ideal untuk campaign atau series dengan durasi lebih panjang.",
+      selectQuarter: "Pilih Kuartal",
+      q1: "Q1 - Jan, Feb, Mar",
+      q2: "Q2 - Apr, Mei, Jun",
+      q3: "Q3 - Jul, Agu, Sep",
+      q4: "Q4 - Okt, Nov, Des",
+    },
+    button: {
+      useTemplate: "Gunakan Template",
+      create: "Buat dari Template",
+      creating: "Membuat...",
+      cancel: "Batal",
+    },
+    messages: {
+      success: "Template berhasil dibuat!",
+      error: "Gagal membuat template",
+      errorDescription: "Silakan coba lagi atau hubungi dukungan",
+    },
+  },
 } as const;

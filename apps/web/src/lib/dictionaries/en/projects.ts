@@ -110,4 +110,36 @@ export const projects = {
       scheduledFor: "Scheduled for",
     },
   },
+  templates: {
+    title: "Choose Project Template",
+    description: "Select a template to automatically create projects",
+    selectTemplate: "Select a template to get started",
+    monthly: {
+      title: "Full Year Monthly Template",
+      description:
+        "Create projects for each remaining month of this year. Each project contains 5 contents and 15 tasks ready to use.",
+      badge: "Most Popular",
+    },
+    quarterly: {
+      title: "Quarterly Template",
+      description:
+        "Create projects for 3 months in one quarter. Ideal for campaigns or series with longer duration.",
+      selectQuarter: "Select Quarter",
+      q1: "Q1 - Jan, Feb, Mar",
+      q2: "Q2 - Apr, May, Jun",
+      q3: "Q3 - Jul, Aug, Sep",
+      q4: "Q4 - Oct, Nov, Dec",
+    },
+    button: {
+      useTemplate: "Use Template",
+      create: "Create from Template",
+      creating: "Creating...",
+      cancel: "Cancel",
+    },
+    messages: {
+      success: "Template created successfully!",
+      error: "Failed to create template",
+      errorDescription: "Please try again or contact support",
+    },
+  },
 } as const;

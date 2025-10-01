@@ -1,12 +1,15 @@
 "use client";
 
 import React from "react";
-import { Plus, Calendar, Kanban, Table, List } from "lucide-react";
+import { Plus, Calendar, Kanban, Table, List, Sparkles } from "lucide-react";
 import ProjectStats from "@/components/projects/project-stats";
 import RecentActivity from "@/components/projects/recent-activity";
 import { ButtonPrimary } from "@/components/ui/button-primary";
+import { Button } from "@/components/ui/button";
 import { CreateProjectDialog } from "@/components/projects/dialog-create-project";
+import { TemplateProjectsDialog } from "@/components/projects/dialog-template-projects";
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
+import { useTemplateDialogStore } from "@/store/use-dialog-template-store";
 import { useTranslations } from "@/hooks/use-translations";
 import TabsCustom from "@/components/tabs/tabs-custom";
 import { useParams, usePathname } from "next/navigation";
@@ -23,6 +26,7 @@ export default function ProjectsLayout({
   const pathname = usePathname();
   const locale = params.locale as string;
   const { openDialog } = useCreateProjectDialogStore();
+  const { openDialog: openTemplateDialog } = useTemplateDialogStore();
   const { t } = useTranslations();
 
   // Determine current route type
@@ -95,6 +99,10 @@ export default function ProjectsLayout({
           <div className="flex items-center justify-between w-full px-2">
             <ProjectBreadcrumb />
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Button variant="outline" size="sm" onClick={openTemplateDialog}>
+                <Sparkles className="h-4 w-4 mr-2" />
+                {t("projects.templates.button.useTemplate")}
+              </Button>
               <ButtonPrimary size="sm" onClick={openDialog}>
                 <Plus className="h-4 w-4 mr-2" />
                 {t("projects.createProject")}
@@ -139,8 +147,9 @@ export default function ProjectsLayout({
         </div>
       </div>
 
-      {/* Create Project Dialog */}
+      {/* Dialogs */}
       <CreateProjectDialog />
+      <TemplateProjectsDialog />
       <ContentDialog />
     </div>
   );
