@@ -92,20 +92,41 @@ export default function ProjectsLayout({
   const projectsTabs = getProjectsTabs();
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="bg-white border-b">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center justify-between w-full px-2">
-            <ProjectBreadcrumb />
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Button variant="outline" size="sm" onClick={openTemplateDialog}>
-                <Sparkles className="h-4 w-4 mr-2" />
-                {t("projects.templates.button.useTemplate")}
+        <div className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
+            {/* Breadcrumb */}
+            <div className="flex-1 min-w-0">
+              <ProjectBreadcrumb />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Template Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openTemplateDialog}
+                className="flex-1 sm:flex-none"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden md:inline ml-2">
+                  {t("projects.templates.button.useTemplate")}
+                </span>
               </Button>
-              <ButtonPrimary size="sm" onClick={openDialog}>
-                <Plus className="h-4 w-4 mr-2" />
-                {t("projects.createProject")}
+
+              {/* Create Project Button */}
+              <ButtonPrimary
+                size="sm"
+                onClick={openDialog}
+                className="flex-1 sm:flex-none"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden md:inline ml-2">
+                  {t("projects.createProject")}
+                </span>
               </ButtonPrimary>
             </div>
           </div>
@@ -114,9 +135,9 @@ export default function ProjectsLayout({
 
       <div className="flex flex-col lg:grid lg:grid-cols-12">
         {/* Main Content */}
-        <div className="flex-1 min-w-0 lg:col-span-10">
+        <div className="flex-1 min-w-0 lg:col-span-10 order-2 lg:order-1">
           {/* Tabs */}
-          <div className="bg-white border-b">
+          <div className="bg-white border-b overflow-x-auto">
             {/* Show TabsYear for base route and year route */}
             {(routeInfo.isBaseRoute || routeInfo.isYearRoute) && (
               <TabsYear useUrlNavigation={true} locale={locale} />
@@ -134,16 +155,22 @@ export default function ProjectsLayout({
           </div>
 
           {/* Content Area - This is where children will be rendered */}
-          <div className="p-6 space-y-6 overflow-x-auto">{children}</div>
+          <div className="p-3 sm:p-4 md:p-6 space-y-4 md:space-y-6 overflow-x-auto">
+            {children}
+          </div>
         </div>
 
-        {/* Left Sidebar - User Info */}
-        <div className="w-full lg:col-span-2 bg-white border-l lg:min-h-screen">
+        {/* Right Sidebar - Stats & Activity */}
+        <div className="w-full lg:col-span-2 bg-white border-t lg:border-t-0 lg:border-l order-1 lg:order-2">
           {/* User Header */}
-          <ProjectStats />
+          <div className="lg:sticky lg:top-14">
+            <ProjectStats />
 
-          {/* Recent Activity */}
-          <RecentActivity />
+            {/* Recent Activity - Hidden on mobile, shown on desktop */}
+            <div className="hidden lg:block">
+              <RecentActivity />
+            </div>
+          </div>
         </div>
       </div>
 

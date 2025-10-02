@@ -74,13 +74,13 @@ const ProjectBreadcrumb: React.FC<ProjectBreadcrumbProps> = ({ className }) => {
             <React.Fragment key={item.href}>
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium bg-primary/5 text-primary">
+                  <BreadcrumbPage className="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium bg-primary/5 text-primary">
                     <span className="truncate max-w-[200px]">{item.label}</span>
                   </BreadcrumbPage>
                 ) : (
                   <Link
                     href={item.href}
-                    className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
+                    className="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
                   >
                     <span className="truncate max-w-[150px]">{item.label}</span>
                   </Link>
