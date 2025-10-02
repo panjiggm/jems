@@ -104,22 +104,39 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
       projectYearStats === undefined)
   ) {
     return (
-      <div className="p-6 border-b">
+      <div className="p-4 sm:p-6 border-b">
         <div className="animate-pulse">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="h-12 w-12 rounded-full bg-gray-200"></div>
-            <div>
-              <div className="mb-2 h-6 w-40 rounded bg-gray-200"></div>
-              <div className="h-4 w-32 rounded bg-gray-200"></div>
+          {/* Desktop Loading */}
+          <div className="hidden sm:block">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-12 w-12 rounded-full bg-gray-200"></div>
+              <div>
+                <div className="mb-2 h-6 w-40 rounded bg-gray-200"></div>
+                <div className="h-4 w-32 rounded bg-gray-200"></div>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex justify-between items-center">
+                  <div className="h-3 w-20 rounded bg-gray-200"></div>
+                  <div className="h-4 w-12 rounded bg-gray-200"></div>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="grid grid-cols-6 md:grid-cols-12 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="col-span-2 flex flex-col gap-2">
-                <div className="h-3 w-20 rounded bg-gray-200"></div>
-                <div className="h-7 w-16 rounded bg-gray-200"></div>
-              </div>
-            ))}
+
+          {/* Mobile Loading */}
+          <div className="sm:hidden">
+            <div className="mb-3 h-4 w-32 rounded bg-gray-200"></div>
+            <div className="grid grid-cols-4 gap-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex flex-col items-center gap-2">
+                  <div className="h-10 w-10 rounded-lg bg-gray-200"></div>
+                  <div className="h-4 w-8 rounded bg-gray-200"></div>
+                  <div className="h-2 w-12 rounded bg-gray-200"></div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -220,28 +237,67 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
     }
 
     return (
-      <div className="space-y-1.5">
-        {items.map(({ label, value, tone, icon: IconComponent }) => (
-          <div
-            key={label}
-            className="flex flex-row justify-between items-center"
-          >
-            <div className="flex items-center gap-2">
-              <IconComponent className="h-3.5 w-3.5 text-muted-foreground" />
-              <h4 className="text-xs font-medium text-muted-foreground">
-                {label}
-              </h4>
-            </div>
-            <span
-              className={`font-medium text-xs leading-tight ${
-                tone === "critical" ? "text-red-500" : "text-gray-600"
-              }`}
+      <>
+        {/* Desktop Layout - Vertical list with labels */}
+        <div className="hidden sm:block space-y-1.5">
+          {items.map(({ label, value, tone, icon: IconComponent }) => (
+            <div
+              key={label}
+              className="flex flex-row justify-between items-center"
             >
-              {value}
-            </span>
-          </div>
-        ))}
-      </div>
+              <div className="flex items-center gap-2">
+                <IconComponent className="h-3.5 w-3.5 text-muted-foreground" />
+                <h4 className="text-xs font-medium text-muted-foreground">
+                  {label}
+                </h4>
+              </div>
+              <span
+                className={`font-medium text-xs leading-tight ${
+                  tone === "critical" ? "text-red-500" : "text-gray-600"
+                }`}
+              >
+                {value}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile Layout - Compact grid */}
+        <div className="sm:hidden grid grid-cols-4 gap-3">
+          {items.map(({ label, value, tone, icon: IconComponent }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center justify-center gap-1.5"
+            >
+              <div
+                className={`p-2 rounded-lg ${
+                  tone === "critical" ? "bg-red-50" : "bg-gray-50"
+                }`}
+              >
+                <IconComponent
+                  className={`h-4 w-4 ${
+                    tone === "critical"
+                      ? "text-red-500"
+                      : "text-muted-foreground"
+                  }`}
+                />
+              </div>
+              <div className="flex flex-col items-center gap-0.5">
+                <span
+                  className={`font-semibold text-sm leading-none ${
+                    tone === "critical" ? "text-red-500" : "text-gray-900"
+                  }`}
+                >
+                  {value}
+                </span>
+                <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                  {label}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
     );
   };
 
@@ -289,8 +345,9 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   const titleInfo = getTitleInfo();
 
   return (
-    <div className="p-6 border-b">
-      <div className="flex items-center gap-3 mb-4">
+    <div className="p-4 sm:p-6 border-b">
+      {/* Header - Hidden on mobile */}
+      <div className="hidden sm:flex items-center gap-3 mb-4">
         <div className="bg-orange-50 rounded-lg p-4 text-orange-400">
           {isProjectsList ? (
             <FolderOpen className="h-7 w-7" />
@@ -308,24 +365,43 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
         </div>
       </div>
 
+      {/* Mobile Header - Simplified */}
+      <div className="sm:hidden mb-3">
+        <h2 className="font-semibold text-xs text-muted-foreground mb-2">
+          {isProjectsList
+            ? t("projects.stats.dashboardOverview")
+            : isYearList
+              ? `${year}`
+              : isProjectDetail
+                ? titleInfo.title
+                : userName}
+        </h2>
+      </div>
+
       {/* Stats */}
       {renderStats()}
 
       {/* Additional Info for specific routes */}
       {isProjectDetail && (projectStats || projectYearStats) && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-3 sm:mt-4 flex flex-wrap gap-1.5 sm:gap-2">
           {(() => {
             const stats = projectYearStats || projectStats;
             if (stats) {
               return (
                 <>
                   {stats.health.overdueItems > 0 && (
-                    <Badge variant="destructive">
+                    <Badge
+                      variant="destructive"
+                      className="text-[10px] sm:text-xs px-2 py-0.5"
+                    >
                       {stats.health.overdueItems} {t("projects.stats.overdue")}
                     </Badge>
                   )}
                   {stats.health.upcomingItems > 0 && (
-                    <Badge variant="secondary">
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] sm:text-xs px-2 py-0.5"
+                    >
                       {stats.health.upcomingItems}{" "}
                       {t("projects.stats.upcoming")}
                     </Badge>
