@@ -1,7 +1,15 @@
 "use client";
 
 import React from "react";
-import { Plus, Calendar, Kanban, Table, List, Sparkles } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  Kanban,
+  Table,
+  List,
+  Sparkles,
+  ArrowLeft,
+} from "lucide-react";
 import ProjectStats from "@/components/projects/project-stats";
 import RecentActivity from "@/components/projects/recent-activity";
 import { ButtonPrimary } from "@/components/ui/button-primary";
@@ -12,10 +20,11 @@ import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
 import { useTemplateDialogStore } from "@/store/use-dialog-template-store";
 import { useTranslations } from "@/hooks/use-translations";
 import TabsCustom from "@/components/tabs/tabs-custom";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { ContentDialog } from "@/components/contents/dialog-content";
 import { TabsYear } from "@/components/tabs";
 import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
+import { ButtonGroupDropdown } from "@/components/ui/button-group";
 
 export default function ProjectsLayout({
   children,
@@ -24,6 +33,7 @@ export default function ProjectsLayout({
 }) {
   const params = useParams();
   const pathname = usePathname();
+  const router = useRouter();
   const locale = params.locale as string;
   const { openDialog } = useCreateProjectDialogStore();
   const { openDialog: openTemplateDialog } = useTemplateDialogStore();
@@ -91,43 +101,64 @@ export default function ProjectsLayout({
 
   const projectsTabs = getProjectsTabs();
 
+  // Handle back navigation
+  const handleBack = () => {
+    if (routeInfo.isProjectRoute && routeInfo.year) {
+      router.push(`/${locale}/projects/${routeInfo.year}`);
+    } else if (routeInfo.isProjectRoute) {
+      router.push(`/${locale}/projects`);
+    } else if (routeInfo.isYearRoute) {
+      router.push(`/${locale}/projects`);
+    } else {
+      router.back();
+    }
+  };
+
+  // Show back button on mobile only if not on base projects route
+  const showBackButton = !routeInfo.isBaseRoute;
+
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="bg-white border-b">
         <div className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
-            {/* Breadcrumb */}
+          <div className="flex items-center justify-between gap-3">
+            {/* Mobile: Back Button | Desktop: Breadcrumb */}
             <div className="flex-1 min-w-0">
-              <ProjectBreadcrumb />
+              {/* Mobile Back Button */}
+              {showBackButton && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBack}
+                  className="sm:hidden flex items-center gap-2 text-sm font-medium"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  {t("common.back") || "Kembali"}
+                </Button>
+              )}
+
+              {/* Desktop Breadcrumb */}
+              <div className="hidden sm:block">
+                <ProjectBreadcrumb />
+              </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 shrink-0">
-              {/* Template Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openTemplateDialog}
-                className="flex-1 sm:flex-none"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span className="hidden md:inline ml-2">
-                  {t("projects.templates.button.useTemplate")}
-                </span>
-              </Button>
-
-              {/* Create Project Button */}
-              <ButtonPrimary
-                size="sm"
-                onClick={openDialog}
-                className="flex-1 sm:flex-none"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden md:inline ml-2">
-                  {t("projects.createProject")}
-                </span>
-              </ButtonPrimary>
+              <ButtonGroupDropdown
+                label={t("projects.createProject")}
+                onMainClick={openDialog}
+                options={[
+                  {
+                    label: t("projects.templates.button.useTemplate"),
+                    description:
+                      "Select a template to automatically create projects",
+                    icon: <Sparkles />,
+                    onClick: openTemplateDialog,
+                  },
+                ]}
+              />
             </div>
           </div>
         </div>

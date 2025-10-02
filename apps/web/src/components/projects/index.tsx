@@ -6,13 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, ChevronDown, Search, X, Sparkles } from "lucide-react";
-import { ButtonPrimary } from "../ui/button-primary";
 import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
 import { useTemplateDialogStore } from "@/store/use-dialog-template-store";
 import { ProjectCard } from "./card-project";
 import { usePaginatedQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
 import { useTranslations } from "@/hooks/use-translations";
+import { ButtonGroupDropdown } from "@/components/ui/button-group";
 
 export default function ProjectsComponent() {
   const { openDialog } = useCreateProjectDialogStore();
@@ -99,16 +99,19 @@ export default function ProjectsComponent() {
               </h3>
               <p className="text-sm">{t("projects.noProjectsDescription")}</p>
             </div>
-            <div className="flex items-center justify-center gap-2">
-              <Button variant="outline" onClick={openTemplateDialog}>
-                <Sparkles className="h-4 w-4 mr-2" />
-                {t("projects.templates.button.useTemplate")}
-              </Button>
-              <ButtonPrimary onClick={openDialog}>
-                <Plus className="h-4 w-4 mr-2" />
-                {t("projects.createProject")}
-              </ButtonPrimary>
-            </div>
+            <ButtonGroupDropdown
+              label={t("projects.createProject")}
+              onMainClick={openDialog}
+              options={[
+                {
+                  label: t("projects.templates.button.useTemplate"),
+                  description:
+                    "Select a template to automatically create projects",
+                  icon: <Sparkles />,
+                  onClick: openTemplateDialog,
+                },
+              ]}
+            />
           </div>
         ) : (
           // Projects list

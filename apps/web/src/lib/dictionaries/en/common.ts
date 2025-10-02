@@ -12,6 +12,7 @@ export const common = {
   sort: "Sort",
   next: "Next",
   previous: "Previous",
+  back: "Back",
   close: "Close",
   open: "Open",
   yes: "Yes",

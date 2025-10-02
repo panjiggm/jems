@@ -12,6 +12,7 @@ export const common = {
   sort: "Urutkan",
   next: "Selanjutnya",
   previous: "Sebelumnya",
+  back: "Kembali",
   close: "Tutup",
   open: "Buka",
   yes: "Ya",
