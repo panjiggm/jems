@@ -23,6 +23,7 @@ import {
   Layers,
   BadgeCheck,
   MonitorSmartphone,
+  Filter,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,13 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { STATUS_LABELS, type ContentType } from "@/types/status";
@@ -361,8 +369,180 @@ export default function SearchFilterContent({
     filters.platform.length;
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-col gap-3 w-full">
+      {/* Mobile Layout */}
+      <div className="flex md:hidden items-center gap-2 w-full">
+        <div className="relative flex-1">
+          <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 transform text-muted-foreground" />
+          <Input
+            placeholder="Search contents..."
+            value={filters.search}
+            onChange={(event) => handleSearchChange(event.target.value)}
+            className="pl-8 h-8 text-xs py-1"
+          />
+        </div>
+
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 px-3 shrink-0">
+              <Filter className="h-3.5 w-3.5 mr-1.5" />
+              Filters
+              {activeFiltersCount > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="ml-1.5 px-1.5 py-0 text-[10px] h-4"
+                >
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-[60vh] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Filters</SheetTitle>
+            </SheetHeader>
+            <div className="space-y-4 p-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Platform</label>
+                <FilterSelect
+                  label="Platform"
+                  icon={MonitorSmartphone}
+                  selectedValues={filters.platform}
+                  options={platformOrder.map((platform) => {
+                    const config = platformConfig[platform];
+                    return {
+                      value: platform,
+                      label: (
+                        <>
+                          {config.icon && (
+                            <Image
+                              src={config.icon}
+                              alt={config.label}
+                              width={16}
+                              height={16}
+                              className="h-4 w-4"
+                            />
+                          )}
+                          {config.label}
+                        </>
+                      ),
+                    } as const;
+                  })}
+                  onToggle={handlePlatformToggle}
+                  onClear={() => clearCategory("platform")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <FilterSelect
+                  label="Status"
+                  icon={BadgeCheck}
+                  selectedValues={filters.status}
+                  options={statusOrder.map((status) => {
+                    const config = statusConfig[status];
+                    const Icon = config.icon;
+                    return {
+                      value: status,
+                      label: (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "flex items-center gap-2 text-xs font-medium",
+                            config.className,
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                          {config.label}
+                        </Badge>
+                      ),
+                    } as const;
+                  })}
+                  onToggle={handleStatusToggle}
+                  onClear={() => clearCategory("status")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Phase</label>
+                <FilterSelect
+                  label="Phase"
+                  icon={Target}
+                  selectedValues={filters.phase}
+                  options={phaseOrder.map((phase) => {
+                    const config = phaseConfig[phase];
+                    const Icon = config.icon;
+                    return {
+                      value: phase,
+                      label: (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "flex items-center gap-2 text-xs font-medium",
+                            config.className,
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                          {config.label}
+                        </Badge>
+                      ),
+                    } as const;
+                  })}
+                  onToggle={handlePhaseToggle}
+                  onClear={() => clearCategory("phase")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Type</label>
+                <FilterSelect
+                  label="Type"
+                  icon={Layers}
+                  selectedValues={filters.types}
+                  options={typeOrder.map((type) => {
+                    const config = typeConfig[type];
+                    return {
+                      value: type,
+                      label: (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "flex items-center gap-2 text-xs font-medium",
+                            config.color,
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "h-2 w-2 rounded-full",
+                              config.dotColor,
+                            )}
+                          />
+                          {config.label}
+                        </Badge>
+                      ),
+                    } as const;
+                  })}
+                  onToggle={handleTypeToggle}
+                  onClear={() => clearCategory("types")}
+                />
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={clearAllFilters}
+                disabled={activeFiltersCount === 0}
+              >
+                Clear all filters
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden md:flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px] max-w-md">
           <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 transform text-muted-foreground" />
           <Input

@@ -79,16 +79,21 @@ export default function ProjectComponent({
   return (
     <div className="w-full space-y-4">
       {/* Header with Create Content Button and Search/Filter */}
-      <div className="flex items-center justify-between">
-        <SearchFilterContent
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-        />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        {/* Search/Filter - takes full width on mobile */}
+        <div className="flex-1 w-full md:w-auto">
+          <SearchFilterContent
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+          />
+        </div>
 
+        {/* Create Content Button - full width on mobile, auto on desktop */}
         <ButtonPrimary
           size="sm"
           onClick={handleCreateContent}
           disabled={!projectId}
+          className="w-full md:w-auto shrink-0"
         >
           <Plus className="h-4 w-4 mr-2" />
           {t("projects.createContent")}
