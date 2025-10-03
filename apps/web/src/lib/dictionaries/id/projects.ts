@@ -55,6 +55,50 @@ export const projects = {
         "Silakan coba lagi atau hubungi dukungan jika masalah berlanjut.",
     },
   },
+  editDialog: {
+    title: "Edit Project",
+    description: "Perbarui informasi project Kamu.",
+    form: {
+      title: "Judul Project",
+      titlePlaceholder: "Masukkan judul project...",
+      titleRequired: "Judul wajib diisi",
+      description: "Deskripsi",
+      descriptionPlaceholder: "Jelaskan project Kamu...",
+      startDate: "Tanggal Mulai",
+      endDate: "Tanggal Selesai",
+      endDateError: "Tanggal selesai harus setelah tanggal mulai",
+    },
+    buttons: {
+      cancel: "Batal",
+      update: "Perbarui Project",
+      updating: "Memperbarui...",
+    },
+    messages: {
+      success: "Project berhasil diperbarui!",
+      successDescription: "telah diperbarui.",
+      error: "Gagal memperbarui project",
+      errorDescription:
+        "Silakan coba lagi atau hubungi dukungan jika masalah berlanjut.",
+    },
+  },
+  deleteDialog: {
+    title: "Hapus Project",
+    description: "Apakah Kamu yakin ingin menghapus",
+    warning:
+      "Tindakan ini tidak dapat dibatalkan. Semua konten dan tugas dalam project ini juga akan dihapus.",
+    buttons: {
+      cancel: "Batal",
+      delete: "Hapus Project",
+      deleting: "Menghapus...",
+    },
+    messages: {
+      success: "Project berhasil dihapus!",
+      successDescription: "telah dihapus.",
+      error: "Gagal menghapus project",
+      errorDescription:
+        "Silakan coba lagi atau hubungi dukungan jika masalah berlanjut.",
+    },
+  },
   breadcrumb: {
     allProjects: "Semua Project",
   },

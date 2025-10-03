@@ -55,6 +55,50 @@ export const projects = {
         "Please try again or contact support if the problem persists.",
     },
   },
+  editDialog: {
+    title: "Edit Project",
+    description: "Update your project information.",
+    form: {
+      title: "Project Title",
+      titlePlaceholder: "Enter project title...",
+      titleRequired: "Title is required",
+      description: "Description",
+      descriptionPlaceholder: "Describe your project...",
+      startDate: "Start Date",
+      endDate: "End Date",
+      endDateError: "End date must be after start date",
+    },
+    buttons: {
+      cancel: "Cancel",
+      update: "Update Project",
+      updating: "Updating...",
+    },
+    messages: {
+      success: "Project updated successfully!",
+      successDescription: "has been updated.",
+      error: "Failed to update project",
+      errorDescription:
+        "Please try again or contact support if the problem persists.",
+    },
+  },
+  deleteDialog: {
+    title: "Delete Project",
+    description: "Are you sure you want to delete",
+    warning:
+      "This action cannot be undone. All contents and tasks within this project will also be deleted.",
+    buttons: {
+      cancel: "Cancel",
+      delete: "Delete Project",
+      deleting: "Deleting...",
+    },
+    messages: {
+      success: "Project deleted successfully!",
+      successDescription: "has been deleted.",
+      error: "Failed to delete project",
+      errorDescription:
+        "Please try again or contact support if the problem persists.",
+    },
+  },
   breadcrumb: {
     allProjects: "All Projects",
   },

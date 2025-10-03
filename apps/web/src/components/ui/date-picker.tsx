@@ -16,13 +16,22 @@ export function DatePicker({
   label,
   onSelectDate,
   className,
+  date: externalDate,
 }: {
   label: string;
   onSelectDate: (date: Date | undefined) => void;
   className?: string;
+  date?: Date | undefined;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [date, setDate] = React.useState<Date | undefined>(undefined);
+  const [date, setDate] = React.useState<Date | undefined>(
+    externalDate || undefined,
+  );
+
+  // Update internal state when external date changes
+  React.useEffect(() => {
+    setDate(externalDate);
+  }, [externalDate]);
 
   const handleDateChange = (date: Date | undefined) => {
     setOpen(false);

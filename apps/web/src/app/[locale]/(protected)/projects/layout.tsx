@@ -9,14 +9,22 @@ import {
   List,
   Sparkles,
   ArrowLeft,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import ProjectStats from "@/components/projects/project-stats";
 import RecentActivity from "@/components/projects/recent-activity";
 import { ButtonPrimary } from "@/components/ui/button-primary";
 import { Button } from "@/components/ui/button";
 import { CreateProjectDialog } from "@/components/projects/dialog-create-project";
+import { EditProjectDialog } from "@/components/projects/dialog-edit-project";
+import { DeleteProjectDialog } from "@/components/projects/dialog-delete-project";
 import { TemplateProjectsDialog } from "@/components/projects/dialog-template-projects";
-import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
+import {
+  useCreateProjectDialogStore,
+  useEditProjectDialogStore,
+  useDeleteProjectDialogStore,
+} from "@/store/use-dialog-store";
 import { useTemplateDialogStore } from "@/store/use-dialog-template-store";
 import { useTranslations } from "@/hooks/use-translations";
 import TabsCustom from "@/components/tabs/tabs-custom";
@@ -25,6 +33,8 @@ import { ContentDialog } from "@/components/contents/dialog-content";
 import { TabsYear } from "@/components/tabs";
 import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
 import { ButtonGroupDropdown } from "@/components/ui/button-group";
+import { useQuery } from "convex-helpers/react/cache/hooks";
+import { api } from "@packages/backend/convex/_generated/api";
 
 export default function ProjectsLayout({
   children,
@@ -37,6 +47,10 @@ export default function ProjectsLayout({
   const locale = params.locale as string;
   const { openDialog } = useCreateProjectDialogStore();
   const { openDialog: openTemplateDialog } = useTemplateDialogStore();
+  const openEditDialog = useEditProjectDialogStore((state) => state.openDialog);
+  const openDeleteDialog = useDeleteProjectDialogStore(
+    (state) => state.openDialog,
+  );
   const { t } = useTranslations();
 
   // Determine current route type
@@ -65,6 +79,32 @@ export default function ProjectsLayout({
   };
 
   const routeInfo = getRouteInfo();
+
+  // Fetch project data when on project detail route
+  const projectStats = useQuery(
+    api.queries.stats.getProjectStats,
+    routeInfo.isProjectRoute && routeInfo.projectId
+      ? { projectId: routeInfo.projectId as any }
+      : "skip",
+  );
+
+  // Handlers for edit and delete
+  const handleEditProject = () => {
+    if (projectStats && routeInfo.projectId) {
+      openEditDialog(routeInfo.projectId as any, {
+        title: projectStats.project.title,
+        description: projectStats.project.description,
+        startDate: projectStats.project.startDate,
+        endDate: projectStats.project.endDate,
+      });
+    }
+  };
+
+  const handleDeleteProject = () => {
+    if (projectStats && routeInfo.projectId) {
+      openDeleteDialog(routeInfo.projectId as any, projectStats.project.title);
+    }
+  };
 
   const getProjectsTabs = () => {
     const basePath = routeInfo.year
@@ -146,19 +186,69 @@ export default function ProjectsLayout({
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 shrink-0">
-              <ButtonGroupDropdown
-                label={t("projects.createProject")}
-                onMainClick={openDialog}
-                options={[
-                  {
-                    label: t("projects.templates.button.useTemplate"),
-                    description:
-                      "Select a template to automatically create projects",
-                    icon: <Sparkles />,
-                    onClick: openTemplateDialog,
-                  },
-                ]}
-              />
+              {/* Show Create + Template buttons for projects list and year list */}
+              {(routeInfo.isBaseRoute || routeInfo.isYearRoute) && (
+                <ButtonGroupDropdown
+                  label={t("projects.createProject")}
+                  onMainClick={openDialog}
+                  options={[
+                    {
+                      label: t("projects.templates.button.useTemplate"),
+                      description:
+                        "Select a template to automatically create projects",
+                      icon: <Sparkles />,
+                      onClick: openTemplateDialog,
+                    },
+                  ]}
+                />
+              )}
+
+              {/* Show Edit + Delete buttons for project detail */}
+              {routeInfo.isProjectRoute && projectStats && (
+                <>
+                  {/* Desktop buttons with text */}
+                  <div className="hidden sm:flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditProject}
+                      className="h-9 px-3"
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      {t("projects.editDialog.buttons.update")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDeleteProject}
+                      className="h-9 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {t("projects.deleteDialog.buttons.delete")}
+                    </Button>
+                  </div>
+
+                  {/* Mobile buttons - icon only */}
+                  <div className="sm:hidden flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditProject}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDeleteProject}
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -207,6 +297,8 @@ export default function ProjectsLayout({
 
       {/* Dialogs */}
       <CreateProjectDialog />
+      <EditProjectDialog />
+      <DeleteProjectDialog />
       <TemplateProjectsDialog />
       <ContentDialog />
     </div>
