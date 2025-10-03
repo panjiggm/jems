@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 import { EditableStatusCell } from "./editable-status-cell";
 import { EditablePhaseCell } from "./editable-phase-cell";
@@ -37,15 +36,9 @@ import { EditablePlatformCell } from "./editable-platform-cell";
 import { EditableTitleCell } from "./editable-title-cell";
 import { EditableNotesCell } from "./editable-notes-cell";
 import { EditableTypeCell } from "./editable-type-cell";
+import { ContentDetailsDrawer } from "../contents";
 
-import {
-  ChevronDown,
-  ChevronUp,
-  MoreHorizontal,
-  Plus,
-  Search,
-  Filter,
-} from "lucide-react";
+import { Eye } from "lucide-react";
 
 type Content = {
   _id: Id<"contents">;
@@ -110,6 +103,11 @@ export function EditableTable({
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
 
+  // Drawer state
+  const [selectedContentId, setSelectedContentId] =
+    useState<Id<"contents"> | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   // Fetch data
   const contents = useQuery(api.queries.contents.getByProject, {
     projectId,
@@ -122,6 +120,11 @@ export function EditableTable({
   const updateContent = useMutation(api.mutations.contents.update);
   const setStatus = useMutation(api.mutations.contents.setStatus);
   const setPhase = useMutation(api.mutations.contents.setPhase);
+
+  const handleOpenDrawer = (contentId: Id<"contents">) => {
+    setSelectedContentId(contentId);
+    setDrawerOpen(true);
+  };
 
   const columns = [
     // Selection column
@@ -255,11 +258,16 @@ export function EditableTable({
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenDrawer(row.original._id);
+          }}
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
       ),
       enableSorting: false,
       enableHiding: false,
@@ -297,88 +305,101 @@ export function EditableTable({
   }
 
   return (
-    <div className="w-full space-y-4">
-      {/* Table */}
-      <div className="rounded-lg border bg-white">
-        <Table>
-          <TableHeader className="bg-muted/70">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b">
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="font-semibold text-foreground"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, index) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="hover:bg-muted/30 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-3">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
+    <>
+      <div className="w-full space-y-4">
+        {/* Table */}
+        <div className="rounded-lg border bg-white">
+          <Table>
+            <TableHeader className="bg-muted/70">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="border-b">
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="font-semibold text-foreground"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  No content found. Create your first content to get started.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="py-3">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    No content found. Create your first content to get started.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between space-x-2 py-4 px-1">
+          <div className="flex-1 text-sm text-muted-foreground">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="h-8"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="h-8"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between space-x-2 py-4 px-1">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="h-8"
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="h-8"
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    </div>
+      {/* Content Details Drawer */}
+      <ContentDetailsDrawer
+        contentId={selectedContentId}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onDeleted={() => {
+          // Content is deleted, the query will automatically refetch
+          // due to Convex's reactive queries
+        }}
+      />
+    </>
   );
 }

@@ -26,8 +26,10 @@ export function TypeBadge({ type }: TypeBadgeProps) {
   const config = typeConfig[type];
 
   return (
-    <Badge className={`text-xs px-2 py-1 ${config.color} border`}>
-      <div className={`w-1.5 h-1.5 rounded-full ${config.dotColor} mr-1`} />
+    <Badge
+      className={`text-xs px-2 py-1 ${config.color} border flex items-center`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor} mr-1`} />
       {config.label}
     </Badge>
   );

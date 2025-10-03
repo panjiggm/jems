@@ -7,11 +7,11 @@ import {
 } from "@dnd-kit/sortable";
 import { Plus, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { KanbanCard } from "./kanban-card";
+import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 interface Content {
-  _id: string;
+  _id: Id<"contents">;
   title: string;
   platform:
     | "tiktok"
