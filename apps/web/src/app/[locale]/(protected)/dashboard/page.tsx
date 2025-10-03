@@ -142,8 +142,8 @@ export default function DashboardPage() {
     <div className="min-h-screen">
       <div className="container mx-auto p-6 space-y-8">
         {/* Hero Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#f7a641] to-[#4a2e1a] p-8 md:p-12 border-2 border-[#4a2e1a]">
-          <div className="relative z-10">
+        <div className="overflow-hidden rounded-3xl bg-gradient-to-r from-[#f7a641] to-[#4a2e1a] p-8 md:p-12 border-2 border-[#4a2e1a]">
+          <div className="relative">
             <div className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-4">
               CONTENT CREATOR PLATFORM
             </div>

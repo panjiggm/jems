@@ -19,7 +19,7 @@ export default function DashboardLayout({
     <SidebarProvider>
       <SidebarLeft />
       <SidebarInset>
-        <header className="bg-background sticky top-0 flex h-14 shrink-0 items-center justify-between gap-2 px-3">
+        <header className="bg-background sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-2 px-3">
           <div className="flex items-center gap-2">
             <SidebarTrigger />
             <Badge className="bg-gradient-to-r from-[#f7a641] to-[#4a2e1a] text-white border-0 font-bold animate-pulse hover:animate-none">

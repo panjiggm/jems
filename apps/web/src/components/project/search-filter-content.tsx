@@ -397,134 +397,137 @@ export default function SearchFilterContent({
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-[60vh] overflow-y-auto">
+          <SheetContent side="bottom" className="h-[40vh] overflow-y-auto">
             <SheetHeader>
               <SheetTitle>Filters</SheetTitle>
             </SheetHeader>
             <div className="space-y-4 p-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Platform</label>
-                <FilterSelect
-                  label="Platform"
-                  icon={MonitorSmartphone}
-                  selectedValues={filters.platform}
-                  options={platformOrder.map((platform) => {
-                    const config = platformConfig[platform];
-                    return {
-                      value: platform,
-                      label: (
-                        <>
-                          {config.icon && (
-                            <Image
-                              src={config.icon}
-                              alt={config.label}
-                              width={16}
-                              height={16}
-                              className="h-4 w-4"
-                            />
-                          )}
-                          {config.label}
-                        </>
-                      ),
-                    } as const;
-                  })}
-                  onToggle={handlePlatformToggle}
-                  onClear={() => clearCategory("platform")}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
-                <FilterSelect
-                  label="Status"
-                  icon={BadgeCheck}
-                  selectedValues={filters.status}
-                  options={statusOrder.map((status) => {
-                    const config = statusConfig[status];
-                    const Icon = config.icon;
-                    return {
-                      value: status,
-                      label: (
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "flex items-center gap-2 text-xs font-medium",
-                            config.className,
-                          )}
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                          {config.label}
-                        </Badge>
-                      ),
-                    } as const;
-                  })}
-                  onToggle={handleStatusToggle}
-                  onClear={() => clearCategory("status")}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Phase</label>
-                <FilterSelect
-                  label="Phase"
-                  icon={Target}
-                  selectedValues={filters.phase}
-                  options={phaseOrder.map((phase) => {
-                    const config = phaseConfig[phase];
-                    const Icon = config.icon;
-                    return {
-                      value: phase,
-                      label: (
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "flex items-center gap-2 text-xs font-medium",
-                            config.className,
-                          )}
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                          {config.label}
-                        </Badge>
-                      ),
-                    } as const;
-                  })}
-                  onToggle={handlePhaseToggle}
-                  onClear={() => clearCategory("phase")}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Type</label>
-                <FilterSelect
-                  label="Type"
-                  icon={Layers}
-                  selectedValues={filters.types}
-                  options={typeOrder.map((type) => {
-                    const config = typeConfig[type];
-                    return {
-                      value: type,
-                      label: (
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "flex items-center gap-2 text-xs font-medium",
-                            config.color,
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "h-2 w-2 rounded-full",
-                              config.dotColor,
+              {/* Grid 2x2 for filters */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Platform</label>
+                  <FilterSelect
+                    label="Platform"
+                    icon={MonitorSmartphone}
+                    selectedValues={filters.platform}
+                    options={platformOrder.map((platform) => {
+                      const config = platformConfig[platform];
+                      return {
+                        value: platform,
+                        label: (
+                          <>
+                            {config.icon && (
+                              <Image
+                                src={config.icon}
+                                alt={config.label}
+                                width={16}
+                                height={16}
+                                className="h-4 w-4"
+                              />
                             )}
-                          />
-                          {config.label}
-                        </Badge>
-                      ),
-                    } as const;
-                  })}
-                  onToggle={handleTypeToggle}
-                  onClear={() => clearCategory("types")}
-                />
+                            {config.label}
+                          </>
+                        ),
+                      } as const;
+                    })}
+                    onToggle={handlePlatformToggle}
+                    onClear={() => clearCategory("platform")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Status</label>
+                  <FilterSelect
+                    label="Status"
+                    icon={BadgeCheck}
+                    selectedValues={filters.status}
+                    options={statusOrder.map((status) => {
+                      const config = statusConfig[status];
+                      const Icon = config.icon;
+                      return {
+                        value: status,
+                        label: (
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "flex items-center gap-2 text-xs font-medium",
+                              config.className,
+                            )}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            {config.label}
+                          </Badge>
+                        ),
+                      } as const;
+                    })}
+                    onToggle={handleStatusToggle}
+                    onClear={() => clearCategory("status")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Phase</label>
+                  <FilterSelect
+                    label="Phase"
+                    icon={Target}
+                    selectedValues={filters.phase}
+                    options={phaseOrder.map((phase) => {
+                      const config = phaseConfig[phase];
+                      const Icon = config.icon;
+                      return {
+                        value: phase,
+                        label: (
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "flex items-center gap-2 text-xs font-medium",
+                              config.className,
+                            )}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            {config.label}
+                          </Badge>
+                        ),
+                      } as const;
+                    })}
+                    onToggle={handlePhaseToggle}
+                    onClear={() => clearCategory("phase")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Type</label>
+                  <FilterSelect
+                    label="Type"
+                    icon={Layers}
+                    selectedValues={filters.types}
+                    options={typeOrder.map((type) => {
+                      const config = typeConfig[type];
+                      return {
+                        value: type,
+                        label: (
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "flex items-center gap-2 text-xs font-medium",
+                              config.color,
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "h-2 w-2 rounded-full",
+                                config.dotColor,
+                              )}
+                            />
+                            {config.label}
+                          </Badge>
+                        ),
+                      } as const;
+                    })}
+                    onToggle={handleTypeToggle}
+                    onClear={() => clearCategory("types")}
+                  />
+                </div>
               </div>
 
               <Button
