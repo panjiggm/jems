@@ -101,11 +101,11 @@ export function EditableStatusBadge({
   contentId,
   contentType,
 }: EditableStatusBadgeProps) {
-  const updateContent = useMutation(api.mutations.contents.update);
+  const updateStatus = useMutation(api.mutations.contents.setStatus);
 
   const handleChange = async (newStatus: Status) => {
     try {
-      await updateContent({
+      await updateStatus({
         id: contentId,
         status: newStatus,
       });
@@ -122,18 +122,18 @@ export function EditableStatusBadge({
 
   return (
     <Select value={value} onValueChange={handleChange}>
-      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0">
+      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0 w-full">
         <Badge
           variant="outline"
           className={cn(
-            "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity",
+            "inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity w-full justify-center",
             currentColor,
           )}
         >
           {React.createElement(currentIcon, {
-            className: "h-3 w-3 shrink-0",
+            className: "h-3 w-3",
           })}
-          {currentLabel}
+          <span className="leading-none">{currentLabel}</span>
         </Badge>
       </SelectTrigger>
       <SelectContent>

@@ -49,7 +49,9 @@ export function EditableTypeBadge({
     try {
       await updateContent({
         id: contentId,
-        type: newType,
+        patch: {
+          type: newType,
+        },
       });
     } catch (error) {
       console.error("Failed to update type:", error);
@@ -60,21 +62,18 @@ export function EditableTypeBadge({
 
   return (
     <Select value={value} onValueChange={handleChange}>
-      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0">
+      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0 w-full">
         <Badge
           variant="outline"
           className={cn(
-            "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity",
+            "flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity w-full justify-center",
             currentConfig?.color,
           )}
         >
           <div
-            className={cn(
-              "w-2 h-2 rounded-full shrink-0",
-              currentConfig?.dotColor,
-            )}
+            className={cn("w-2 h-2 rounded-full", currentConfig?.dotColor)}
           />
-          {currentConfig?.label}
+          <span className="">{currentConfig?.label}</span>
         </Badge>
       </SelectTrigger>
       <SelectContent>

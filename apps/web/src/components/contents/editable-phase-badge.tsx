@@ -53,11 +53,11 @@ export function EditablePhaseBadge({
   value,
   contentId,
 }: EditablePhaseBadgeProps) {
-  const updateContent = useMutation(api.mutations.contents.update);
+  const updatePhase = useMutation(api.mutations.contents.setPhase);
 
   const handleChange = async (newPhase: Phase) => {
     try {
-      await updateContent({
+      await updatePhase({
         id: contentId,
         phase: newPhase,
       });
@@ -71,16 +71,16 @@ export function EditablePhaseBadge({
 
   return (
     <Select value={value} onValueChange={handleChange}>
-      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0">
+      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0 w-full">
         <Badge
           variant="outline"
           className={cn(
-            "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity",
+            "flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity w-full justify-center",
             currentConfig.className,
           )}
         >
-          <Icon className="h-3 w-3 shrink-0" />
-          {currentConfig.label}
+          <Icon className="h-3 w-3" />
+          <span className="leading-none">{currentConfig.label}</span>
         </Badge>
       </SelectTrigger>
       <SelectContent>

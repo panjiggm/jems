@@ -20,6 +20,7 @@ import {
 import { Trash2, Plus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { ButtonPrimary } from "../ui/button-primary";
 
 interface Task {
   _id: Id<"tasks">;
@@ -191,8 +192,8 @@ export function TaskSection({ contentId, projectId }: TaskSectionProps) {
           }}
           className="flex-1"
         />
-        <Button
-          size="sm"
+        <ButtonPrimary
+          size="default"
           onClick={handleAddTask}
           disabled={!newTaskTitle.trim() || isAddingTask}
         >
@@ -201,7 +202,7 @@ export function TaskSection({ contentId, projectId }: TaskSectionProps) {
           ) : (
             <Plus className="h-4 w-4" />
           )}
-        </Button>
+        </ButtonPrimary>
       </div>
 
       {/* Task Stats */}

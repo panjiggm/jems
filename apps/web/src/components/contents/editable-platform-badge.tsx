@@ -77,7 +77,9 @@ export function EditablePlatformBadge({
     try {
       await updateContent({
         id: contentId,
-        platform: newPlatform,
+        patch: {
+          platform: newPlatform,
+        },
       });
     } catch (error) {
       console.error("Failed to update platform:", error);
@@ -88,11 +90,11 @@ export function EditablePlatformBadge({
 
   return (
     <Select value={value} onValueChange={handleChange}>
-      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0">
+      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0 w-full">
         <Badge
           variant="outline"
           className={cn(
-            "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity",
+            "inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity w-full justify-center",
             currentConfig.className,
           )}
         >
@@ -102,10 +104,10 @@ export function EditablePlatformBadge({
               alt={currentConfig.label}
               width={12}
               height={12}
-              className="w-3 h-3 shrink-0"
+              className="w-3 h-3"
             />
           )}
-          {currentConfig.label}
+          <span className="leading-none">{currentConfig.label}</span>
         </Badge>
       </SelectTrigger>
       <SelectContent>

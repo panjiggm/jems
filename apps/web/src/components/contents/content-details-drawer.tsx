@@ -93,7 +93,7 @@ export function ContentDetailsDrawer({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col h-full"
+          className="w-full sm:max-w-md md:max-w-lg p-0 flex flex-col h-full"
         >
           {/* Fixed Header */}
           <SheetHeader className="p-6 pb-4 flex-shrink-0 border-b">
@@ -125,7 +125,7 @@ export function ContentDetailsDrawer({
                   </h3>
 
                   {/* Editable Badges */}
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     <EditablePlatformBadge
                       value={content.platform}
                       contentId={content._id}
