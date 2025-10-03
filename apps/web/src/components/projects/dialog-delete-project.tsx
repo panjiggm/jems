@@ -78,7 +78,7 @@ export function DeleteProjectDialog() {
           <DialogDescription className="pt-3">
             {t("projects.deleteDialog.description")}{" "}
             <span className="font-semibold text-foreground">
-              "{projectTitle}"
+              &ldquo;{projectTitle}&rdquo;
             </span>
             ?
             <br />

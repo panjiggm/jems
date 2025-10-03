@@ -218,9 +218,9 @@ export function ContentDetailsDrawer({
           <DialogHeader>
             <DialogTitle>Delete Content</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{content.title}"? This action
-              cannot be undone. All associated tasks will remain but will no
-              longer be linked to this content.
+              Are you sure you want to delete &ldquo;{content.title}&rdquo;?
+              This action cannot be undone. All associated tasks will remain but
+              will no longer be linked to this content.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

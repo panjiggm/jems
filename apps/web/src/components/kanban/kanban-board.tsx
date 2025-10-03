@@ -19,7 +19,7 @@ import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { FilterState } from "../project/search-filter-content";
 
 interface Content {
-  _id: string;
+  _id: Id<"contents">;
   title: string;
   description?: string;
   platform:
