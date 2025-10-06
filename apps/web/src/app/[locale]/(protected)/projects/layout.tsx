@@ -2,7 +2,6 @@
 
 import React from "react";
 import {
-  Plus,
   Calendar,
   Kanban,
   Table,
@@ -14,7 +13,6 @@ import {
 } from "lucide-react";
 import ProjectStats from "@/components/projects/project-stats";
 import RecentActivity from "@/components/projects/recent-activity";
-import { ButtonPrimary } from "@/components/ui/button-primary";
 import { Button } from "@/components/ui/button";
 import { CreateProjectDialog } from "@/components/projects/dialog-create-project";
 import { EditProjectDialog } from "@/components/projects/dialog-edit-project";
