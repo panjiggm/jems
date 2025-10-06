@@ -70,7 +70,7 @@ export function StatusSection({
   const [isExpanded, setIsExpanded] = useState(count > 0);
 
   return (
-    <div className="bg-white rounded-lg border">
+    <div className="bg-card rounded-lg border border-border">
       {/* Header */}
       <div className="flex items-center justify-between p-2">
         <div className="flex items-center gap-3">

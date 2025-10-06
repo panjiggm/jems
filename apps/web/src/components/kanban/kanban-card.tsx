@@ -56,7 +56,7 @@ const platformColors = {
   tiktok: "bg-pink-100 text-pink-800",
   instagram: "bg-purple-100 text-purple-800",
   youtube: "bg-red-100 text-red-800",
-  x: "bg-black text-white",
+  x: "bg-gray-100 text-gray-800",
   facebook: "bg-blue-100 text-blue-800",
   threads: "bg-gray-100 text-gray-800",
   other: "bg-gray-100 text-gray-800",
@@ -77,16 +77,11 @@ export function KanbanCard({
   title,
   description,
   platform,
-  status,
   type,
   phase,
   dueDate,
   scheduledAt,
-  publishedAt,
-  notes,
   assetIds = [],
-  createdAt,
-  updatedAt,
 }: KanbanCardProps) {
   const {
     attributes,
@@ -154,14 +149,14 @@ export function KanbanCard({
         {...attributes}
         {...listeners}
         className={cn(
-          "w-full bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing",
+          "w-full bg-card rounded-lg border border-border p-4 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing",
           isDragging && "opacity-50 rotate-2 scale-105",
         )}
         onClick={() => handleOpenDrawer(id)}
       >
         {/* Header with title and status */}
         <div className="flex items-start justify-between mb-3">
-          <h4 className="font-semibold text-sm text-gray-900 line-clamp-2">
+          <h4 className="font-semibold text-sm text-foreground line-clamp-2">
             {title}
           </h4>
           <Badge className={cn("text-xs", getPhaseColor(phase))}>
@@ -171,7 +166,7 @@ export function KanbanCard({
 
         {/* Description */}
         {description && (
-          <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+          <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
             {description}
           </p>
         )}
@@ -201,7 +196,7 @@ export function KanbanCard({
         {/* Attachments */}
         {assetIds && assetIds.length > 0 && (
           <div className="mb-3">
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Paperclip className="h-3 w-3" />
               <span>{assetIds.length} attachments</span>
             </div>
@@ -209,9 +204,9 @@ export function KanbanCard({
         )}
 
         {/* Metrics */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           {/* Subtasks */}
-          <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <CheckSquare className="h-3 w-3" />
             <span>0 subtasks</span>
           </div>

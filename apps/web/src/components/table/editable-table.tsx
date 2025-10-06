@@ -308,11 +308,14 @@ export function EditableTable({
     <>
       <div className="w-full space-y-4">
         {/* Table */}
-        <div className="rounded-lg border bg-white">
+        <div className="rounded-lg border border-border bg-card">
           <Table>
             <TableHeader className="bg-muted/70">
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="border-b">
+                <TableRow
+                  key={headerGroup.id}
+                  className="border-b border-border"
+                >
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
@@ -335,7 +338,7 @@ export function EditableTable({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="hover:bg-muted/30 transition-colors"
+                    className="hover:bg-muted/30 transition-colors border-b border-border"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="py-3">

@@ -158,9 +158,9 @@ export default function ProjectsLayout({
   const showBackButton = !routeInfo.isBaseRoute;
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-muted/30 min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-card border-b border-border">
         <div className="p-3 sm:p-4">
           <div className="flex items-center justify-between gap-3">
             {/* Mobile: Back Button | Desktop: Breadcrumb */}
@@ -221,7 +221,7 @@ export default function ProjectsLayout({
                       variant="outline"
                       size="sm"
                       onClick={handleDeleteProject}
-                      className="h-9 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      className="h-9 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50 dark:border-red-900/50"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       {t("projects.deleteDialog.buttons.delete")}
@@ -242,7 +242,7 @@ export default function ProjectsLayout({
                       variant="outline"
                       size="sm"
                       onClick={handleDeleteProject}
-                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50 dark:border-red-900/50"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -258,7 +258,7 @@ export default function ProjectsLayout({
         {/* Main Content */}
         <div className="flex-1 min-w-0 lg:col-span-10 order-2 lg:order-1">
           {/* Tabs */}
-          <div className="bg-white border-b overflow-x-auto">
+          <div className="bg-card border-b border-border overflow-x-auto">
             {/* Show TabsYear for base route and year route */}
             {(routeInfo.isBaseRoute || routeInfo.isYearRoute) && (
               <TabsYear useUrlNavigation={true} locale={locale} />
@@ -282,13 +282,13 @@ export default function ProjectsLayout({
         </div>
 
         {/* Right Sidebar - Stats & Activity */}
-        <div className="w-full lg:col-span-2 bg-white border-t lg:border-t-0 lg:border-l order-1 lg:order-2">
+        <div className="w-full lg:col-span-2 bg-card border-t border-border lg:border-t-0 lg:border-l order-1 lg:order-2">
           {/* User Header */}
           <div className="lg:sticky lg:top-14">
             <ProjectStats />
 
             {/* Recent Activity - Hidden on mobile, shown on desktop */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:block min-h-screen">
               <RecentActivity />
             </div>
           </div>
