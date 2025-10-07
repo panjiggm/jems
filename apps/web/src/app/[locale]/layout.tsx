@@ -5,6 +5,7 @@ import "@/styles/globals.css";
 import ConvexClientProvider from "@/components/providers/convex-providers";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const inter = Inter({ subsets: ["latin"] });
 const montserrat = Montserrat({ subsets: ["latin"] });
@@ -26,7 +27,9 @@ export default function RootLayout({
         className={cn(inter.className, montserrat.className, lato.className)}
       >
         <ThemeProvider attribute={"class"} defaultTheme="system" enableSystem>
-          <ConvexClientProvider>{children}</ConvexClientProvider>
+          <ConvexClientProvider>
+            <NuqsAdapter>{children}</NuqsAdapter>
+          </ConvexClientProvider>
           <Toaster position="top-right" richColors />
         </ThemeProvider>
       </body>

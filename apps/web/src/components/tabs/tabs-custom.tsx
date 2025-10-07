@@ -3,7 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { useQueryState } from "nuqs";
 import {
   FolderOpen,
   FileText,
@@ -96,14 +97,13 @@ const TabsCustom = ({
 }: TabsCustomProps) => {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [viewParam, setViewParam] = useQueryState("view");
 
   // Get current active tab based on URL
   const getCurrentTab = () => {
     if (!useUrlNavigation) return defaultValue;
 
     // First check for view query parameter
-    const viewParam = searchParams.get("view");
     if (viewParam) {
       const tab = tabs.find((t) => t.id === viewParam);
       if (tab) return tab.id;
@@ -142,11 +142,7 @@ const TabsCustom = ({
       }
     } else {
       // For non-URL navigation, update the view query parameter
-      const current = new URLSearchParams(Array.from(searchParams.entries()));
-      current.set("view", value);
-      const search = current.toString();
-      const query = search ? `?${search}` : "";
-      router.push(`${pathname}${query}`);
+      setViewParam(value);
       onValueChange?.(value);
     }
   };

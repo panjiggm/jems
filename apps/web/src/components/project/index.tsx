@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useQueryState } from "nuqs";
 import { Plus } from "lucide-react";
 import SearchFilterContent, { FilterState } from "./search-filter-content";
 import KanbanView from "./views/kanban-view";
@@ -21,7 +21,7 @@ export default function ProjectComponent({
   projectId,
   userId,
 }: ProjectComponentProps) {
-  const searchParams = useSearchParams();
+  const [currentView] = useQueryState("view", { defaultValue: "table" });
   const { openDialog } = useContentDialogStore();
   const { t } = useTranslations();
   const [filters, setFilters] = useState<FilterState>({
@@ -41,9 +41,6 @@ export default function ProjectComponent({
       openDialog(projectId);
     }
   };
-
-  // Get current view from URL query parameter
-  const currentView = searchParams.get("view") || "table";
 
   // Render the appropriate view based on current view
   const renderView = () => {
