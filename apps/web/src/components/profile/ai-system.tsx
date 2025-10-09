@@ -17,7 +17,7 @@ export default function AISystem() {
           AI System
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          View your AI assistant's system prompt
+          View your AI assistant&apos;s system prompt
         </p>
       </div>
 
