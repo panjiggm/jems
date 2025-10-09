@@ -1,10 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { HardDrive, Home, Laptop2, MessageCircleQuestion } from "lucide-react";
+import {
+  CreditCard,
+  HardDrive,
+  Home,
+  Laptop2,
+  MessageCircleQuestion,
+  User,
+  Bell,
+} from "lucide-react";
 
 import { NavChats } from "@/components/nav-chats";
 import { NavMain } from "@/components/nav-main";
+import { NavAccount } from "@/components/nav-account";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
@@ -40,6 +49,23 @@ const getNavData = (locale: Locale) => ({
       title: "Drive",
       url: `/${locale}/drive`,
       icon: HardDrive,
+    },
+  ],
+  navAccount: [
+    {
+      title: "Profile",
+      url: `/${locale}/profile`,
+      icon: User,
+    },
+    {
+      title: "Billing",
+      url: `/${locale}/billing`,
+      icon: CreditCard,
+    },
+    {
+      title: "Notifications",
+      url: `/${locale}/notifications`,
+      icon: Bell,
     },
   ],
   chats: [
@@ -85,6 +111,7 @@ export function SidebarLeft({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavAccount items={data.navAccount} />
         <NavChats chats={data.chats} />
       </SidebarContent>
       <SidebarRail />

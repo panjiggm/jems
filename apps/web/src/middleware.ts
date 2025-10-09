@@ -7,6 +7,7 @@ const isProtectedRoute = createRouteMatcher([
   "/:locale/ai",
   "/:locale/schedule",
   "/:locale/projects",
+  "/:locale/profile",
 ]);
 
 const isAuthRoute = createRouteMatcher([
