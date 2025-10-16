@@ -1,11 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/../../packages/backend/convex/_generated/api";
-import { OnboardingDialog } from "@/components/onboarding/onboarding-dialog";
 import { useUser } from "@clerk/nextjs";
-import { Toaster } from "@/components/ui/sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -110,49 +105,7 @@ const socialPlatforms = [
 ];
 
 export default function DashboardPage() {
-  const { user, isLoaded } = useUser();
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const hasTriedFixRef = useRef(false);
-
-  const onboardingStatus = useQuery(api.queries.profile.getOnboardingStatus);
-  const fixOnboardingStatus = useMutation(
-    api.mutations.profile.fixOnboardingStatus,
-  );
-
-  useEffect(() => {
-    if (isLoaded && user && onboardingStatus !== undefined) {
-      // If user has profile and persona but onboarding is not marked complete, try to fix it
-      if (
-        onboardingStatus.hasProfile &&
-        onboardingStatus.hasPersona &&
-        !onboardingStatus.isCompleted &&
-        !hasTriedFixRef.current
-      ) {
-        hasTriedFixRef.current = true;
-        fixOnboardingStatus().catch(console.error);
-        return; // Don't show onboarding dialog while fixing
-      }
-
-      if (!onboardingStatus.isCompleted) {
-        setShowOnboarding(true);
-      }
-    }
-  }, [isLoaded, user, onboardingStatus]);
-
-  const handleCloseOnboarding = () => {
-    setShowOnboarding(false);
-  };
-
-  if (!isLoaded || onboardingStatus === undefined) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f7a641] mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const { user } = useUser();
 
   return (
     <div className="min-h-screen">
@@ -543,15 +496,6 @@ export default function DashboardPage() {
             </Card>
           </div>
         </div>
-
-        {/* Onboarding Dialog */}
-        <OnboardingDialog
-          isOpen={showOnboarding}
-          onClose={handleCloseOnboarding}
-        />
-
-        {/* Toast notifications */}
-        <Toaster position="top-right" richColors />
       </div>
     </div>
   );
