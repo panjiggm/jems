@@ -33,9 +33,21 @@ export const getOnboardingStatus = query({
       return { isCompleted: false, hasProfile: false };
     }
 
+    // Check if user has persona data as well (more comprehensive check)
+    const persona = await ctx.db
+      .query("persona")
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .first();
+
+    // Consider onboarding completed if:
+    // 1. Profile has is_onboarding_completed = true, OR
+    // 2. Both profile and persona exist (user has gone through the process)
+    const isCompleted = profile.is_onboarding_completed || (profile && persona);
+
     return {
-      isCompleted: profile.is_onboarding_completed,
+      isCompleted,
       hasProfile: true,
+      hasPersona: !!persona,
       profile,
     };
   },

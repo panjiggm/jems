@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery } from "convex/react";
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/../../packages/backend/convex/_generated/api";
 import { OnboardingDialog } from "@/components/onboarding/onboarding-dialog";
 import { useUser } from "@clerk/nextjs";
@@ -112,11 +112,27 @@ const socialPlatforms = [
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const hasTriedFixRef = useRef(false);
 
   const onboardingStatus = useQuery(api.queries.profile.getOnboardingStatus);
+  const fixOnboardingStatus = useMutation(
+    api.mutations.profile.fixOnboardingStatus,
+  );
 
   useEffect(() => {
     if (isLoaded && user && onboardingStatus !== undefined) {
+      // If user has profile and persona but onboarding is not marked complete, try to fix it
+      if (
+        onboardingStatus.hasProfile &&
+        onboardingStatus.hasPersona &&
+        !onboardingStatus.isCompleted &&
+        !hasTriedFixRef.current
+      ) {
+        hasTriedFixRef.current = true;
+        fixOnboardingStatus().catch(console.error);
+        return; // Don't show onboarding dialog while fixing
+      }
+
       if (!onboardingStatus.isCompleted) {
         setShowOnboarding(true);
       }

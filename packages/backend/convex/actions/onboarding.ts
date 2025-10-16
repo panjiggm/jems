@@ -44,13 +44,8 @@ export const generateAndSavePrompt = internalAction({
         aiPrompt: aiPrompt || "Default AI prompt - generation failed",
       });
 
-      // Mark onboarding complete
-      await ctx.runMutation(
-        internal.mutations.onboarding.completeOnboardingProcess,
-        {
-          profileId: args.profileId,
-        },
-      );
+      // Onboarding is already marked complete in the mutation
+      // This action only handles AI prompt generation
     } catch (error) {
       // Save fallback and complete onboarding
       await ctx.runMutation(internal.mutations.onboarding.updatePersonaPrompt, {
@@ -58,12 +53,8 @@ export const generateAndSavePrompt = internalAction({
         aiPrompt: "Default AI prompt - generation failed",
       });
 
-      await ctx.runMutation(
-        internal.mutations.onboarding.completeOnboardingProcess,
-        {
-          profileId: args.profileId,
-        },
-      );
+      // Onboarding is already marked complete in the mutation
+      // This action only handles AI prompt generation
     }
   },
 });

@@ -122,6 +122,40 @@ export const completeOnboarding = mutation({
   },
 });
 
+// Fix onboarding status for existing users who have both profile and persona
+export const fixOnboardingStatus = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("User not found");
+
+    const profile = await ctx.db
+      .query("profile")
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .first();
+
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    // Check if user also has persona data
+    const persona = await ctx.db
+      .query("persona")
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .first();
+
+    // If user has both profile and persona but onboarding is not marked complete, fix it
+    if (persona && !profile.is_onboarding_completed) {
+      await ctx.db.patch(profile._id, {
+        is_onboarding_completed: true,
+      });
+      return { fixed: true, profileId: profile._id };
+    }
+
+    return { fixed: false, profileId: profile._id };
+  },
+});
+
 // Create or update persona
 export const updatePersona = mutation({
   args: {

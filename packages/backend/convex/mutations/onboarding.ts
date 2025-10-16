@@ -30,7 +30,8 @@ export const completeOnboarding = mutation({
       await ctx.db.patch(existingProfile._id, {
         full_name: args.full_name,
         phone: args.phone,
-        is_onboarding_completed: false, // Will be set to true after persona is created
+        // Don't reset onboarding status if it's already completed
+        is_onboarding_completed: existingProfile.is_onboarding_completed,
       });
       profileId = existingProfile._id;
     } else {
@@ -66,7 +67,12 @@ export const completeOnboarding = mutation({
       });
     }
 
-    // 3. Schedule AI prompt generation and save
+    // 3. Mark onboarding as completed immediately since we have both profile and persona
+    await ctx.db.patch(profileId, {
+      is_onboarding_completed: true,
+    });
+
+    // 4. Schedule AI prompt generation and save (background process)
     await ctx.scheduler.runAfter(
       0,
       internal.actions.onboarding.generateAndSavePrompt,
