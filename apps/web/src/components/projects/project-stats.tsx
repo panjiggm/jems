@@ -263,42 +263,6 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
             </div>
           ))}
         </div>
-
-        {/* Mobile Layout - Compact grid */}
-        <div className="sm:hidden grid grid-cols-4 gap-3">
-          {items.map(({ label, value, tone, icon: IconComponent }) => (
-            <div
-              key={label}
-              className="flex flex-col items-center justify-center gap-1.5"
-            >
-              <div
-                className={`p-2 rounded-lg ${
-                  tone === "critical" ? "bg-red-50" : "bg-gray-50"
-                }`}
-              >
-                <IconComponent
-                  className={`h-4 w-4 ${
-                    tone === "critical"
-                      ? "text-red-500"
-                      : "text-muted-foreground"
-                  }`}
-                />
-              </div>
-              <div className="flex flex-col items-center gap-0.5">
-                <span
-                  className={`font-semibold text-sm leading-none ${
-                    tone === "critical" ? "text-red-500" : "text-gray-900"
-                  }`}
-                >
-                  {value}
-                </span>
-                <span className="text-[10px] text-muted-foreground text-center leading-tight">
-                  {label}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
       </>
     );
   };
@@ -347,9 +311,9 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   const titleInfo = getTitleInfo();
 
   return (
-    <div className="p-4 sm:p-6 border-b">
+    <div className="hidden sm:block p-4 sm:p-6 border-b">
       {/* Header - Hidden on mobile */}
-      <div className="hidden sm:flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-4">
         <div className="bg-orange-50 rounded-lg p-4 text-orange-400">
           {isProjectsList ? (
             <FolderOpen className="h-7 w-7" />
@@ -365,19 +329,6 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
           <h2 className="font-semibold text-sm">{titleInfo.title}</h2>
           <p className="text-xs text-muted-foreground">{titleInfo.subtitle}</p>
         </div>
-      </div>
-
-      {/* Mobile Header - Simplified */}
-      <div className="sm:hidden mb-3">
-        <h2 className="font-semibold text-xs text-muted-foreground mb-2">
-          {isProjectsList
-            ? t("projects.stats.dashboardOverview")
-            : isYearList
-              ? `${year}`
-              : isProjectDetail
-                ? titleInfo.title
-                : userName}
-        </h2>
       </div>
 
       {/* Stats */}

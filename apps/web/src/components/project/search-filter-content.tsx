@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
+import { useQueryState } from "nuqs";
 import {
   Search,
   CheckCircle,
@@ -13,7 +14,7 @@ import {
   Calendar,
   Target,
   Play,
-  Layers,
+  Tag,
   BadgeCheck,
   MonitorSmartphone,
   Filter,
@@ -36,9 +37,9 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { STATUS_LABELS, type ContentType } from "@/types/status";
+import { STATUS_LABELS } from "@/types/status";
 
-// Campaign statuses
+// Campaign statuses (from schema)
 export type CampaignStatus =
   | "product_obtained"
   | "production"
@@ -46,12 +47,13 @@ export type CampaignStatus =
   | "payment"
   | "done";
 
-// Routine statuses
+// Routine statuses (from schema)
 export type RoutineStatus = "plan" | "in_progress" | "scheduled" | "published";
 
 // Combined for backward compatibility
 export type Status = CampaignStatus | RoutineStatus;
 
+// Platform types (from schema)
 export type Platform =
   | "tiktok"
   | "instagram"
@@ -61,10 +63,16 @@ export type Platform =
   | "threads"
   | "other";
 
+// Campaign types (from schema - only for campaigns)
+export type CampaignType = "barter" | "paid";
+
+// Content type (campaign or routine)
+export type ContentType = "campaign" | "routine";
+
 export interface FilterState {
   search: string;
   status: Status[];
-  types: ContentType[];
+  campaignTypes: CampaignType[]; // Changed from 'types' to 'campaignTypes'
   platform: Platform[];
 }
 
@@ -115,27 +123,28 @@ const platformConfig: Record<
   },
 };
 
-const typeConfig: Record<
-  ContentType,
-  { label: string; color: string; dotColor: string }
+// Campaign type config (barter vs paid - only for campaigns)
+const campaignTypeConfig: Record<
+  CampaignType,
+  { label: string; className: string; icon: LucideIcon }
 > = {
-  campaign: {
-    label: "Campaign",
-    color: "bg-purple-100 text-purple-800 border-purple-200",
-    dotColor: "bg-purple-500",
+  barter: {
+    label: "Barter",
+    className: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    icon: Package,
   },
-  routine: {
-    label: "Routine",
-    color: "bg-blue-100 text-blue-800 border-blue-200",
-    dotColor: "bg-blue-500",
+  paid: {
+    label: "Paid",
+    className: "bg-amber-100 text-amber-800 border-amber-200",
+    icon: DollarSign,
   },
 };
 
-const statusConfig: Record<
-  Status,
+// Status config with proper typing per content type
+const campaignStatusConfig: Record<
+  CampaignStatus,
   { label: string; className: string; icon: LucideIcon }
 > = {
-  // Campaign statuses
   product_obtained: {
     label: STATUS_LABELS.product_obtained || "Product Obtained",
     className: "bg-blue-100 text-blue-800 border-blue-200",
@@ -146,12 +155,27 @@ const statusConfig: Record<
     className: "bg-orange-100 text-orange-800 border-orange-200",
     icon: Wrench,
   },
+  published: {
+    label: STATUS_LABELS.published || "Published",
+    className: "bg-green-100 text-green-800 border-green-200",
+    icon: Send,
+  },
   payment: {
     label: STATUS_LABELS.payment || "Payment",
     className: "bg-yellow-100 text-yellow-800 border-yellow-200",
     icon: DollarSign,
   },
-  // Routine statuses
+  done: {
+    label: STATUS_LABELS.done || "Done",
+    className: "bg-gray-100 text-gray-800 border-gray-200",
+    icon: CheckCircle,
+  },
+};
+
+const routineStatusConfig: Record<
+  RoutineStatus,
+  { label: string; className: string; icon: LucideIcon }
+> = {
   plan: {
     label: STATUS_LABELS.plan || "Plan",
     className: "bg-blue-100 text-blue-800 border-blue-200",
@@ -167,20 +191,14 @@ const statusConfig: Record<
     className: "bg-purple-100 text-purple-800 border-purple-200",
     icon: Calendar,
   },
-  // Shared statuses
   published: {
     label: STATUS_LABELS.published || "Published",
     className: "bg-green-100 text-green-800 border-green-200",
     icon: Send,
   },
-  done: {
-    label: STATUS_LABELS.done || "Done",
-    className: "bg-gray-100 text-gray-800 border-gray-200",
-    icon: CheckCircle,
-  },
 };
 
-// Campaign statuses order
+// Status order per content type
 const campaignStatusOrder: CampaignStatus[] = [
   "product_obtained",
   "production",
@@ -189,18 +207,11 @@ const campaignStatusOrder: CampaignStatus[] = [
   "done",
 ];
 
-// Routine statuses order
 const routineStatusOrder: RoutineStatus[] = [
   "plan",
   "in_progress",
   "scheduled",
   "published",
-];
-
-// Combined status order
-const statusOrder: Status[] = [
-  ...campaignStatusOrder,
-  ...routineStatusOrder.filter((s) => !campaignStatusOrder.includes(s as any)),
 ];
 
 const platformOrder: Platform[] = [
@@ -213,12 +224,17 @@ const platformOrder: Platform[] = [
   "other",
 ];
 
-const typeOrder: ContentType[] = ["campaign", "routine"];
+const campaignTypeOrder: CampaignType[] = ["barter", "paid"];
 
 export default function SearchFilterContent({
   filters,
   onFiltersChange,
 }: SearchFilterContentProps) {
+  // Get contentType from URL params
+  const [contentType] = useQueryState("contentType", {
+    defaultValue: "campaign",
+  });
+
   const updateFilter = <K extends keyof FilterState>(
     key: K,
     value: FilterState[K],
@@ -243,8 +259,8 @@ export default function SearchFilterContent({
     updateFilter("platform", toggleValue(filters.platform, value));
   };
 
-  const handleTypeToggle = (value: ContentType) => {
-    updateFilter("types", toggleValue(filters.types, value));
+  const handleCampaignTypeToggle = (value: CampaignType) => {
+    updateFilter("campaignTypes", toggleValue(filters.campaignTypes, value));
   };
 
   const clearCategory = (key: keyof Omit<FilterState, "search">) => {
@@ -255,15 +271,24 @@ export default function SearchFilterContent({
     onFiltersChange({
       search: "",
       status: [],
-      types: [],
+      campaignTypes: [],
       platform: [],
     });
   };
 
+  // Get current status config and order based on contentType
+  const isCampaign = contentType === "campaign";
+  const currentStatusConfig = isCampaign
+    ? campaignStatusConfig
+    : routineStatusConfig;
+  const currentStatusOrder = isCampaign
+    ? campaignStatusOrder
+    : routineStatusOrder;
+
   const activeFiltersCount =
     (filters.search ? 1 : 0) +
     filters.status.length +
-    filters.types.length +
+    (isCampaign ? filters.campaignTypes.length : 0) +
     filters.platform.length;
 
   return (
@@ -276,19 +301,19 @@ export default function SearchFilterContent({
             placeholder="Search contents..."
             value={filters.search}
             onChange={(event) => handleSearchChange(event.target.value)}
-            className="pl-8 h-8 text-xs py-1"
+            className="pl-8 h-7 text-xs py-1"
           />
         </div>
 
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 px-3 shrink-0">
-              <Filter className="h-3.5 w-3.5 mr-1.5" />
+            <Button variant="outline" size="xs" className="px-3 shrink-0">
+              <Filter className="h-3 w-3 mr-1" />
               Filters
               {activeFiltersCount > 0 && (
                 <Badge
                   variant="secondary"
-                  className="ml-1.5 px-1.5 py-0 text-[10px] h-4"
+                  className="ml-1.5 px-1.5 py-0 text-[10px] h-3"
                 >
                   {activeFiltersCount}
                 </Badge>
@@ -339,8 +364,11 @@ export default function SearchFilterContent({
                     label="Status"
                     icon={BadgeCheck}
                     selectedValues={filters.status}
-                    options={statusOrder.map((status) => {
-                      const config = statusConfig[status];
+                    options={currentStatusOrder.map((status) => {
+                      const config =
+                        currentStatusConfig[
+                          status as keyof typeof currentStatusConfig
+                        ];
                       const Icon = config.icon;
                       return {
                         value: status,
@@ -363,39 +391,38 @@ export default function SearchFilterContent({
                   />
                 </div>
 
-                <div className="space-y-2 col-span-2">
-                  <label className="text-sm font-medium">Type</label>
-                  <FilterSelect
-                    label="Type"
-                    icon={Layers}
-                    selectedValues={filters.types}
-                    options={typeOrder.map((type) => {
-                      const config = typeConfig[type];
-                      return {
-                        value: type,
-                        label: (
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "flex items-center gap-2 text-xs font-medium",
-                              config.color,
-                            )}
-                          >
-                            <span
+                {/* Campaign Type Filter - Only show for campaigns */}
+                {isCampaign && (
+                  <div className="space-y-2 col-span-2">
+                    <label className="text-sm font-medium">Campaign Type</label>
+                    <FilterSelect
+                      label="Type"
+                      icon={Tag}
+                      selectedValues={filters.campaignTypes}
+                      options={campaignTypeOrder.map((type) => {
+                        const config = campaignTypeConfig[type];
+                        const Icon = config.icon;
+                        return {
+                          value: type,
+                          label: (
+                            <Badge
+                              variant="outline"
                               className={cn(
-                                "h-2 w-2 rounded-full",
-                                config.dotColor,
+                                "flex items-center gap-2 text-xs font-medium",
+                                config.className,
                               )}
-                            />
-                            {config.label}
-                          </Badge>
-                        ),
-                      } as const;
-                    })}
-                    onToggle={handleTypeToggle}
-                    onClear={() => clearCategory("types")}
-                  />
-                </div>
+                            >
+                              <Icon className="h-3.5 w-3.5" />
+                              {config.label}
+                            </Badge>
+                          ),
+                        } as const;
+                      })}
+                      onToggle={handleCampaignTypeToggle}
+                      onClear={() => clearCategory("campaignTypes")}
+                    />
+                  </div>
+                )}
               </div>
 
               <Button
@@ -457,8 +484,9 @@ export default function SearchFilterContent({
             label="Status"
             icon={BadgeCheck}
             selectedValues={filters.status}
-            options={statusOrder.map((status) => {
-              const config = statusConfig[status];
+            options={currentStatusOrder.map((status) => {
+              const config =
+                currentStatusConfig[status as keyof typeof currentStatusConfig];
               const Icon = config.icon;
               return {
                 value: status,
@@ -480,33 +508,35 @@ export default function SearchFilterContent({
             onClear={() => clearCategory("status")}
           />
 
-          <FilterSelect
-            label="Type"
-            icon={Layers}
-            selectedValues={filters.types}
-            options={typeOrder.map((type) => {
-              const config = typeConfig[type];
-              return {
-                value: type,
-                label: (
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "flex items-center gap-2 text-xs font-medium",
-                      config.color,
-                    )}
-                  >
-                    <span
-                      className={cn("h-2 w-2 rounded-full", config.dotColor)}
-                    />
-                    {config.label}
-                  </Badge>
-                ),
-              } as const;
-            })}
-            onToggle={handleTypeToggle}
-            onClear={() => clearCategory("types")}
-          />
+          {/* Campaign Type Filter - Only show for campaigns */}
+          {isCampaign && (
+            <FilterSelect
+              label="Type"
+              icon={Tag}
+              selectedValues={filters.campaignTypes}
+              options={campaignTypeOrder.map((type) => {
+                const config = campaignTypeConfig[type];
+                const Icon = config.icon;
+                return {
+                  value: type,
+                  label: (
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "flex items-center gap-2 text-xs font-medium",
+                        config.className,
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {config.label}
+                    </Badge>
+                  ),
+                } as const;
+              })}
+              onToggle={handleCampaignTypeToggle}
+              onClear={() => clearCategory("campaignTypes")}
+            />
+          )}
 
           <Button
             variant="ghost"
@@ -556,7 +586,10 @@ export default function SearchFilterContent({
           })}
 
           {(filters.status || []).map((status) => {
-            const config = statusConfig[status];
+            const config = isCampaign
+              ? campaignStatusConfig[status as CampaignStatus]
+              : routineStatusConfig[status as RoutineStatus];
+            if (!config) return null;
             const Icon = config.icon;
             return (
               <Badge
@@ -581,30 +614,32 @@ export default function SearchFilterContent({
             );
           })}
 
-          {(filters.types || []).map((type) => {
-            const config = typeConfig[type];
-            return (
-              <Badge
-                key={type}
-                variant="outline"
-                className={cn(
-                  "text-xs",
-                  "flex items-center gap-1 px-2 py-1",
-                  config.color,
-                )}
-              >
-                <span className={cn("h-2 w-2 rounded-full", config.dotColor)} />
-                {config.label}
-                <button
-                  type="button"
-                  onClick={() => handleTypeToggle(type)}
-                  className="ml-1 rounded-full p-0.5 hover:bg-destructive/20"
+          {isCampaign &&
+            (filters.campaignTypes || []).map((type) => {
+              const config = campaignTypeConfig[type];
+              const Icon = config.icon;
+              return (
+                <Badge
+                  key={type}
+                  variant="outline"
+                  className={cn(
+                    "text-xs",
+                    "flex items-center gap-1 px-2 py-1",
+                    config.className,
+                  )}
                 >
-                  <XIcon className="h-3.5 w-3.5" />
-                </button>
-              </Badge>
-            );
-          })}
+                  <Icon className="h-3.5 w-3.5" />
+                  {config.label}
+                  <button
+                    type="button"
+                    onClick={() => handleCampaignTypeToggle(type)}
+                    className="ml-1 rounded-full p-0.5 hover:bg-destructive/20"
+                  >
+                    <XIcon className="h-3.5 w-3.5" />
+                  </button>
+                </Badge>
+              );
+            })}
         </div>
       )}
     </div>
@@ -637,7 +672,7 @@ function FilterSelect<T extends string>({
   return (
     <div className="flex items-center gap-2">
       <Select open={open} onOpenChange={setOpen}>
-        <SelectTrigger className="justify-start gap-1.5 h-8 px-2 py-1">
+        <SelectTrigger className="justify-start gap-1.5">
           <Icon className="h-3 w-3" />
           <div className="flex flex-wrap items-center gap-1">
             <span className="text-xs text-muted-foreground">
@@ -663,7 +698,7 @@ function FilterSelect<T extends string>({
                   event.preventDefault();
                   onToggle(option.value);
                 }}
-                className={`cursor-pointer text-xs py-1.5 px-2 ${
+                className={`cursor-pointer text-xs py-1 px-2 ${
                   selectedValues.includes(option.value)
                     ? "bg-primary/10"
                     : "hover:bg-muted"

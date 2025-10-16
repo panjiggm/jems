@@ -31,8 +31,8 @@ export function ViewDisplayDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="xs" className="gap-2">
-          <CurrentIcon className="h-4 w-4" />
+        <Button variant="outline" size="xs" className="gap-2 text-xs">
+          <CurrentIcon className="h-3 w-3" />
           <span className="hidden sm:inline">Display</span>
         </Button>
       </DropdownMenuTrigger>
@@ -47,9 +47,9 @@ export function ViewDisplayDropdown() {
               <DropdownMenuRadioItem
                 key={option.value}
                 value={option.value}
-                className="cursor-pointer"
+                className="cursor-pointer text-xs"
               >
-                <Icon className="h-4 w-4 mr-2" />
+                <Icon className="h-3 w-3 mr-1" />
                 {option.label}
               </DropdownMenuRadioItem>
             );

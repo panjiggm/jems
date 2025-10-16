@@ -30,7 +30,7 @@ export default function ProjectComponent({
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     status: [],
-    types: [],
+    campaignTypes: [],
     platform: [],
   });
 
@@ -98,25 +98,43 @@ export default function ProjectComponent({
   return (
     <div className="w-full space-y-4">
       {/* Header with Create Content Button and Search/Filter */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        {/* Search/Filter - takes full width on mobile */}
-        <div className="flex-1 w-full md:w-auto">
-          <SearchFilterContent
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-          />
+      <div className="space-y-3">
+        {/* Mobile Layout - Inline with search */}
+        <div className="flex md:hidden items-center gap-2">
+          <div className="flex-1">
+            <SearchFilterContent
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+            />
+          </div>
+          <ButtonPrimary
+            size="xs"
+            onClick={handleCreateContent}
+            disabled={!projectId}
+            className="shrink-0"
+          >
+            <Plus className="h-3 w-3" />
+          </ButtonPrimary>
         </div>
 
-        {/* Create Content Button - full width on mobile, auto on desktop */}
-        <ButtonPrimary
-          size="sm"
-          onClick={handleCreateContent}
-          disabled={!projectId}
-          className="w-full md:w-auto shrink-0"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {t("projects.createContent")}
-        </ButtonPrimary>
+        {/* Desktop Layout - Separate rows */}
+        <div className="hidden md:flex md:items-center md:justify-between gap-3">
+          <div className="flex-1">
+            <SearchFilterContent
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+            />
+          </div>
+          <ButtonPrimary
+            size="xs"
+            onClick={handleCreateContent}
+            disabled={!projectId}
+            className="shrink-0"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            {t("projects.createContent")}
+          </ButtonPrimary>
+        </div>
       </div>
 
       {/* View Content */}

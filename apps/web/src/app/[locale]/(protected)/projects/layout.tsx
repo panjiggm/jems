@@ -177,7 +177,9 @@ export default function ProjectsLayout({
                   className="sm:hidden flex items-center gap-2 text-sm font-medium"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  {t("common.back") || "Kembali"}
+                  {routeInfo.isProjectRoute && projectStats?.project?.title
+                    ? projectStats.project.title
+                    : t("common.back") || "Kembali"}
                 </Button>
               )}
 
@@ -216,16 +218,20 @@ export default function ProjectsLayout({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={handleEditProject}>
-                      <Edit2 className="h-4 w-4 mr-2" />
+                    <DropdownMenuItem
+                      onClick={handleEditProject}
+                      className="cursor-pointer text-xs"
+                    >
+                      <Edit2 className="h-3 w-3 mr-1" />
                       {t("projects.editDialog.buttons.update")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleDeleteProject}
                       variant="destructive"
+                      className="cursor-pointer text-xs"
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="h-3 w-3 mr-1" />
                       {t("projects.deleteDialog.buttons.delete")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>

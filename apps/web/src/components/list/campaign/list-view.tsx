@@ -45,11 +45,12 @@ export default function CampaignListView({
   const campaigns = useQuery(
     api.queries.contentCampaigns.getByProject,
     projectId
-      ? {
+      ?         {
           projectId,
           search: filters.search || undefined,
           status: filters.status.length > 0 ? filters.status : undefined,
-          types: filters.types.length > 0 ? filters.types : undefined,
+          types:
+            filters.campaignTypes.length > 0 ? filters.campaignTypes : undefined,
           platform: filters.platform.length > 0 ? filters.platform : undefined,
         }
       : "skip",

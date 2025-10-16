@@ -1,7 +1,7 @@
 export const projects = {
   title: "Projects",
   createProject: "Create Project",
-  createContent: "Create Content",
+  createContent: "Add Content",
   createTask: "Create Task",
   noProjects: "No projects yet",
   noProjectsDescription: "Create your first project to get started",
