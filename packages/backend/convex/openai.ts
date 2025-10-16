@@ -1,10 +1,5 @@
 import { OpenAI } from "openai";
-import {
-  action,
-  internalAction,
-  internalMutation,
-  query,
-} from "./_generated/server";
+import { action, internalAction, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 
@@ -99,7 +94,7 @@ Write this as a system prompt that will be used to instruct an AI assistant.`;
         },
         { role: "user", content: prompt },
       ],
-      model: "gpt-4o-mini",
+      model: process.env.AI_MODEL as string,
     });
 
     const aiPrompt = output.choices[0]?.message.content?.trim();
@@ -154,7 +149,7 @@ ${nicheNames ? ` my niches: ${nicheNames}` : ""}. Create an engaging and profess
         },
         { role: "user" as const, content: userPrompt },
       ],
-      model: "gpt-4o-mini",
+      model: process.env.AI_MODEL as string,
     });
 
     const messageContent = output.choices[0]?.message.content?.trim();
