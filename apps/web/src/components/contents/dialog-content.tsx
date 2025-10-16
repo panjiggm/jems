@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2, CalendarIcon } from "lucide-react";
 import Image from "next/image";
 import { format } from "date-fns";
+import { useState } from "react";
 
 import {
   Dialog,
@@ -33,10 +34,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useContentDialogStore } from "@/store/use-dialog-content-store";
 import { useTranslations } from "@/hooks/use-translations";
-import { ContentType } from "@/types/status";
+import {
+  ContentType,
+  ContentCampaignType,
+  ContentCampaignStatus,
+  ContentRoutineStatus,
+} from "@/types/status";
 
 export function ContentDialog() {
   const { t } = useTranslations();
@@ -54,13 +61,16 @@ export function ContentDialog() {
     resetForm,
   } = useContentDialogStore();
 
+  const [contentType, setContentType] = useState<ContentType>("campaign");
+
   // Get projects list for dropdown (only when projectId is not provided)
   const projects = useQuery(
     api.queries.projects.getAll,
     !projectId ? { search: "" } : "skip",
   );
 
-  const createContent = useMutation(api.mutations.contents.create);
+  const createCampaign = useMutation(api.mutations.contentCampaigns.create);
+  const createRoutine = useMutation(api.mutations.contentRoutines.create);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,22 +81,23 @@ export function ContentDialog() {
     let hasErrors = false;
 
     if (!formData.title.trim()) {
-      setError("title", t("contents.dialog.form.titleRequired"));
+      setError("title", "Title is required");
       hasErrors = true;
     }
 
     if (!formData.platform) {
-      setError("platform", t("contents.dialog.form.platformRequired"));
-      hasErrors = true;
-    }
-
-    if (!formData.type) {
-      setError("type", t("contents.dialog.form.typeRequired"));
+      setError("platform", "Platform is required");
       hasErrors = true;
     }
 
     if (!projectId) {
-      setError("projectId", t("contents.dialog.form.projectRequired"));
+      setError("projectId", "Project is required");
+      hasErrors = true;
+    }
+
+    // Campaign-specific validation
+    if (contentType === "campaign" && !formData.campaignType) {
+      setError("campaignType", "Campaign type is required");
       hasErrors = true;
     }
 
@@ -97,28 +108,37 @@ export function ContentDialog() {
     try {
       setLoading(true);
 
-      await createContent({
-        projectId: projectId as any,
-        title: formData.title.trim(),
-        platform: formData.platform,
-        type: formData.type,
-        status: getDefaultStatus(formData.type),
-        phase: "plan",
-        dueDate: formData.dueDate || undefined,
-        publishedAt: formData.publishedAt || undefined,
-        notes: formData.notes.trim() || undefined,
-      });
+      if (contentType === "campaign") {
+        await createCampaign({
+          projectId: projectId as any,
+          title: formData.title.trim(),
+          sow: formData.sow?.trim() || undefined,
+          platform: formData.platform,
+          type: formData.campaignType as ContentCampaignType,
+          status: (formData.campaignStatus ||
+            "product_obtained") as ContentCampaignStatus,
+          notes: formData.notes.trim() || undefined,
+        });
+      } else {
+        await createRoutine({
+          projectId: projectId as any,
+          title: formData.title.trim(),
+          notes: formData.notes.trim() || undefined,
+          platform: formData.platform,
+          status: (formData.routineStatus || "plan") as ContentRoutineStatus,
+        });
+      }
 
-      toast.success(t("contents.dialog.messages.success"), {
-        description: `"${formData.title}" ${t("contents.dialog.messages.successDescription")}`,
+      toast.success("Content created successfully!", {
+        description: `"${formData.title}" has been created`,
       });
 
       resetForm();
       closeDialog();
     } catch (error) {
       console.error("Failed to create content:", error);
-      toast.error(t("contents.dialog.messages.error"), {
-        description: t("contents.dialog.messages.errorDescription"),
+      toast.error("Failed to create content", {
+        description: "Please try again",
       });
     } finally {
       setLoading(false);
@@ -142,63 +162,59 @@ export function ContentDialog() {
     { value: "other", label: "Other", icon: null },
   ];
 
-  const typeOptions = [
-    {
-      value: "campaign",
-      label: "Campaign",
-      color: "bg-purple-100 text-purple-800 border-purple-200",
-      dotColor: "bg-purple-500",
-    },
-    {
-      value: "series",
-      label: "Series",
-      color: "bg-green-100 text-green-800 border-green-200",
-      dotColor: "bg-green-500",
-    },
-    {
-      value: "routine",
-      label: "Routine",
-      color: "bg-blue-100 text-blue-800 border-blue-200",
-      dotColor: "bg-blue-500",
-    },
+  const campaignTypeOptions = [
+    { value: "barter", label: "Barter" },
+    { value: "paid", label: "Paid" },
   ];
 
-  // Get default status based on content type
-  const getDefaultStatus = (
-    type: ContentType,
-  ): "confirmed" | "ideation" | "planned" => {
-    switch (type) {
-      case "campaign":
-        return "confirmed";
-      case "series":
-        return "ideation";
-      case "routine":
-        return "planned";
-      default:
-        return "confirmed";
-    }
-  };
+  const campaignStatusOptions = [
+    { value: "product_obtained", label: "Product Obtained" },
+    { value: "production", label: "Production" },
+    { value: "published", label: "Published" },
+    { value: "payment", label: "Payment" },
+    { value: "done", label: "Done" },
+  ];
+
+  const routineStatusOptions = [
+    { value: "plan", label: "Plan" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "scheduled", label: "Scheduled" },
+    { value: "published", label: "Published" },
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{t("contents.dialog.title")}</DialogTitle>
+            <DialogTitle>Create New Content</DialogTitle>
             <DialogDescription>
               {projectId
-                ? t("contents.dialog.description.withProject")
-                : t("contents.dialog.description.selectProject")}
+                ? "Add content to your project"
+                : "Select a project and add content"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
+            {/* Content Type Selection */}
+            <div className="grid gap-2">
+              <Label>Content Type</Label>
+              <Tabs
+                value={contentType}
+                onValueChange={(value) => setContentType(value as ContentType)}
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="campaign">Campaign</TabsTrigger>
+                  <TabsTrigger value="routine">Routine</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
             {/* Project Selection - Only show when projectId is not provided */}
             {!projectId && (
               <div className="grid gap-2">
                 <Label htmlFor="project">
-                  {t("contents.dialog.form.project")}{" "}
-                  <span className="text-red-500">*</span>
+                  Project <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={projectId}
@@ -210,9 +226,7 @@ export function ContentDialog() {
                   <SelectTrigger
                     className={errors.projectId ? "border-red-500" : ""}
                   >
-                    <SelectValue
-                      placeholder={t("contents.dialog.form.projectPlaceholder")}
-                    />
+                    <SelectValue placeholder="Select a project" />
                   </SelectTrigger>
                   <SelectContent>
                     {projects?.map((project) => (
@@ -231,14 +245,13 @@ export function ContentDialog() {
             {/* Content Title */}
             <div className="grid gap-2">
               <Label htmlFor="title">
-                {t("contents.dialog.form.title")}{" "}
-                <span className="text-red-500">*</span>
+                Title <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => updateFormData({ title: e.target.value })}
-                placeholder={t("contents.dialog.form.titlePlaceholder")}
+                placeholder="Enter content title"
                 disabled={isLoading}
                 className={errors.title ? "border-red-500" : ""}
               />
@@ -247,188 +260,152 @@ export function ContentDialog() {
               )}
             </div>
 
-            {/* Platform and Type Selection - Side by Side */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Platform Selection */}
+            {/* Campaign-specific fields */}
+            {contentType === "campaign" && (
+              <>
+                <div className="grid gap-2">
+                  <Label htmlFor="sow">Statement of Work (SOW)</Label>
+                  <Textarea
+                    id="sow"
+                    value={formData.sow || ""}
+                    onChange={(e) => updateFormData({ sow: e.target.value })}
+                    placeholder="Enter SOW details"
+                    disabled={isLoading}
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="campaignType">
+                      Type <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={formData.campaignType}
+                      onValueChange={(value: any) =>
+                        updateFormData({ campaignType: value })
+                      }
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger
+                        className={errors.campaignType ? "border-red-500" : ""}
+                      >
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {campaignTypeOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.campaignType && (
+                      <p className="text-sm text-red-500">
+                        {errors.campaignType}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="campaignStatus">Status</Label>
+                    <Select
+                      value={formData.campaignStatus || "product_obtained"}
+                      onValueChange={(value: any) =>
+                        updateFormData({ campaignStatus: value })
+                      }
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {campaignStatusOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Routine-specific fields */}
+            {contentType === "routine" && (
               <div className="grid gap-2">
-                <Label htmlFor="platform">
-                  {t("contents.dialog.form.platform")}{" "}
-                  <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="routineStatus">Status</Label>
                 <Select
-                  value={formData.platform}
+                  value={formData.routineStatus || "plan"}
                   onValueChange={(value: any) =>
-                    updateFormData({ platform: value })
+                    updateFormData({ routineStatus: value })
                   }
                   disabled={isLoading}
                 >
-                  <SelectTrigger
-                    className={errors.platform ? "border-red-500" : ""}
-                  >
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {platformOptions.map((option) => (
+                    {routineStatusOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center gap-2">
-                          {option.icon && (
-                            <Image
-                              src={option.icon}
-                              alt={option.label}
-                              width={16}
-                              height={16}
-                              className="w-4 h-4"
-                            />
-                          )}
-                          {option.label}
-                        </div>
+                        {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.platform && (
-                  <p className="text-sm text-red-500">{errors.platform}</p>
-                )}
               </div>
+            )}
 
-              {/* Type Selection */}
-              <div className="grid gap-2">
-                <Label htmlFor="type">
-                  {t("contents.dialog.form.type")}{" "}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value: any) =>
-                    updateFormData({ type: value })
-                  }
-                  disabled={isLoading}
+            {/* Platform Selection */}
+            <div className="grid gap-2">
+              <Label htmlFor="platform">
+                Platform <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.platform}
+                onValueChange={(value: any) =>
+                  updateFormData({ platform: value })
+                }
+                disabled={isLoading}
+              >
+                <SelectTrigger
+                  className={errors.platform ? "border-red-500" : ""}
                 >
-                  <SelectTrigger
-                    className={errors.type ? "border-red-500" : ""}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {typeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-2 h-2 rounded-full ${option.dotColor}`}
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  {platformOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center gap-2">
+                        {option.icon && (
+                          <Image
+                            src={option.icon}
+                            alt={option.label}
+                            width={16}
+                            height={16}
+                            className="w-4 h-4"
                           />
-                          {option.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.type && (
-                  <p className="text-sm text-red-500">{errors.type}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Due Date and Published At - Side by Side */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Due Date */}
-              <div className="grid gap-2">
-                <Label htmlFor="dueDate">
-                  {t("contents.dialog.form.dueDate")}
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={`w-full justify-start text-left font-normal ${
-                        !formData.dueDate && "text-muted-foreground"
-                      } ${errors.dueDate ? "border-red-500" : ""}`}
-                      disabled={isLoading}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.dueDate ? (
-                        format(new Date(formData.dueDate), "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={
-                        formData.dueDate
-                          ? new Date(formData.dueDate)
-                          : undefined
-                      }
-                      onSelect={(date) =>
-                        updateFormData({
-                          dueDate: date ? format(date, "yyyy-MM-dd") : "",
-                        })
-                      }
-                      disabled={(date) => date < new Date("1900-01-01")}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                {errors.dueDate && (
-                  <p className="text-sm text-red-500">{errors.dueDate}</p>
-                )}
-              </div>
-
-              {/* Published At */}
-              <div className="grid gap-2">
-                <Label htmlFor="publishedAt">
-                  {t("contents.dialog.form.publishedAt")}
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={`w-full justify-start text-left font-normal ${
-                        !formData.publishedAt && "text-muted-foreground"
-                      } ${errors.publishedAt ? "border-red-500" : ""}`}
-                      disabled={isLoading}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.publishedAt ? (
-                        format(new Date(formData.publishedAt), "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={
-                        formData.publishedAt
-                          ? new Date(formData.publishedAt)
-                          : undefined
-                      }
-                      onSelect={(date) =>
-                        updateFormData({
-                          publishedAt: date ? format(date, "yyyy-MM-dd") : "",
-                        })
-                      }
-                      disabled={(date) => date < new Date("1900-01-01")}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                {errors.publishedAt && (
-                  <p className="text-sm text-red-500">{errors.publishedAt}</p>
-                )}
-              </div>
+                        )}
+                        {option.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.platform && (
+                <p className="text-sm text-red-500">{errors.platform}</p>
+              )}
             </div>
 
             {/* Notes */}
             <div className="grid gap-2">
-              <Label htmlFor="notes">{t("contents.dialog.form.notes")}</Label>
+              <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => updateFormData({ notes: e.target.value })}
-                placeholder={t("contents.dialog.form.notesPlaceholder")}
+                placeholder="Add any additional notes..."
                 disabled={isLoading}
                 rows={3}
               />
@@ -442,11 +419,11 @@ export function ContentDialog() {
               onClick={handleClose}
               disabled={isLoading}
             >
-              {t("common.cancel")}
+              Cancel
             </Button>
             <ButtonPrimary type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t("contents.dialog.form.createButton")}
+              Create Content
             </ButtonPrimary>
           </DialogFooter>
         </form>

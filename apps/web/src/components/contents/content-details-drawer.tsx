@@ -25,17 +25,20 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, Clock, Trash2, ExternalLink, FileText } from "lucide-react";
+import { Calendar, Clock, Trash2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskSection } from "@/components/tasks";
 import { EditablePlatformBadge } from "./editable-platform-badge";
-import { EditableTypeBadge } from "./editable-type-badge";
-import { EditablePhaseBadge } from "./editable-phase-badge";
-import { EditableStatusBadge } from "./editable-status-badge";
+import {
+  EditableCampaignTypeBadge,
+  EditableCampaignStatusBadge,
+  EditableRoutineStatusBadge,
+} from "./editable-badges";
 import { toast } from "sonner";
 
 interface ContentDetailsDrawerProps {
-  contentId: Id<"contents"> | null;
+  contentId: string | null;
+  contentType: "campaign" | "routine";
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDeleted?: () => void;
@@ -43,26 +46,41 @@ interface ContentDetailsDrawerProps {
 
 export function ContentDetailsDrawer({
   contentId,
+  contentType,
   open,
   onOpenChange,
   onDeleted,
 }: ContentDetailsDrawerProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Queries
-  const contentData = useQuery(
-    api.queries.contents.getByIdWithStats,
-    contentId ? { contentId } : "skip",
+  // Queries - conditionally fetch based on content type
+  const campaignData = useQuery(
+    api.queries.contentCampaigns.getById,
+    contentId && contentType === "campaign"
+      ? { campaignId: contentId as Id<"contentCampaigns"> }
+      : "skip",
+  );
+
+  const routineData = useQuery(
+    api.queries.contentRoutines.getById,
+    contentId && contentType === "routine"
+      ? { routineId: contentId as Id<"contentRoutines"> }
+      : "skip",
   );
 
   // Mutations
-  const deleteContent = useMutation(api.mutations.contents.remove);
+  const deleteCampaign = useMutation(api.mutations.contentCampaigns.remove);
+  const deleteRoutine = useMutation(api.mutations.contentRoutines.remove);
 
   const handleDeleteContent = async () => {
     if (!contentId) return;
 
     try {
-      await deleteContent({ id: contentId });
+      if (contentType === "campaign") {
+        await deleteCampaign({ id: contentId as Id<"contentCampaigns"> });
+      } else {
+        await deleteRoutine({ id: contentId as Id<"contentRoutines"> });
+      }
       toast.success("Content deleted successfully");
       setDeleteDialogOpen(false);
       onOpenChange(false);
@@ -82,11 +100,24 @@ export function ContentDetailsDrawer({
     });
   };
 
-  if (!contentId || !contentData?.content) {
+  const formatTimestamp = (timestamp?: number) => {
+    if (!timestamp) return "-";
+    return new Date(timestamp).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // Get the appropriate content based on type
+  const content =
+    contentType === "campaign" ? campaignData?.campaign : routineData?.routine;
+
+  if (!contentId || !content) {
     return null;
   }
-
-  const { content } = contentData;
 
   return (
     <>
@@ -99,9 +130,14 @@ export function ContentDetailsDrawer({
           <SheetHeader className="p-6 pb-4 flex-shrink-0 border-b">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <SheetTitle className="text-xl font-semibold break-words">
-                  {content.title}
-                </SheetTitle>
+                <div className="flex items-center gap-2 mb-2">
+                  <SheetTitle className="text-xl font-semibold break-words">
+                    {content.title}
+                  </SheetTitle>
+                  <Badge variant="outline" className="text-xs">
+                    {contentType === "campaign" ? "Campaign" : "Routine"}
+                  </Badge>
+                </div>
                 {content.notes && (
                   <div className="mt-2 flex items-start gap-2">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
@@ -110,6 +146,18 @@ export function ContentDetailsDrawer({
                     </p>
                   </div>
                 )}
+                {contentType === "campaign" &&
+                  "sow" in content &&
+                  content.sow && (
+                    <div className="mt-2">
+                      <Label className="text-xs text-muted-foreground">
+                        SOW
+                      </Label>
+                      <p className="text-sm mt-1 whitespace-pre-wrap">
+                        {content.sow}
+                      </p>
+                    </div>
+                  )}
               </div>
             </div>
           </SheetHeader>
@@ -125,54 +173,68 @@ export function ContentDetailsDrawer({
                   </h3>
 
                   {/* Editable Badges */}
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <EditablePlatformBadge
                       value={content.platform}
-                      contentId={content._id}
+                      contentId={contentId as any}
                     />
-                    <EditableTypeBadge
-                      value={content.type}
-                      contentId={content._id}
-                    />
-                    <EditablePhaseBadge
-                      value={content.phase}
-                      contentId={content._id}
-                    />
-                    <EditableStatusBadge
-                      value={content.status}
-                      contentId={content._id}
-                      contentType={content.type}
-                    />
+                    {contentType === "campaign" && "type" in content && (
+                      <>
+                        <EditableCampaignTypeBadge
+                          value={content.type}
+                          campaignId={contentId as Id<"contentCampaigns">}
+                        />
+                        <EditableCampaignStatusBadge
+                          value={content.status}
+                          campaignId={contentId as Id<"contentCampaigns">}
+                        />
+                      </>
+                    )}
+                    {contentType === "routine" && (
+                      <EditableRoutineStatusBadge
+                        value={content.status}
+                        routineId={contentId as Id<"contentRoutines">}
+                      />
+                    )}
                   </div>
 
+                  {/* Status History */}
+                  {content.statusHistory &&
+                    content.statusHistory.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">
+                          Status History
+                        </Label>
+                        <div className="space-y-2">
+                          {content.statusHistory.map((history, index) => (
+                            <div
+                              key={index}
+                              className="flex items-start gap-2 text-xs"
+                            >
+                              <Clock className="h-3 w-3 text-muted-foreground mt-0.5" />
+                              <div className="flex-1">
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs mr-2"
+                                >
+                                  {history.status}
+                                </Badge>
+                                <span className="text-muted-foreground">
+                                  {formatTimestamp(history.timestamp)}
+                                </span>
+                                {history.note && (
+                                  <p className="text-muted-foreground mt-1">
+                                    {history.note}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">
-                        Due Date
-                      </Label>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>{formatDate(content.dueDate)}</span>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">
-                        Scheduled At
-                      </Label>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{formatDate(content.scheduledAt)}</span>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">
-                        Published At
-                      </Label>
-                      <div className="flex items-center gap-2">
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                        <span>{formatDate(content.publishedAt)}</span>
-                      </div>
-                    </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">
                         Created
@@ -184,6 +246,17 @@ export function ContentDetailsDrawer({
                         </span>
                       </div>
                     </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">
+                        Updated
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>
+                          {new Date(content.updatedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -191,7 +264,8 @@ export function ContentDetailsDrawer({
 
                 {/* Tasks Section */}
                 <TaskSection
-                  contentId={content._id}
+                  contentId={contentId}
+                  contentType={contentType}
                   projectId={content.projectId}
                 />
               </div>

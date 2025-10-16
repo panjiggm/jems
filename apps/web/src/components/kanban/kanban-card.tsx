@@ -3,18 +3,14 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Paperclip, CheckSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TypeBadge } from "@/components/list/type-badge";
 import Image from "next/image";
 import { useState } from "react";
-import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { ContentDetailsDrawer } from "../contents";
 
 interface KanbanCardProps {
-  id: Id<"contents">;
+  id: string;
   title: string;
-  description?: string;
   platform:
     | "tiktok"
     | "instagram"
@@ -23,31 +19,9 @@ interface KanbanCardProps {
     | "facebook"
     | "threads"
     | "other";
-  status:
-    | "confirmed"
-    | "shipped"
-    | "received"
-    | "shooting"
-    | "drafting"
-    | "editing"
-    | "done"
-    | "pending_payment"
-    | "paid"
-    | "canceled"
-    | "ideation"
-    | "scripting"
-    | "scheduled"
-    | "published"
-    | "archived"
-    | "planned"
-    | "skipped";
-  type: "campaign" | "series" | "routine";
-  phase: "plan" | "production" | "review" | "published" | "done";
-  dueDate?: string;
-  scheduledAt?: string;
-  publishedAt?: string;
+  status: string;
+  type?: "barter" | "paid"; // Campaign only
   notes?: string;
-  assetIds?: string[];
   createdAt: number;
   updatedAt: number;
 }
@@ -75,13 +49,10 @@ const platformIcons = {
 export function KanbanCard({
   id,
   title,
-  description,
   platform,
+  status,
   type,
-  phase,
-  dueDate,
-  scheduledAt,
-  assetIds = [],
+  notes,
 }: KanbanCardProps) {
   const {
     attributes,
@@ -93,11 +64,12 @@ export function KanbanCard({
   } = useSortable({ id });
 
   // Drawer state
-  const [selectedContentId, setSelectedContentId] =
-    useState<Id<"contents"> | null>(null);
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(
+    null,
+  );
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const handleOpenDrawer = (contentId: Id<"contents">) => {
+  const handleOpenDrawer = (contentId: string) => {
     setSelectedContentId(contentId);
     setDrawerOpen(true);
   };
@@ -107,38 +79,40 @@ export function KanbanCard({
     transition,
   };
 
-  const getPhaseColor = (phase: string) => {
-    switch (phase) {
-      case "plan":
-        return "bg-gray-100 text-gray-800";
-      case "production":
+  // Determine content type: campaigns have type field, routines don't
+  const contentType = type !== undefined ? "campaign" : "routine";
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      // Campaign statuses
+      case "product_obtained":
         return "bg-blue-100 text-blue-800";
-      case "review":
+      case "production":
+        return "bg-orange-100 text-orange-800";
+      case "payment":
         return "bg-yellow-100 text-yellow-800";
+      // Routine statuses
+      case "plan":
+        return "bg-blue-100 text-blue-800";
+      case "in_progress":
+        return "bg-yellow-100 text-yellow-800";
+      case "scheduled":
+        return "bg-purple-100 text-purple-800";
+      // Shared
       case "published":
         return "bg-green-100 text-green-800";
       case "done":
-        return "bg-purple-100 text-purple-800";
+        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getPhaseLabel = (phase: string) => {
-    switch (phase) {
-      case "plan":
-        return "Plan";
-      case "production":
-        return "Production";
-      case "review":
-        return "Review";
-      case "published":
-        return "Published";
-      case "done":
-        return "Done";
-      default:
-        return "Plan";
-    }
+  const getStatusLabel = (status: string) => {
+    return status
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   return (
@@ -159,15 +133,15 @@ export function KanbanCard({
           <h4 className="font-semibold text-sm text-foreground line-clamp-2">
             {title}
           </h4>
-          <Badge className={cn("text-xs", getPhaseColor(phase))}>
-            {getPhaseLabel(phase)}
+          <Badge className={cn("text-xs", getStatusColor(status))}>
+            {getStatusLabel(status)}
           </Badge>
         </div>
 
-        {/* Description */}
-        {description && (
+        {/* Notes preview */}
+        {notes && (
           <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-            {description}
+            {notes}
           </p>
         )}
 
@@ -190,42 +164,24 @@ export function KanbanCard({
             )}
             {platform.charAt(0).toUpperCase() + platform.slice(1)}
           </Badge>
-          <TypeBadge type={type} />
+          {type && (
+            <Badge className="text-xs bg-purple-100 text-purple-800">
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </Badge>
+          )}
         </div>
 
-        {/* Attachments */}
-        {assetIds && assetIds.length > 0 && (
-          <div className="mb-3">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Paperclip className="h-3 w-3" />
-              <span>{assetIds.length} attachments</span>
-            </div>
-          </div>
-        )}
-
-        {/* Metrics */}
+        {/* Content type badge */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          {/* Subtasks */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CheckSquare className="h-3 w-3" />
-            <span>0 subtasks</span>
-          </div>
-          {/* Due date */}
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            <span>
-              {dueDate
-                ? new Date(dueDate).toLocaleDateString()
-                : scheduledAt
-                  ? new Date(scheduledAt).toLocaleDateString()
-                  : "No date"}
-            </span>
-          </div>
+          <Badge variant="outline" className="text-xs">
+            {contentType === "campaign" ? "Campaign" : "Routine"}
+          </Badge>
         </div>
       </div>
 
       <ContentDetailsDrawer
         contentId={selectedContentId}
+        contentType={contentType}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         onDeleted={() => {

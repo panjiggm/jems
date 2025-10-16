@@ -1,4 +1,5 @@
-import { EditableTable } from "@/components/table";
+import { EditableCampaignTable } from "@/components/table/campaign/editable-table";
+import { EditableRoutineTable } from "@/components/table/routine/editable-table";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { FilterState } from "../search-filter-content";
 
@@ -6,12 +7,14 @@ interface TableViewProps {
   projectId?: Id<"projects">;
   userId?: string;
   filters: FilterState;
+  contentType: "campaign" | "routine";
 }
 
 export default function TableView({
   projectId,
   userId,
   filters,
+  contentType,
 }: TableViewProps) {
   if (!projectId || !userId) {
     return (
@@ -26,7 +29,19 @@ export default function TableView({
 
   return (
     <div>
-      <EditableTable projectId={projectId} userId={userId} filters={filters} />
+      {contentType === "campaign" ? (
+        <EditableCampaignTable
+          projectId={projectId}
+          userId={userId}
+          filters={filters}
+        />
+      ) : (
+        <EditableRoutineTable
+          projectId={projectId}
+          userId={userId}
+          filters={filters}
+        />
+      )}
     </div>
   );
 }

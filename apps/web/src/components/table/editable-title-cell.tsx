@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface EditableTitleCellProps {
   value: string;
-  contentId: Id<"contents">;
+  contentId: string;
   onUpdate: (newTitle: string) => void;
 }
 

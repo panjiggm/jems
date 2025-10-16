@@ -69,35 +69,37 @@ const getRandomPlatform = ():
   return platforms[Math.floor(Math.random() * platforms.length)];
 };
 
-// Helper function to get random content type
-const getRandomContentType = (): "campaign" | "series" | "routine" => {
-  const types = ["campaign", "series", "routine"] as const;
+// Helper function to get random campaign type
+const getRandomCampaignType = (): "barter" | "paid" => {
+  const types = ["barter", "paid"] as const;
   return types[Math.floor(Math.random() * types.length)];
 };
 
-// Helper function to get random content status
-const getRandomContentStatus = () => {
+// Helper function to get random campaign status
+const getRandomCampaignStatus = ():
+  | "product_obtained"
+  | "production"
+  | "published"
+  | "payment"
+  | "done" => {
   const statuses = [
-    "ideation",
-    "scripting",
-    "planned",
-    "shooting",
-    "drafting",
-    "editing",
-    "scheduled",
+    "product_obtained",
+    "production",
+    "published",
+    "payment",
+    "done",
   ] as const;
   return statuses[Math.floor(Math.random() * statuses.length)];
 };
 
-// Helper function to get random phase
-const getRandomPhase = ():
+// Helper function to get random routine status
+const getRandomRoutineStatus = ():
   | "plan"
-  | "production"
-  | "review"
-  | "published"
-  | "done" => {
-  const phases = ["plan", "production", "review"] as const;
-  return phases[Math.floor(Math.random() * phases.length)];
+  | "in_progress"
+  | "scheduled"
+  | "published" => {
+  const statuses = ["plan", "in_progress", "scheduled", "published"] as const;
+  return statuses[Math.floor(Math.random() * statuses.length)];
 };
 
 // Helper function to get random task status
@@ -138,11 +140,13 @@ export const createMonthlyTemplate = mutation({
 
     const createdData = {
       projects: [] as string[],
-      contents: [] as string[],
+      campaigns: [] as string[],
+      routines: [] as string[],
       tasks: [] as string[],
       summary: {
         projectsCreated: 0,
-        contentsCreated: 0,
+        campaignsCreated: 0,
+        routinesCreated: 0,
         tasksCreated: 0,
       },
     };
@@ -194,48 +198,51 @@ export const createMonthlyTemplate = mutation({
         },
       );
 
-      // Create 5 contents for each project
-      const contentsPerProject = 5;
-      for (let j = 0; j < contentsPerProject; j++) {
-        const contentTitle = generateContentTitle(j + 1, monthName);
+      // Create 3 campaigns for each project
+      const campaignsPerProject = 3;
+      for (let j = 0; j < campaignsPerProject; j++) {
+        const campaignTitle = `Campaign ${monthName} #${j + 1}`;
         const platform = getRandomPlatform();
-        const type = getRandomContentType();
-        const status = getRandomContentStatus();
-        const phase = getRandomPhase();
+        const type = getRandomCampaignType();
+        const status = getRandomCampaignStatus();
 
         // Calculate due date within the month (spread throughout the month)
-        const dayOfMonth = Math.floor(((j + 1) / contentsPerProject) * 28) + 1; // Spread across month
+        const dayOfMonth = Math.floor(((j + 1) / campaignsPerProject) * 28) + 1;
         const dueDate = new Date(currentYear, monthIndex, dayOfMonth)
           .toISOString()
           .split("T")[0];
 
-        const contentId = await ctx.db.insert("contents", {
+        const campaignId = await ctx.db.insert("contentCampaigns", {
           userId,
           projectId,
-          title: contentTitle,
+          title: campaignTitle,
           platform,
           type,
           status,
-          phase,
-          dueDate,
+          statusHistory: [
+            {
+              status,
+              timestamp: Date.now(),
+            },
+          ],
           createdAt: Date.now(),
           updatedAt: Date.now(),
         });
 
-        createdData.contents.push(contentId);
-        createdData.summary.contentsCreated++;
+        createdData.campaigns.push(campaignId);
+        createdData.summary.campaignsCreated++;
 
-        // Log content creation activity
+        // Log campaign creation activity
         await ctx.scheduler.runAfter(
           0,
           internal.mutations.projectActivities.logActivity,
           {
             userId,
             projectId,
-            entityType: "content" as const,
-            entityId: contentId,
+            entityType: "content_campaign" as any,
+            entityId: campaignId,
             action: "created" as const,
-            description: `Content "${contentTitle}" was created via template`,
+            description: `Campaign "${campaignTitle}" was created via template`,
             metadata: {
               template: "monthly",
               platform,
@@ -244,23 +251,24 @@ export const createMonthlyTemplate = mutation({
           },
         );
 
-        // Create 3 tasks for each content
-        const tasksPerContent = 3;
-        for (let k = 0; k < tasksPerContent; k++) {
-          const taskTitle = generateTaskTitle(contentTitle, k);
+        // Create 2 tasks for each campaign
+        const tasksPerCampaign = 2;
+        for (let k = 0; k < tasksPerCampaign; k++) {
+          const taskTitle = generateTaskTitle(campaignTitle, k);
           const taskStatus = getRandomTaskStatus();
 
-          // Calculate task due date (before content due date)
+          // Calculate task due date (before campaign due date)
           const taskDueDateObj = new Date(dueDate);
           taskDueDateObj.setDate(
-            taskDueDateObj.getDate() - (tasksPerContent - k),
+            taskDueDateObj.getDate() - (tasksPerCampaign - k),
           );
           const taskDueDate = taskDueDateObj.toISOString().split("T")[0];
 
           const taskId = await ctx.db.insert("tasks", {
             userId,
             projectId,
-            contentId,
+            contentId: campaignId,
+            contentType: "campaign" as const,
             title: taskTitle,
             status: taskStatus,
             dueDate: taskDueDate,
@@ -284,7 +292,105 @@ export const createMonthlyTemplate = mutation({
               description: `Task "${taskTitle}" was created via template`,
               metadata: {
                 template: "monthly",
-                contentId,
+                campaignId,
+              },
+            },
+          );
+        }
+      }
+
+      // Create 3 routines for each project
+      const routinesPerProject = 3;
+      for (let j = 0; j < routinesPerProject; j++) {
+        const routineTitle = `Routine ${monthName} #${j + 1}`;
+        const platform = getRandomPlatform();
+        const status = getRandomRoutineStatus();
+
+        // Calculate due date within the month (spread throughout the month)
+        const dayOfMonth = Math.floor(((j + 1) / routinesPerProject) * 28) + 1;
+        const dueDate = new Date(currentYear, monthIndex, dayOfMonth)
+          .toISOString()
+          .split("T")[0];
+
+        const routineId = await ctx.db.insert("contentRoutines", {
+          userId,
+          projectId,
+          title: routineTitle,
+          platform,
+          status,
+          statusHistory: [
+            {
+              status,
+              timestamp: Date.now(),
+            },
+          ],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        createdData.routines.push(routineId);
+        createdData.summary.routinesCreated++;
+
+        // Log routine creation activity
+        await ctx.scheduler.runAfter(
+          0,
+          internal.mutations.projectActivities.logActivity,
+          {
+            userId,
+            projectId,
+            entityType: "content_routine" as any,
+            entityId: routineId,
+            action: "created" as const,
+            description: `Routine "${routineTitle}" was created via template`,
+            metadata: {
+              template: "monthly",
+              platform,
+            },
+          },
+        );
+
+        // Create 2 tasks for each routine
+        const tasksPerRoutine = 2;
+        for (let k = 0; k < tasksPerRoutine; k++) {
+          const taskTitle = generateTaskTitle(routineTitle, k);
+          const taskStatus = getRandomTaskStatus();
+
+          // Calculate task due date (before routine due date)
+          const taskDueDateObj = new Date(dueDate);
+          taskDueDateObj.setDate(
+            taskDueDateObj.getDate() - (tasksPerRoutine - k),
+          );
+          const taskDueDate = taskDueDateObj.toISOString().split("T")[0];
+
+          const taskId = await ctx.db.insert("tasks", {
+            userId,
+            projectId,
+            contentId: routineId,
+            contentType: "routine" as const,
+            title: taskTitle,
+            status: taskStatus,
+            dueDate: taskDueDate,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+
+          createdData.tasks.push(taskId);
+          createdData.summary.tasksCreated++;
+
+          // Log task creation activity
+          await ctx.scheduler.runAfter(
+            0,
+            internal.mutations.projectActivities.logActivity,
+            {
+              userId,
+              projectId,
+              entityType: "task" as const,
+              entityId: taskId,
+              action: "created" as const,
+              description: `Task "${taskTitle}" was created via template`,
+              metadata: {
+                template: "monthly",
+                routineId,
               },
             },
           );
@@ -295,8 +401,8 @@ export const createMonthlyTemplate = mutation({
     return {
       success: true,
       message: isIndonesian
-        ? `Berhasil membuat ${createdData.summary.projectsCreated} projects, ${createdData.summary.contentsCreated} contents, dan ${createdData.summary.tasksCreated} tasks`
-        : `Successfully created ${createdData.summary.projectsCreated} projects, ${createdData.summary.contentsCreated} contents, and ${createdData.summary.tasksCreated} tasks`,
+        ? `Berhasil membuat ${createdData.summary.projectsCreated} projects, ${createdData.summary.campaignsCreated} campaigns, ${createdData.summary.routinesCreated} routines, dan ${createdData.summary.tasksCreated} tasks`
+        : `Successfully created ${createdData.summary.projectsCreated} projects, ${createdData.summary.campaignsCreated} campaigns, ${createdData.summary.routinesCreated} routines, and ${createdData.summary.tasksCreated} tasks`,
       data: createdData,
     };
   },
@@ -329,11 +435,13 @@ export const createQuarterlyTemplate = mutation({
 
     const createdData = {
       projects: [] as string[],
-      contents: [] as string[],
+      campaigns: [] as string[],
+      routines: [] as string[],
       tasks: [] as string[],
       summary: {
         projectsCreated: 0,
-        contentsCreated: 0,
+        campaignsCreated: 0,
+        routinesCreated: 0,
         tasksCreated: 0,
       },
     };
@@ -384,46 +492,49 @@ export const createQuarterlyTemplate = mutation({
         },
       );
 
-      // Create 5 contents per project
-      for (let j = 0; j < 5; j++) {
-        const contentTitle = generateContentTitle(j + 1, monthName);
+      // Create 3 campaigns per project
+      for (let j = 0; j < 3; j++) {
+        const campaignTitle = `Campaign ${monthName} #${j + 1}`;
         const platform = getRandomPlatform();
-        const type = getRandomContentType();
-        const status = getRandomContentStatus();
-        const phase = getRandomPhase();
+        const type = getRandomCampaignType();
+        const status = getRandomCampaignStatus();
 
-        const dayOfMonth = Math.floor(((j + 1) / 5) * 28) + 1;
+        const dayOfMonth = Math.floor(((j + 1) / 3) * 28) + 1;
         const dueDate = new Date(year, monthIndex, dayOfMonth)
           .toISOString()
           .split("T")[0];
 
-        const contentId = await ctx.db.insert("contents", {
+        const campaignId = await ctx.db.insert("contentCampaigns", {
           userId,
           projectId,
-          title: contentTitle,
+          title: campaignTitle,
           platform,
           type,
           status,
-          phase,
-          dueDate,
+          statusHistory: [
+            {
+              status,
+              timestamp: Date.now(),
+            },
+          ],
           createdAt: Date.now(),
           updatedAt: Date.now(),
         });
 
-        createdData.contents.push(contentId);
-        createdData.summary.contentsCreated++;
+        createdData.campaigns.push(campaignId);
+        createdData.summary.campaignsCreated++;
 
-        // Log content creation
+        // Log campaign creation
         await ctx.scheduler.runAfter(
           0,
           internal.mutations.projectActivities.logActivity,
           {
             userId,
             projectId,
-            entityType: "content" as const,
-            entityId: contentId,
+            entityType: "content_campaign" as any,
+            entityId: campaignId,
             action: "created" as const,
-            description: `Content "${contentTitle}" was created via quarterly template`,
+            description: `Campaign "${campaignTitle}" was created via quarterly template`,
             metadata: {
               template: "quarterly",
               quarter: args.quarter,
@@ -433,19 +544,20 @@ export const createQuarterlyTemplate = mutation({
           },
         );
 
-        // Create 3 tasks per content
-        for (let k = 0; k < 3; k++) {
-          const taskTitle = generateTaskTitle(contentTitle, k);
+        // Create 2 tasks per campaign
+        for (let k = 0; k < 2; k++) {
+          const taskTitle = generateTaskTitle(campaignTitle, k);
           const taskStatus = getRandomTaskStatus();
 
           const taskDueDateObj = new Date(dueDate);
-          taskDueDateObj.setDate(taskDueDateObj.getDate() - (3 - k));
+          taskDueDateObj.setDate(taskDueDateObj.getDate() - (2 - k));
           const taskDueDate = taskDueDateObj.toISOString().split("T")[0];
 
           const taskId = await ctx.db.insert("tasks", {
             userId,
             projectId,
-            contentId,
+            contentId: campaignId,
+            contentType: "campaign" as const,
             title: taskTitle,
             status: taskStatus,
             dueDate: taskDueDate,
@@ -470,7 +582,101 @@ export const createQuarterlyTemplate = mutation({
               metadata: {
                 template: "quarterly",
                 quarter: args.quarter,
-                contentId,
+                campaignId,
+              },
+            },
+          );
+        }
+      }
+
+      // Create 3 routines per project
+      for (let j = 0; j < 3; j++) {
+        const routineTitle = `Routine ${monthName} #${j + 1}`;
+        const platform = getRandomPlatform();
+        const status = getRandomRoutineStatus();
+
+        const dayOfMonth = Math.floor(((j + 1) / 3) * 28) + 1;
+        const dueDate = new Date(year, monthIndex, dayOfMonth)
+          .toISOString()
+          .split("T")[0];
+
+        const routineId = await ctx.db.insert("contentRoutines", {
+          userId,
+          projectId,
+          title: routineTitle,
+          platform,
+          status,
+          statusHistory: [
+            {
+              status,
+              timestamp: Date.now(),
+            },
+          ],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        createdData.routines.push(routineId);
+        createdData.summary.routinesCreated++;
+
+        // Log routine creation
+        await ctx.scheduler.runAfter(
+          0,
+          internal.mutations.projectActivities.logActivity,
+          {
+            userId,
+            projectId,
+            entityType: "content_routine" as any,
+            entityId: routineId,
+            action: "created" as const,
+            description: `Routine "${routineTitle}" was created via quarterly template`,
+            metadata: {
+              template: "quarterly",
+              quarter: args.quarter,
+              platform,
+            },
+          },
+        );
+
+        // Create 2 tasks per routine
+        for (let k = 0; k < 2; k++) {
+          const taskTitle = generateTaskTitle(routineTitle, k);
+          const taskStatus = getRandomTaskStatus();
+
+          const taskDueDateObj = new Date(dueDate);
+          taskDueDateObj.setDate(taskDueDateObj.getDate() - (2 - k));
+          const taskDueDate = taskDueDateObj.toISOString().split("T")[0];
+
+          const taskId = await ctx.db.insert("tasks", {
+            userId,
+            projectId,
+            contentId: routineId,
+            contentType: "routine" as const,
+            title: taskTitle,
+            status: taskStatus,
+            dueDate: taskDueDate,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+
+          createdData.tasks.push(taskId);
+          createdData.summary.tasksCreated++;
+
+          // Log task creation
+          await ctx.scheduler.runAfter(
+            0,
+            internal.mutations.projectActivities.logActivity,
+            {
+              userId,
+              projectId,
+              entityType: "task" as const,
+              entityId: taskId,
+              action: "created" as const,
+              description: `Task "${taskTitle}" was created via quarterly template`,
+              metadata: {
+                template: "quarterly",
+                quarter: args.quarter,
+                routineId,
               },
             },
           );
@@ -481,8 +687,8 @@ export const createQuarterlyTemplate = mutation({
     return {
       success: true,
       message: isIndonesian
-        ? `Berhasil membuat template ${quarterName}: ${createdData.summary.projectsCreated} projects, ${createdData.summary.contentsCreated} contents, dan ${createdData.summary.tasksCreated} tasks`
-        : `Successfully created ${quarterName} template: ${createdData.summary.projectsCreated} projects, ${createdData.summary.contentsCreated} contents, and ${createdData.summary.tasksCreated} tasks`,
+        ? `Berhasil membuat template ${quarterName}: ${createdData.summary.projectsCreated} projects, ${createdData.summary.campaignsCreated} campaigns, ${createdData.summary.routinesCreated} routines, dan ${createdData.summary.tasksCreated} tasks`
+        : `Successfully created ${quarterName} template: ${createdData.summary.projectsCreated} projects, ${createdData.summary.campaignsCreated} campaigns, ${createdData.summary.routinesCreated} routines, and ${createdData.summary.tasksCreated} tasks`,
       data: createdData,
     };
   },

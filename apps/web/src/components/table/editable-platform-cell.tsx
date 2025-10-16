@@ -1,6 +1,5 @@
 "use client";
 
-import { Id } from "@packages/backend/convex/_generated/dataModel";
 import Image from "next/image";
 
 import {
@@ -23,7 +22,7 @@ type Platform =
 
 interface EditablePlatformCellProps {
   value: Platform;
-  contentId: Id<"contents">;
+  contentId: string;
   onUpdate: (newPlatform: Platform) => void;
 }
 

@@ -3,74 +3,53 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
-import { PlatformBadge } from "./platform-badge";
-import { TypeBadge } from "./type-badge";
-import { ContentDetailsDrawer } from "../contents";
+import { PlatformBadge } from "../platform-badge";
+import { ContentDetailsDrawer } from "../../contents";
 import { useState } from "react";
+import { ContentRoutineStatus, Platform } from "@/types/status";
 
-interface Content {
-  _id: Id<"contents">;
+interface RoutineContent {
+  _id: Id<"contentRoutines">;
   _creationTime: number;
   userId: string;
   projectId: Id<"projects">;
   title: string;
-  platform:
-    | "tiktok"
-    | "instagram"
-    | "youtube"
-    | "x"
-    | "facebook"
-    | "threads"
-    | "other";
-  status:
-    | "confirmed"
-    | "shipped"
-    | "received"
-    | "shooting"
-    | "drafting"
-    | "editing"
-    | "done"
-    | "pending_payment"
-    | "paid"
-    | "canceled"
-    | "ideation"
-    | "scripting"
-    | "scheduled"
-    | "published"
-    | "archived"
-    | "planned"
-    | "skipped";
-  phase: "plan" | "production" | "review" | "published" | "done";
-  type: "campaign" | "series" | "routine";
-  dueDate?: string;
-  scheduledAt?: string;
-  publishedAt?: string;
   notes?: string;
-  assetIds?: string[];
-  aiMetadata?: any;
+  platform: Platform;
+  status: ContentRoutineStatus;
+  statusHistory: Array<{
+    status: string;
+    timestamp: number;
+    scheduledAt?: string;
+    publishedAt?: string;
+    note?: string;
+  }>;
   createdAt: number;
   updatedAt: number;
 }
 
-interface ContentCardProps {
-  content: Content;
+interface RoutineContentCardProps {
+  content: RoutineContent;
   projectId: Id<"projects">;
   userId: string;
 }
 
-export function ContentCard({ content, projectId, userId }: ContentCardProps) {
+export function RoutineContentCard({
+  content,
+  projectId,
+  userId,
+}: RoutineContentCardProps) {
   const [selectedContentId, setSelectedContentId] =
-    useState<Id<"contents"> | null>(null);
+    useState<Id<"contentRoutines"> | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const handleOpenDrawer = (contentId: Id<"contents">) => {
+  const handleOpenDrawer = (contentId: Id<"contentRoutines">) => {
     setSelectedContentId(contentId);
     setDrawerOpen(true);
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -95,7 +74,7 @@ export function ContentCard({ content, projectId, userId }: ContentCardProps) {
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <span>📅</span>
-            {formatDate(content.dueDate)}
+            {formatDate(content.createdAt)}
           </span>
           <span className="flex items-center gap-1">
             <span>👥</span>
@@ -108,20 +87,11 @@ export function ContentCard({ content, projectId, userId }: ContentCardProps) {
         </div>
       </div>
 
-      {/* Priority Badge - Use priority from database */}
-      <div className="flex-shrink-0">
-        <TypeBadge type={content.type} />
-      </div>
-
-      {/* Actions */}
-      {/* <div className="flex-shrink-0">
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-          <MoreHorizontal className="h-3 w-3" />
-        </Button>
-      </div> */}
+      {/* No type badge for routines - they don't have barter/paid type */}
 
       <ContentDetailsDrawer
         contentId={selectedContentId}
+        contentType="routine"
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         onDeleted={() => {

@@ -1,36 +1,21 @@
-"use client";
-
-import { useQuery } from "convex-helpers/react/cache";
-import { api } from "@packages/backend/convex/_generated/api";
+import CampaignListView from "@/components/list/campaign/list-view";
+import RoutineListView from "@/components/list/routine/list-view";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { FilterState } from "../search-filter-content";
-import { StatusSection } from "./index";
 
 interface ListViewProps {
   projectId?: Id<"projects">;
   userId?: string;
   filters: FilterState;
+  contentType: "campaign" | "routine";
 }
 
 export default function ListView({
   projectId,
   userId,
   filters,
+  contentType,
 }: ListViewProps) {
-  const contents = useQuery(
-    api.queries.contents.getByProject,
-    projectId
-      ? {
-          projectId,
-          search: filters.search || undefined,
-          status: filters.status.length > 0 ? filters.status : undefined,
-          phase: filters.phase.length > 0 ? filters.phase : undefined,
-          types: filters.types.length > 0 ? filters.types : undefined,
-          platform: filters.platform.length > 0 ? filters.platform : undefined,
-        }
-      : "skip",
-  );
-
   if (!projectId || !userId) {
     return (
       <div className="p-4">
@@ -42,74 +27,21 @@ export default function ListView({
     );
   }
 
-  if (!contents) {
-    return (
-      <div className="flex items-center justify-center h-32">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-
-  // Group contents by phase
-  const contentsByPhase = contents.reduce(
-    (acc, content) => {
-      if (!acc[content.phase]) {
-        acc[content.phase] = [];
-      }
-      acc[content.phase].push(content);
-      return acc;
-    },
-    {} as Record<string, typeof contents>,
-  );
-
-  const phaseConfig = [
-    {
-      key: "plan",
-      title: "Plan",
-      color: "bg-gray-200",
-      count: contentsByPhase.plan?.length || 0,
-    },
-    {
-      key: "production",
-      title: "Production",
-      color: "bg-blue-200",
-      count: contentsByPhase.production?.length || 0,
-    },
-    {
-      key: "review",
-      title: "Review",
-      color: "bg-yellow-200",
-      count: contentsByPhase.review?.length || 0,
-    },
-    {
-      key: "published",
-      title: "Published",
-      color: "bg-green-200",
-      count: contentsByPhase.published?.length || 0,
-    },
-    {
-      key: "done",
-      title: "Done",
-      color: "bg-purple-200",
-      count: contentsByPhase.done?.length || 0,
-    },
-  ];
-
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        {phaseConfig.map((phase) => (
-          <StatusSection
-            key={phase.key}
-            title={phase.title}
-            color={phase.color}
-            count={phase.count}
-            contents={contentsByPhase[phase.key] || []}
-            projectId={projectId}
-            userId={userId}
-          />
-        ))}
-      </div>
-    </div>
+    <>
+      {contentType === "campaign" ? (
+        <CampaignListView
+          projectId={projectId}
+          userId={userId}
+          filters={filters}
+        />
+      ) : (
+        <RoutineListView
+          projectId={projectId}
+          userId={userId}
+          filters={filters}
+        />
+      )}
+    </>
   );
 }

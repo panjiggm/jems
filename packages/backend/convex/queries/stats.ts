@@ -12,13 +12,17 @@ export const getDashboardStats = query({
     if (!userId) return null;
 
     // Get all data
-    const [projects, contents, tasks] = await Promise.all([
+    const [projects, campaigns, routines, tasks] = await Promise.all([
       ctx.db
         .query("projects")
         .withIndex("by_user", (q) => q.eq("userId", userId))
         .collect(),
       ctx.db
-        .query("contents")
+        .query("contentCampaigns")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("contentRoutines")
         .withIndex("by_user", (q) => q.eq("userId", userId))
         .collect(),
       ctx.db
@@ -40,10 +44,10 @@ export const getDashboardStats = query({
         })
       : projects;
 
-    // Filter contents by year through their associated projects
-    const filteredContents = args.year
-      ? contents.filter((content) => {
-          const project = projects.find((p) => p._id === content.projectId);
+    // Filter campaigns by year through their associated projects
+    const filteredCampaigns = args.year
+      ? campaigns.filter((campaign) => {
+          const project = projects.find((p) => p._id === campaign.projectId);
           if (!project) return false;
           const startYear = project.startDate
             ? new Date(project.startDate).getFullYear()
@@ -53,7 +57,22 @@ export const getDashboardStats = query({
             : null;
           return startYear === args.year || endYear === args.year;
         })
-      : contents;
+      : campaigns;
+
+    // Filter routines by year through their associated projects
+    const filteredRoutines = args.year
+      ? routines.filter((routine) => {
+          const project = projects.find((p) => p._id === routine.projectId);
+          if (!project) return false;
+          const startYear = project.startDate
+            ? new Date(project.startDate).getFullYear()
+            : null;
+          const endYear = project.endDate
+            ? new Date(project.endDate).getFullYear()
+            : null;
+          return startYear === args.year || endYear === args.year;
+        })
+      : routines;
 
     // Filter tasks by year through their associated projects
     const filteredTasks = args.year
@@ -90,12 +109,35 @@ export const getDashboardStats = query({
 
     // Calculate content stats
     const contentStats = {
-      total: filteredContents.length,
-      byStatus: {
-        draft: 0,
-        in_progress: 0,
-        scheduled: 0,
-        published: 0,
+      total: filteredCampaigns.length + filteredRoutines.length,
+      campaigns: {
+        total: filteredCampaigns.length,
+        byStatus: {
+          product_obtained: 0,
+          production: 0,
+          published: 0,
+          payment: 0,
+          done: 0,
+        },
+        byType: {
+          barter: 0,
+          paid: 0,
+        },
+        byPlatform: {} as Record<string, number>,
+        recentlyCreated: 0,
+        recentlyUpdated: 0,
+      },
+      routines: {
+        total: filteredRoutines.length,
+        byStatus: {
+          plan: 0,
+          in_progress: 0,
+          scheduled: 0,
+          published: 0,
+        },
+        byPlatform: {} as Record<string, number>,
+        recentlyCreated: 0,
+        recentlyUpdated: 0,
       },
       byPlatform: {} as Record<string, number>,
       recentlyCreated: 0,
@@ -104,40 +146,38 @@ export const getDashboardStats = query({
       upcoming: 0,
     };
 
-    filteredContents.forEach((content) => {
-      // Map content status to simplified categories
-      if (["ideation", "scripting", "planned"].includes(content.status)) {
-        contentStats.byStatus.draft++;
-      } else if (
-        [
-          "confirmed",
-          "shipped",
-          "received",
-          "shooting",
-          "drafting",
-          "editing",
-          "pending payment",
-          "paid",
-        ].includes(content.status)
-      ) {
-        contentStats.byStatus.in_progress++;
-      } else if (content.status === "scheduled") {
-        contentStats.byStatus.scheduled++;
-      } else if (content.status === "published") {
-        contentStats.byStatus.published++;
+    // Process campaigns
+    filteredCampaigns.forEach((campaign) => {
+      contentStats.campaigns.byStatus[campaign.status]++;
+      contentStats.campaigns.byType[campaign.type]++;
+      contentStats.campaigns.byPlatform[campaign.platform] =
+        (contentStats.campaigns.byPlatform[campaign.platform] || 0) + 1;
+      contentStats.byPlatform[campaign.platform] =
+        (contentStats.byPlatform[campaign.platform] || 0) + 1;
+      if (campaign.createdAt >= sevenDaysAgo) {
+        contentStats.campaigns.recentlyCreated++;
+        contentStats.recentlyCreated++;
       }
+      if (campaign.updatedAt >= sevenDaysAgo) {
+        contentStats.campaigns.recentlyUpdated++;
+        contentStats.recentlyUpdated++;
+      }
+    });
 
-      contentStats.byPlatform[content.platform] =
-        (contentStats.byPlatform[content.platform] || 0) + 1;
-      if (content.createdAt >= sevenDaysAgo) contentStats.recentlyCreated++;
-      if (content.updatedAt >= sevenDaysAgo) contentStats.recentlyUpdated++;
-      if (content.dueDate) {
-        if (content.dueDate < today && content.status !== "published") {
-          contentStats.overdue++;
-        }
-        if (content.dueDate >= today && content.dueDate <= nextWeek) {
-          contentStats.upcoming++;
-        }
+    // Process routines
+    filteredRoutines.forEach((routine) => {
+      contentStats.routines.byStatus[routine.status]++;
+      contentStats.routines.byPlatform[routine.platform] =
+        (contentStats.routines.byPlatform[routine.platform] || 0) + 1;
+      contentStats.byPlatform[routine.platform] =
+        (contentStats.byPlatform[routine.platform] || 0) + 1;
+      if (routine.createdAt >= sevenDaysAgo) {
+        contentStats.routines.recentlyCreated++;
+        contentStats.recentlyCreated++;
+      }
+      if (routine.updatedAt >= sevenDaysAgo) {
+        contentStats.routines.recentlyUpdated++;
+        contentStats.recentlyUpdated++;
       }
     });
 
@@ -195,7 +235,10 @@ export const getDashboardStats = query({
       contentPublishRate:
         contentStats.total > 0
           ? Math.round(
-              (contentStats.byStatus.published / contentStats.total) * 100,
+              ((contentStats.campaigns.byStatus.published +
+                contentStats.routines.byStatus.published) /
+                contentStats.total) *
+                100,
             )
           : 0,
       taskCompletionRate: taskStats.completionRate,
@@ -231,10 +274,16 @@ export const getProjectStats = query({
     const project = await ctx.db.get(args.projectId);
     if (!project || project.userId !== userId) return null;
 
-    // Get contents and tasks for this project
-    const [contents, tasks] = await Promise.all([
+    // Get campaigns, routines, and tasks for this project
+    const [campaigns, routines, tasks] = await Promise.all([
       ctx.db
-        .query("contents")
+        .query("contentCampaigns")
+        .withIndex("by_user_project", (q) =>
+          q.eq("userId", userId).eq("projectId", args.projectId),
+        )
+        .collect(),
+      ctx.db
+        .query("contentRoutines")
         .withIndex("by_user_project", (q) =>
           q.eq("userId", userId).eq("projectId", args.projectId),
         )
@@ -255,12 +304,35 @@ export const getProjectStats = query({
 
     // Calculate content stats
     const contentStats = {
-      total: contents.length,
-      byStatus: {
-        draft: 0,
-        in_progress: 0,
-        scheduled: 0,
-        published: 0,
+      total: campaigns.length + routines.length,
+      campaigns: {
+        total: campaigns.length,
+        byStatus: {
+          product_obtained: 0,
+          production: 0,
+          published: 0,
+          payment: 0,
+          done: 0,
+        },
+        byType: {
+          barter: 0,
+          paid: 0,
+        },
+        byPlatform: {} as Record<string, number>,
+        recentlyCreated: 0,
+        recentlyUpdated: 0,
+      },
+      routines: {
+        total: routines.length,
+        byStatus: {
+          plan: 0,
+          in_progress: 0,
+          scheduled: 0,
+          published: 0,
+        },
+        byPlatform: {} as Record<string, number>,
+        recentlyCreated: 0,
+        recentlyUpdated: 0,
       },
       byPlatform: {} as Record<string, number>,
       recentlyCreated: 0,
@@ -269,39 +341,38 @@ export const getProjectStats = query({
       upcoming: 0,
     };
 
-    contents.forEach((content) => {
-      // Map content status to simplified categories
-      if (["ideation", "scripting", "planned"].includes(content.status)) {
-        contentStats.byStatus.draft++;
-      } else if (
-        [
-          "confirmed",
-          "shipped",
-          "received",
-          "shooting",
-          "drafting",
-          "editing",
-          "pending payment",
-          "paid",
-        ].includes(content.status)
-      ) {
-        contentStats.byStatus.in_progress++;
-      } else if (content.status === "scheduled") {
-        contentStats.byStatus.scheduled++;
-      } else if (content.status === "published") {
-        contentStats.byStatus.published++;
+    // Process campaigns
+    campaigns.forEach((campaign) => {
+      contentStats.campaigns.byStatus[campaign.status]++;
+      contentStats.campaigns.byType[campaign.type]++;
+      contentStats.campaigns.byPlatform[campaign.platform] =
+        (contentStats.campaigns.byPlatform[campaign.platform] || 0) + 1;
+      contentStats.byPlatform[campaign.platform] =
+        (contentStats.byPlatform[campaign.platform] || 0) + 1;
+      if (campaign.createdAt >= sevenDaysAgo) {
+        contentStats.campaigns.recentlyCreated++;
+        contentStats.recentlyCreated++;
       }
-      contentStats.byPlatform[content.platform] =
-        (contentStats.byPlatform[content.platform] || 0) + 1;
-      if (content.createdAt >= sevenDaysAgo) contentStats.recentlyCreated++;
-      if (content.updatedAt >= sevenDaysAgo) contentStats.recentlyUpdated++;
-      if (content.dueDate) {
-        if (content.dueDate < today && content.status !== "published") {
-          contentStats.overdue++;
-        }
-        if (content.dueDate >= today && content.dueDate <= nextWeek) {
-          contentStats.upcoming++;
-        }
+      if (campaign.updatedAt >= sevenDaysAgo) {
+        contentStats.campaigns.recentlyUpdated++;
+        contentStats.recentlyUpdated++;
+      }
+    });
+
+    // Process routines
+    routines.forEach((routine) => {
+      contentStats.routines.byStatus[routine.status]++;
+      contentStats.routines.byPlatform[routine.platform] =
+        (contentStats.routines.byPlatform[routine.platform] || 0) + 1;
+      contentStats.byPlatform[routine.platform] =
+        (contentStats.byPlatform[routine.platform] || 0) + 1;
+      if (routine.createdAt >= sevenDaysAgo) {
+        contentStats.routines.recentlyCreated++;
+        contentStats.recentlyCreated++;
+      }
+      if (routine.updatedAt >= sevenDaysAgo) {
+        contentStats.routines.recentlyUpdated++;
+        contentStats.recentlyUpdated++;
       }
     });
 
@@ -354,7 +425,10 @@ export const getProjectStats = query({
       contentPublishRate:
         contentStats.total > 0
           ? Math.round(
-              (contentStats.byStatus.published / contentStats.total) * 100,
+              ((contentStats.campaigns.byStatus.published +
+                contentStats.routines.byStatus.published) /
+                contentStats.total) *
+                100,
             )
           : 0,
       taskCompletionRate: taskStats.completionRate,
@@ -378,82 +452,339 @@ export const getProjectStats = query({
   },
 });
 
-// Get content-specific stats with tasks
-export const getContentStats = query({
+// Get content-specific stats with tasks (for campaigns)
+export const getCampaignStats = query({
   args: {
-    contentId: v.id("contents"),
+    campaignId: v.optional(v.id("contentCampaigns")),
+    projectId: v.optional(v.id("projects")),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
-    const content = await ctx.db.get(args.contentId);
-    if (!content || content.userId !== userId) return null;
+    // Handle both individual campaign stats and project-level campaign stats
+    if (args.campaignId) {
+      // Individual campaign stats
+      const campaign = await ctx.db.get(args.campaignId);
+      if (!campaign || campaign.userId !== userId) return null;
 
-    // Get tasks for this content
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("contentId"), args.contentId))
-      .collect();
+      // Get tasks for this campaign
+      const tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("contentId"), args.campaignId),
+            q.eq(q.field("contentType"), "campaign"),
+          ),
+        )
+        .collect();
 
-    const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().split("T")[0];
 
-    // Calculate task stats
-    const taskStats = {
-      total: tasks.length,
-      byStatus: {
-        todo: 0,
-        doing: 0,
-        done: 0,
-      },
-      overdue: 0,
-      upcoming: 0,
-      completionRate: 0,
-    };
+      // Calculate task stats
+      const taskStats = {
+        total: tasks.length,
+        byStatus: {
+          todo: 0,
+          doing: 0,
+          done: 0,
+        },
+        overdue: 0,
+        upcoming: 0,
+        completionRate: 0,
+      };
 
-    const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
 
-    tasks.forEach((task) => {
-      // Map task status to simplified categories
-      if (task.status === "todo") {
-        taskStats.byStatus.todo++;
-      } else if (task.status === "doing") {
-        taskStats.byStatus.doing++;
-      } else if (task.status === "done") {
-        taskStats.byStatus.done++;
-      }
-      // Skip "skipped" tasks in the count
-      if (task.dueDate) {
-        if (task.dueDate < today && task.status !== "done") {
-          taskStats.overdue++;
+      tasks.forEach((task) => {
+        // Map task status to simplified categories
+        if (task.status === "todo") {
+          taskStats.byStatus.todo++;
+        } else if (task.status === "doing") {
+          taskStats.byStatus.doing++;
+        } else if (task.status === "done") {
+          taskStats.byStatus.done++;
         }
-        if (task.dueDate >= today && task.dueDate <= nextWeek) {
-          taskStats.upcoming++;
+        // Skip "skipped" tasks in the count
+        if (task.dueDate) {
+          if (task.dueDate < today && task.status !== "done") {
+            taskStats.overdue++;
+          }
+          if (task.dueDate >= today && task.dueDate <= nextWeek) {
+            taskStats.upcoming++;
+          }
         }
-      }
-    });
+      });
 
-    // Calculate completion rate
-    if (taskStats.total > 0) {
-      taskStats.completionRate = Math.round(
-        (taskStats.byStatus.done / taskStats.total) * 100,
-      );
+      // Calculate completion rate
+      if (taskStats.total > 0) {
+        taskStats.completionRate = Math.round(
+          (taskStats.byStatus.done / taskStats.total) * 100,
+        );
+      }
+
+      return {
+        campaign,
+        tasks: taskStats,
+        summary: {
+          totalTasks: taskStats.total,
+          completedTasks: taskStats.byStatus.done,
+          overdueTasks: taskStats.overdue,
+          upcomingTasks: taskStats.upcoming,
+          completionRate: taskStats.completionRate,
+        },
+      };
+    } else if (args.projectId) {
+      // Project-level campaign stats
+      const campaigns = await ctx.db
+        .query("contentCampaigns")
+        .withIndex("by_user_project", (q) =>
+          q.eq("userId", userId).eq("projectId", args.projectId!),
+        )
+        .collect();
+
+      // Get all tasks for campaigns in this project
+      const tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_user_project", (q) =>
+          q.eq("userId", userId).eq("projectId", args.projectId!),
+        )
+        .filter((q) => q.eq(q.field("contentType"), "campaign"))
+        .collect();
+
+      const today = new Date().toISOString().split("T")[0];
+
+      // Calculate task stats
+      const taskStats = {
+        total: tasks.length,
+        byStatus: {
+          todo: 0,
+          doing: 0,
+          done: 0,
+        },
+        overdue: 0,
+        upcoming: 0,
+        completionRate: 0,
+      };
+
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
+
+      tasks.forEach((task) => {
+        // Map task status to simplified categories
+        if (task.status === "todo") {
+          taskStats.byStatus.todo++;
+        } else if (task.status === "doing") {
+          taskStats.byStatus.doing++;
+        } else if (task.status === "done") {
+          taskStats.byStatus.done++;
+        }
+        // Skip "skipped" tasks in the count
+        if (task.dueDate) {
+          if (task.dueDate < today && task.status !== "done") {
+            taskStats.overdue++;
+          }
+          if (task.dueDate >= today && task.dueDate <= nextWeek) {
+            taskStats.upcoming++;
+          }
+        }
+      });
+
+      // Calculate completion rate
+      if (taskStats.total > 0) {
+        taskStats.completionRate = Math.round(
+          (taskStats.byStatus.done / taskStats.total) * 100,
+        );
+      }
+
+      return {
+        campaigns,
+        tasks: taskStats,
+        summary: {
+          totalCampaigns: campaigns.length,
+          totalTasks: taskStats.total,
+          completedTasks: taskStats.byStatus.done,
+          overdueTasks: taskStats.overdue,
+          upcomingTasks: taskStats.upcoming,
+          completionRate: taskStats.completionRate,
+        },
+      };
+    } else {
+      // Neither campaignId nor projectId provided
+      return null;
     }
+  },
+});
 
-    return {
-      content,
-      tasks: taskStats,
-      summary: {
-        totalTasks: taskStats.total,
-        completedTasks: taskStats.byStatus.done,
-        overdueTasks: taskStats.overdue,
-        upcomingTasks: taskStats.upcoming,
-        completionRate: taskStats.completionRate,
-      },
-    };
+// Get content-specific stats with tasks (for routines)
+export const getRoutineStats = query({
+  args: {
+    routineId: v.optional(v.id("contentRoutines")),
+    projectId: v.optional(v.id("projects")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    // Handle both individual routine stats and project-level routine stats
+    if (args.routineId) {
+      // Individual routine stats
+      const routine = await ctx.db.get(args.routineId);
+      if (!routine || routine.userId !== userId) return null;
+
+      // Get tasks for this routine
+      const tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("contentId"), args.routineId),
+            q.eq(q.field("contentType"), "routine"),
+          ),
+        )
+        .collect();
+
+      const today = new Date().toISOString().split("T")[0];
+
+      // Calculate task stats
+      const taskStats = {
+        total: tasks.length,
+        byStatus: {
+          todo: 0,
+          doing: 0,
+          done: 0,
+        },
+        overdue: 0,
+        upcoming: 0,
+        completionRate: 0,
+      };
+
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
+
+      tasks.forEach((task) => {
+        // Map task status to simplified categories
+        if (task.status === "todo") {
+          taskStats.byStatus.todo++;
+        } else if (task.status === "doing") {
+          taskStats.byStatus.doing++;
+        } else if (task.status === "done") {
+          taskStats.byStatus.done++;
+        }
+        // Skip "skipped" tasks in the count
+        if (task.dueDate) {
+          if (task.dueDate < today && task.status !== "done") {
+            taskStats.overdue++;
+          }
+          if (task.dueDate >= today && task.dueDate <= nextWeek) {
+            taskStats.upcoming++;
+          }
+        }
+      });
+
+      // Calculate completion rate
+      if (taskStats.total > 0) {
+        taskStats.completionRate = Math.round(
+          (taskStats.byStatus.done / taskStats.total) * 100,
+        );
+      }
+
+      return {
+        routine,
+        tasks: taskStats,
+        summary: {
+          totalTasks: taskStats.total,
+          completedTasks: taskStats.byStatus.done,
+          overdueTasks: taskStats.overdue,
+          upcomingTasks: taskStats.upcoming,
+          completionRate: taskStats.completionRate,
+        },
+      };
+    } else if (args.projectId) {
+      // Project-level routine stats
+      const routines = await ctx.db
+        .query("contentRoutines")
+        .withIndex("by_user_project", (q) =>
+          q.eq("userId", userId).eq("projectId", args.projectId!),
+        )
+        .collect();
+
+      // Get all tasks for routines in this project
+      const tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_user_project", (q) =>
+          q.eq("userId", userId).eq("projectId", args.projectId!),
+        )
+        .filter((q) => q.eq(q.field("contentType"), "routine"))
+        .collect();
+
+      const today = new Date().toISOString().split("T")[0];
+
+      // Calculate task stats
+      const taskStats = {
+        total: tasks.length,
+        byStatus: {
+          todo: 0,
+          doing: 0,
+          done: 0,
+        },
+        overdue: 0,
+        upcoming: 0,
+        completionRate: 0,
+      };
+
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
+
+      tasks.forEach((task) => {
+        // Map task status to simplified categories
+        if (task.status === "todo") {
+          taskStats.byStatus.todo++;
+        } else if (task.status === "doing") {
+          taskStats.byStatus.doing++;
+        } else if (task.status === "done") {
+          taskStats.byStatus.done++;
+        }
+        // Skip "skipped" tasks in the count
+        if (task.dueDate) {
+          if (task.dueDate < today && task.status !== "done") {
+            taskStats.overdue++;
+          }
+          if (task.dueDate >= today && task.dueDate <= nextWeek) {
+            taskStats.upcoming++;
+          }
+        }
+      });
+
+      // Calculate completion rate
+      if (taskStats.total > 0) {
+        taskStats.completionRate = Math.round(
+          (taskStats.byStatus.done / taskStats.total) * 100,
+        );
+      }
+
+      return {
+        routines,
+        tasks: taskStats,
+        summary: {
+          totalRoutines: routines.length,
+          totalTasks: taskStats.total,
+          completedTasks: taskStats.byStatus.done,
+          overdueTasks: taskStats.overdue,
+          upcomingTasks: taskStats.upcoming,
+          completionRate: taskStats.completionRate,
+        },
+      };
+    } else {
+      // Neither routineId nor projectId provided
+      return null;
+    }
   },
 });
 
@@ -467,13 +798,17 @@ export const getYearStats = query({
     if (!userId) return null;
 
     // Get all data
-    const [projects, contents, tasks] = await Promise.all([
+    const [projects, campaigns, routines, tasks] = await Promise.all([
       ctx.db
         .query("projects")
         .withIndex("by_user", (q) => q.eq("userId", userId))
         .collect(),
       ctx.db
-        .query("contents")
+        .query("contentCampaigns")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("contentRoutines")
         .withIndex("by_user", (q) => q.eq("userId", userId))
         .collect(),
       ctx.db
@@ -493,9 +828,22 @@ export const getYearStats = query({
       return startYear === args.year || endYear === args.year;
     });
 
-    // Filter contents by year through their associated projects
-    const filteredContents = contents.filter((content) => {
-      const project = projects.find((p) => p._id === content.projectId);
+    // Filter campaigns by year through their associated projects
+    const filteredCampaigns = campaigns.filter((campaign) => {
+      const project = projects.find((p) => p._id === campaign.projectId);
+      if (!project) return false;
+      const startYear = project.startDate
+        ? new Date(project.startDate).getFullYear()
+        : null;
+      const endYear = project.endDate
+        ? new Date(project.endDate).getFullYear()
+        : null;
+      return startYear === args.year || endYear === args.year;
+    });
+
+    // Filter routines by year through their associated projects
+    const filteredRoutines = routines.filter((routine) => {
+      const project = projects.find((p) => p._id === routine.projectId);
       if (!project) return false;
       const startYear = project.startDate
         ? new Date(project.startDate).getFullYear()
@@ -539,12 +887,35 @@ export const getYearStats = query({
 
     // Calculate content stats
     const contentStats = {
-      total: filteredContents.length,
-      byStatus: {
-        draft: 0,
-        in_progress: 0,
-        scheduled: 0,
-        published: 0,
+      total: filteredCampaigns.length + filteredRoutines.length,
+      campaigns: {
+        total: filteredCampaigns.length,
+        byStatus: {
+          product_obtained: 0,
+          production: 0,
+          published: 0,
+          payment: 0,
+          done: 0,
+        },
+        byType: {
+          barter: 0,
+          paid: 0,
+        },
+        byPlatform: {} as Record<string, number>,
+        recentlyCreated: 0,
+        recentlyUpdated: 0,
+      },
+      routines: {
+        total: filteredRoutines.length,
+        byStatus: {
+          plan: 0,
+          in_progress: 0,
+          scheduled: 0,
+          published: 0,
+        },
+        byPlatform: {} as Record<string, number>,
+        recentlyCreated: 0,
+        recentlyUpdated: 0,
       },
       byPlatform: {} as Record<string, number>,
       recentlyCreated: 0,
@@ -553,40 +924,38 @@ export const getYearStats = query({
       upcoming: 0,
     };
 
-    filteredContents.forEach((content) => {
-      // Map content status to simplified categories
-      if (["ideation", "scripting", "planned"].includes(content.status)) {
-        contentStats.byStatus.draft++;
-      } else if (
-        [
-          "confirmed",
-          "shipped",
-          "received",
-          "shooting",
-          "drafting",
-          "editing",
-          "pending payment",
-          "paid",
-        ].includes(content.status)
-      ) {
-        contentStats.byStatus.in_progress++;
-      } else if (content.status === "scheduled") {
-        contentStats.byStatus.scheduled++;
-      } else if (content.status === "published") {
-        contentStats.byStatus.published++;
+    // Process campaigns
+    filteredCampaigns.forEach((campaign) => {
+      contentStats.campaigns.byStatus[campaign.status]++;
+      contentStats.campaigns.byType[campaign.type]++;
+      contentStats.campaigns.byPlatform[campaign.platform] =
+        (contentStats.campaigns.byPlatform[campaign.platform] || 0) + 1;
+      contentStats.byPlatform[campaign.platform] =
+        (contentStats.byPlatform[campaign.platform] || 0) + 1;
+      if (campaign.createdAt >= sevenDaysAgo) {
+        contentStats.campaigns.recentlyCreated++;
+        contentStats.recentlyCreated++;
       }
+      if (campaign.updatedAt >= sevenDaysAgo) {
+        contentStats.campaigns.recentlyUpdated++;
+        contentStats.recentlyUpdated++;
+      }
+    });
 
-      contentStats.byPlatform[content.platform] =
-        (contentStats.byPlatform[content.platform] || 0) + 1;
-      if (content.createdAt >= sevenDaysAgo) contentStats.recentlyCreated++;
-      if (content.updatedAt >= sevenDaysAgo) contentStats.recentlyUpdated++;
-      if (content.dueDate) {
-        if (content.dueDate < today && content.status !== "published") {
-          contentStats.overdue++;
-        }
-        if (content.dueDate >= today && content.dueDate <= nextWeek) {
-          contentStats.upcoming++;
-        }
+    // Process routines
+    filteredRoutines.forEach((routine) => {
+      contentStats.routines.byStatus[routine.status]++;
+      contentStats.routines.byPlatform[routine.platform] =
+        (contentStats.routines.byPlatform[routine.platform] || 0) + 1;
+      contentStats.byPlatform[routine.platform] =
+        (contentStats.byPlatform[routine.platform] || 0) + 1;
+      if (routine.createdAt >= sevenDaysAgo) {
+        contentStats.routines.recentlyCreated++;
+        contentStats.recentlyCreated++;
+      }
+      if (routine.updatedAt >= sevenDaysAgo) {
+        contentStats.routines.recentlyUpdated++;
+        contentStats.recentlyUpdated++;
       }
     });
 
@@ -644,7 +1013,10 @@ export const getYearStats = query({
       contentPublishRate:
         contentStats.total > 0
           ? Math.round(
-              (contentStats.byStatus.published / contentStats.total) * 100,
+              ((contentStats.campaigns.byStatus.published +
+                contentStats.routines.byStatus.published) /
+                contentStats.total) *
+                100,
             )
           : 0,
       taskCompletionRate: taskStats.completionRate,
@@ -696,10 +1068,16 @@ export const getProjectYearStats = query({
       }
     }
 
-    // Get contents and tasks for this project
-    const [contents, tasks] = await Promise.all([
+    // Get campaigns, routines, and tasks for this project
+    const [campaigns, routines, tasks] = await Promise.all([
       ctx.db
-        .query("contents")
+        .query("contentCampaigns")
+        .withIndex("by_user_project", (q) =>
+          q.eq("userId", userId).eq("projectId", args.projectId),
+        )
+        .collect(),
+      ctx.db
+        .query("contentRoutines")
         .withIndex("by_user_project", (q) =>
           q.eq("userId", userId).eq("projectId", args.projectId),
         )
@@ -720,12 +1098,35 @@ export const getProjectYearStats = query({
 
     // Calculate content stats
     const contentStats = {
-      total: contents.length,
-      byStatus: {
-        draft: 0,
-        in_progress: 0,
-        scheduled: 0,
-        published: 0,
+      total: campaigns.length + routines.length,
+      campaigns: {
+        total: campaigns.length,
+        byStatus: {
+          product_obtained: 0,
+          production: 0,
+          published: 0,
+          payment: 0,
+          done: 0,
+        },
+        byType: {
+          barter: 0,
+          paid: 0,
+        },
+        byPlatform: {} as Record<string, number>,
+        recentlyCreated: 0,
+        recentlyUpdated: 0,
+      },
+      routines: {
+        total: routines.length,
+        byStatus: {
+          plan: 0,
+          in_progress: 0,
+          scheduled: 0,
+          published: 0,
+        },
+        byPlatform: {} as Record<string, number>,
+        recentlyCreated: 0,
+        recentlyUpdated: 0,
       },
       byPlatform: {} as Record<string, number>,
       recentlyCreated: 0,
@@ -734,39 +1135,38 @@ export const getProjectYearStats = query({
       upcoming: 0,
     };
 
-    contents.forEach((content) => {
-      // Map content status to simplified categories
-      if (["ideation", "scripting", "planned"].includes(content.status)) {
-        contentStats.byStatus.draft++;
-      } else if (
-        [
-          "confirmed",
-          "shipped",
-          "received",
-          "shooting",
-          "drafting",
-          "editing",
-          "pending payment",
-          "paid",
-        ].includes(content.status)
-      ) {
-        contentStats.byStatus.in_progress++;
-      } else if (content.status === "scheduled") {
-        contentStats.byStatus.scheduled++;
-      } else if (content.status === "published") {
-        contentStats.byStatus.published++;
+    // Process campaigns
+    campaigns.forEach((campaign) => {
+      contentStats.campaigns.byStatus[campaign.status]++;
+      contentStats.campaigns.byType[campaign.type]++;
+      contentStats.campaigns.byPlatform[campaign.platform] =
+        (contentStats.campaigns.byPlatform[campaign.platform] || 0) + 1;
+      contentStats.byPlatform[campaign.platform] =
+        (contentStats.byPlatform[campaign.platform] || 0) + 1;
+      if (campaign.createdAt >= sevenDaysAgo) {
+        contentStats.campaigns.recentlyCreated++;
+        contentStats.recentlyCreated++;
       }
-      contentStats.byPlatform[content.platform] =
-        (contentStats.byPlatform[content.platform] || 0) + 1;
-      if (content.createdAt >= sevenDaysAgo) contentStats.recentlyCreated++;
-      if (content.updatedAt >= sevenDaysAgo) contentStats.recentlyUpdated++;
-      if (content.dueDate) {
-        if (content.dueDate < today && content.status !== "published") {
-          contentStats.overdue++;
-        }
-        if (content.dueDate >= today && content.dueDate <= nextWeek) {
-          contentStats.upcoming++;
-        }
+      if (campaign.updatedAt >= sevenDaysAgo) {
+        contentStats.campaigns.recentlyUpdated++;
+        contentStats.recentlyUpdated++;
+      }
+    });
+
+    // Process routines
+    routines.forEach((routine) => {
+      contentStats.routines.byStatus[routine.status]++;
+      contentStats.routines.byPlatform[routine.platform] =
+        (contentStats.routines.byPlatform[routine.platform] || 0) + 1;
+      contentStats.byPlatform[routine.platform] =
+        (contentStats.byPlatform[routine.platform] || 0) + 1;
+      if (routine.createdAt >= sevenDaysAgo) {
+        contentStats.routines.recentlyCreated++;
+        contentStats.recentlyCreated++;
+      }
+      if (routine.updatedAt >= sevenDaysAgo) {
+        contentStats.routines.recentlyUpdated++;
+        contentStats.recentlyUpdated++;
       }
     });
 
@@ -819,7 +1219,10 @@ export const getProjectYearStats = query({
       contentPublishRate:
         contentStats.total > 0
           ? Math.round(
-              (contentStats.byStatus.published / contentStats.total) * 100,
+              ((contentStats.campaigns.byStatus.published +
+                contentStats.routines.byStatus.published) /
+                contentStats.total) *
+                100,
             )
           : 0,
       taskCompletionRate: taskStats.completionRate,

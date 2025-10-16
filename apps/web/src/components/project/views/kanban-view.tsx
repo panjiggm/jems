@@ -1,4 +1,5 @@
-import { KanbanBoard } from "@/components/kanban";
+import { KanbanCampaignBoard } from "@/components/kanban/campaign/kanban-board";
+import { KanbanRoutineBoard } from "@/components/kanban/routine/kanban-board";
 import { FilterState } from "../search-filter-content";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 
@@ -6,16 +7,32 @@ interface KanbanViewProps {
   projectId?: Id<"projects">;
   userId?: string;
   filters: FilterState;
+  contentType: "campaign" | "routine";
 }
 
 export default function KanbanView({
   projectId,
   userId,
   filters,
+  contentType,
 }: KanbanViewProps) {
   if (projectId && userId) {
     return (
-      <KanbanBoard projectId={projectId} userId={userId} filters={filters} />
+      <>
+        {contentType === "campaign" ? (
+          <KanbanCampaignBoard
+            projectId={projectId}
+            userId={userId}
+            filters={filters}
+          />
+        ) : (
+          <KanbanRoutineBoard
+            projectId={projectId}
+            userId={userId}
+            filters={filters}
+          />
+        )}
+      </>
     );
   }
 

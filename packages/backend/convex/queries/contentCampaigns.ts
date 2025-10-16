@@ -8,8 +8,6 @@ export const list = query({
     status: v.optional(v.array(v.string())),
     platform: v.optional(v.array(v.string())),
     types: v.optional(v.array(v.string())),
-    dateFrom: v.optional(v.string()),
-    dateTo: v.optional(v.string()),
     search: v.optional(v.string()),
     cursor: v.optional(v.string()),
     pageSize: v.optional(v.number()),
@@ -22,25 +20,25 @@ export const list = query({
     let q;
     if (args.projectId) {
       q = ctx.db
-        .query("contents")
+        .query("contentCampaigns")
         .withIndex("by_user_project", (q) =>
           q.eq("userId", userId!).eq("projectId", args.projectId!),
         );
     } else if (args.status?.length === 1) {
       q = ctx.db
-        .query("contents")
+        .query("contentCampaigns")
         .withIndex("by_user_status", (q) =>
           q.eq("userId", userId!).eq("status", args.status![0] as any),
         );
     } else if (args.platform?.length === 1) {
       q = ctx.db
-        .query("contents")
+        .query("contentCampaigns")
         .withIndex("by_user_platform", (q) =>
           q.eq("userId", userId!).eq("platform", args.platform![0] as any),
         );
     } else {
       q = ctx.db
-        .query("contents")
+        .query("contentCampaigns")
         .withIndex("by_user", (q) => q.eq("userId", userId!));
     }
 
@@ -67,29 +65,14 @@ export const list = query({
       );
     }
 
-    if (args.dateFrom) {
-      q = q.filter((q) =>
-        q.or(
-          q.eq(q.field("dueDate"), undefined),
-          q.gte(q.field("dueDate"), args.dateFrom!),
-        ),
-      );
-    }
-
-    if (args.dateTo) {
-      q = q.filter((q) =>
-        q.or(
-          q.eq(q.field("dueDate"), undefined),
-          q.lte(q.field("dueDate"), args.dateTo!),
-        ),
-      );
-    }
-
     if (args.search) {
-      q = q.filter(
-        (q) =>
-          q.gte(q.field("title"), args.search!.toLowerCase()) &&
-          q.lt(q.field("title"), args.search!.toLowerCase() + "\uffff"),
+      q = q.filter((q) =>
+        q.or(
+          q.and(
+            q.gte(q.field("title"), args.search!.toLowerCase()),
+            q.lt(q.field("title"), args.search!.toLowerCase() + "\uffff"),
+          ),
+        ),
       );
     }
 
@@ -102,7 +85,7 @@ export const list = query({
   },
 });
 
-// Get content statistics
+// Get campaign statistics
 export const getStats = query({
   args: {
     projectId: v.optional(v.id("projects")),
@@ -111,111 +94,84 @@ export const getStats = query({
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
-    let contents = await ctx.db
-      .query("contents")
+    let campaigns = await ctx.db
+      .query("contentCampaigns")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     // Filter by project if specified
     if (args.projectId) {
-      contents = contents.filter((c) => c.projectId === args.projectId);
+      campaigns = campaigns.filter((c) => c.projectId === args.projectId);
     }
 
     const stats = {
-      total: contents.length,
+      total: campaigns.length,
       byStatus: {
-        confirmed: 0,
-        shipped: 0,
-        received: 0,
-        shooting: 0,
-        drafting: 0,
-        editing: 0,
-        done: 0,
-        pending_payment: 0,
-        paid: 0,
-        canceled: 0,
-        ideation: 0,
-        scripting: 0,
-        scheduled: 0,
+        product_obtained: 0,
+        production: 0,
         published: 0,
-        archived: 0,
-        planned: 0,
-        skipped: 0,
+        payment: 0,
+        done: 0,
       },
       byPlatform: {} as Record<string, number>,
       byType: {
-        campaign: 0,
-        series: 0,
-        routine: 0,
+        barter: 0,
+        paid: 0,
       },
+      withSow: 0,
       withNotes: 0,
-      withDueDate: 0,
-      withScheduledDate: 0,
-      withPublishedDate: 0,
       recentlyCreated: 0, // Last 7 days
       recentlyUpdated: 0, // Last 7 days
-      overdue: 0,
-      upcoming: 0, // Due in next 7 days
     };
 
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const today = new Date().toISOString().split("T")[0];
-    const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
 
-    contents.forEach((content) => {
+    campaigns.forEach((campaign) => {
       // Count by status
-      const statusKey = content.status;
-      stats.byStatus[statusKey as keyof typeof stats.byStatus]++;
+      stats.byStatus[campaign.status]++;
 
       // Count by platform
-      stats.byPlatform[content.platform] =
-        (stats.byPlatform[content.platform] || 0) + 1;
+      stats.byPlatform[campaign.platform] =
+        (stats.byPlatform[campaign.platform] || 0) + 1;
 
       // Count by type
-      stats.byType[content.type]++;
+      stats.byType[campaign.type]++;
 
       // Count with optional fields
-      if (content.notes) stats.withNotes++;
-      if (content.dueDate) {
-        stats.withDueDate++;
-        if (content.dueDate < today && content.status !== "published") {
-          stats.overdue++;
-        }
-        if (content.dueDate >= today && content.dueDate <= nextWeek) {
-          stats.upcoming++;
-        }
-      }
-      if (content.scheduledAt) stats.withScheduledDate++;
-      if (content.publishedAt) stats.withPublishedDate++;
+      if (campaign.sow) stats.withSow++;
+      if (campaign.notes) stats.withNotes++;
 
       // Count recent activity
-      if (content.createdAt >= sevenDaysAgo) stats.recentlyCreated++;
-      if (content.updatedAt >= sevenDaysAgo) stats.recentlyUpdated++;
+      if (campaign.createdAt >= sevenDaysAgo) stats.recentlyCreated++;
+      if (campaign.updatedAt >= sevenDaysAgo) stats.recentlyUpdated++;
     });
 
     return stats;
   },
 });
 
-// Get content by ID with task stats
-export const getByIdWithStats = query({
+// Get campaign by ID with task stats
+export const getById = query({
   args: {
-    contentId: v.id("contents"),
+    campaignId: v.id("contentCampaigns"),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
-    const content = await ctx.db.get(args.contentId);
-    if (!content || content.userId !== userId) return null;
+    const campaign = await ctx.db.get(args.campaignId);
+    if (!campaign || campaign.userId !== userId) return null;
 
-    // Get tasks for this content
+    // Get tasks for this campaign
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("contentId"), args.contentId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("contentId"), args.campaignId),
+          q.eq(q.field("contentType"), "campaign"),
+        ),
+      )
       .collect();
 
     // Calculate task stats
@@ -244,19 +200,18 @@ export const getByIdWithStats = query({
     });
 
     return {
-      content,
+      campaign,
       taskStats,
     };
   },
 });
 
-// Get contents by project for Kanban board
+// Get campaigns by project
 export const getByProject = query({
   args: {
     projectId: v.id("projects"),
     search: v.optional(v.string()),
     status: v.optional(v.array(v.string())),
-    phase: v.optional(v.array(v.string())),
     types: v.optional(v.array(v.string())),
     platform: v.optional(v.array(v.string())),
   },
@@ -264,8 +219,8 @@ export const getByProject = query({
     const userId = await getUserId(ctx);
     if (!userId) return [];
 
-    let contents = await ctx.db
-      .query("contents")
+    let campaigns = await ctx.db
+      .query("contentCampaigns")
       .withIndex("by_user_project", (q) =>
         q.eq("userId", userId).eq("projectId", args.projectId),
       )
@@ -273,32 +228,28 @@ export const getByProject = query({
 
     // Apply filters
     if (args.search) {
-      contents = contents.filter((c) =>
+      campaigns = campaigns.filter((c) =>
         c.title.toLowerCase().includes(args.search!.toLowerCase()),
       );
     }
 
     if (args.status?.length) {
-      contents = contents.filter((c) => args.status!.includes(c.status));
-    }
-
-    if (args.phase?.length) {
-      contents = contents.filter((c) => args.phase!.includes(c.phase));
+      campaigns = campaigns.filter((c) => args.status!.includes(c.status));
     }
 
     if (args.types?.length) {
-      contents = contents.filter((c) => args.types!.includes(c.type));
+      campaigns = campaigns.filter((c) => args.types!.includes(c.type));
     }
 
     if (args.platform?.length) {
-      contents = contents.filter((c) => args.platform!.includes(c.platform));
+      campaigns = campaigns.filter((c) => args.platform!.includes(c.platform));
     }
 
-    return contents;
+    return campaigns;
   },
 });
 
-// Get contents by project with stats
+// Get campaigns by project with stats
 export const getByProjectWithStats = query({
   args: {
     projectId: v.id("projects"),
@@ -307,52 +258,38 @@ export const getByProjectWithStats = query({
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
-    const contents = await ctx.db
-      .query("contents")
+    const campaigns = await ctx.db
+      .query("contentCampaigns")
       .withIndex("by_user_project", (q) =>
         q.eq("userId", userId).eq("projectId", args.projectId),
       )
       .collect();
 
     const stats = {
-      total: contents.length,
+      total: campaigns.length,
       byStatus: {
-        confirmed: 0,
-        shipped: 0,
-        received: 0,
-        shooting: 0,
-        drafting: 0,
-        editing: 0,
-        done: 0,
-        pending_payment: 0,
-        paid: 0,
-        canceled: 0,
-        ideation: 0,
-        scripting: 0,
-        scheduled: 0,
+        product_obtained: 0,
+        production: 0,
         published: 0,
-        archived: 0,
-        planned: 0,
-        skipped: 0,
+        payment: 0,
+        done: 0,
       },
       byPlatform: {} as Record<string, number>,
       byType: {
-        campaign: 0,
-        series: 0,
-        routine: 0,
+        barter: 0,
+        paid: 0,
       },
     };
 
-    contents.forEach((content) => {
-      const statusKey = content.status;
-      stats.byStatus[statusKey as keyof typeof stats.byStatus]++;
-      stats.byPlatform[content.platform] =
-        (stats.byPlatform[content.platform] || 0) + 1;
-      stats.byType[content.type]++;
+    campaigns.forEach((campaign) => {
+      stats.byStatus[campaign.status]++;
+      stats.byPlatform[campaign.platform] =
+        (stats.byPlatform[campaign.platform] || 0) + 1;
+      stats.byType[campaign.type]++;
     });
 
     return {
-      contents,
+      campaigns,
       stats,
     };
   },

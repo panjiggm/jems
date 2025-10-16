@@ -97,33 +97,28 @@ const TabsCustom = ({
 }: TabsCustomProps) => {
   const router = useRouter();
   const pathname = usePathname();
-  const [viewParam, setViewParam] = useQueryState("view");
+  const [contentTypeParam, setContentTypeParam] = useQueryState("contentType");
 
   // Get current active tab based on URL
   const getCurrentTab = () => {
     if (!useUrlNavigation) return defaultValue;
 
-    // First check for view query parameter
-    if (viewParam) {
-      const tab = tabs.find((t) => t.id === viewParam);
+    // Check contentType query param first
+    if (contentTypeParam) {
+      const tab = tabs.find((t) => t.id === contentTypeParam);
       if (tab) return tab.id;
     }
 
-    // Fallback to href matching
-    // Sort tabs by href length (longest first) to match more specific routes first
+    // Then check if current path matches any tab href
     const sortedTabs = [...tabs].sort(
       (a, b) => (b.href?.length || 0) - (a.href?.length || 0),
     );
 
-    // Check which tab's href matches the current pathname
     const currentTab = sortedTabs.find((tab) => {
       if (!tab.href) return false;
 
-      // Exact match
       if (pathname === tab.href) return true;
 
-      // Check if pathname starts with tab.href and the next character is '/' or end of string
-      // This prevents /projects from matching /projects/contents
       const nextChar = pathname[tab.href.length];
       return (
         pathname.startsWith(tab.href) &&
@@ -139,10 +134,11 @@ const TabsCustom = ({
       const tab = tabs.find((t) => t.id === value);
       if (tab?.href) {
         router.push(tab.href);
+      } else {
+        setContentTypeParam(value);
       }
     } else {
-      // For non-URL navigation, update the view query parameter
-      setViewParam(value);
+      setContentTypeParam(value);
       onValueChange?.(value);
     }
   };
@@ -162,7 +158,7 @@ const TabsCustom = ({
     switch (variant) {
       case "underline":
         return cn(
-          "px-8 py-3 text-sm font-bold border-b-2 border-transparent",
+          "px-4 py-3 text-sm font-semibold border-b-2 border-transparent",
           "border-t-0 border-l-0 border-r-0 shadow-none",
           "data-[state=active]:border-b-[#f7a641] data-[state=active]:text-[#4a2e1a]",
           "data-[state=active]:border-t-0 data-[state=active]:border-l-0 data-[state=active]:border-r-0",
@@ -175,21 +171,23 @@ const TabsCustom = ({
         );
       case "pills":
         return cn(
-          "px-8 py-2 text-sm font-bold rounded-md",
+          "px-4 py-2 text-sm font-semibold rounded-md",
           "data-[state=active]:bg-[#f7a641] data-[state=active]:text-[#4a2e1a]",
           "dark:data-[state=active]:bg-[#4a2e1a] dark:data-[state=active]:text-[#f8e9b0]",
           "text-muted-foreground hover:text-foreground",
           "transition-colors whitespace-nowrap",
         );
       default:
-        return "px-4 py-3 text-sm font-bold";
+        return "px-4 py-3 text-sm font-semibold";
     }
   };
 
   return (
     <div className={cn("w-full", className)}>
       <Tabs
-        value={useUrlNavigation ? getCurrentTab() : defaultValue}
+        value={
+          useUrlNavigation ? getCurrentTab() : contentTypeParam || defaultValue
+        }
         onValueChange={handleTabChange}
         className="w-full"
       >
@@ -214,7 +212,7 @@ const TabsCustom = ({
                     {IconComponent && <IconComponent className="h-4 w-4" />}
                     {tab.label}
                     {tab.badge && (
-                      <Badge variant="secondary" className="ml-2 h-5 text-xs">
+                      <Badge variant="secondary" className="h-5 text-xs">
                         {tab.badge}
                       </Badge>
                     )}

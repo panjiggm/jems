@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 interface EditableNotesCellProps {
   value: string;
-  contentId: Id<"contents">;
+  contentId: string;
   onUpdate: (newNotes: string) => void;
 }
 

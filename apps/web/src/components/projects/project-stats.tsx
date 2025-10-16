@@ -220,7 +220,9 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
           },
           {
             label: t("projects.stats.labels.published"),
-            value: stats.contents.byStatus.published,
+            value:
+              stats.contents.campaigns.byStatus.published +
+              stats.contents.routines.byStatus.published,
             icon: Rocket,
           },
           {

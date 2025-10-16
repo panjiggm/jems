@@ -59,17 +59,29 @@ export const list = query({
     // Get content count for each project in the page
     const projectsWithContentCount = await Promise.all(
       page.map(async (project) => {
-        const contentCount = await ctx.db
-          .query("contents")
+        // Get content campaigns count
+        const campaignsCount = await ctx.db
+          .query("contentCampaigns")
           .withIndex("by_user_project", (q) =>
             q.eq("userId", userId!).eq("projectId", project._id),
           )
           .collect()
-          .then((contents) => contents.length);
+          .then((campaigns) => campaigns.length);
+
+        // Get content routines count
+        const routinesCount = await ctx.db
+          .query("contentRoutines")
+          .withIndex("by_user_project", (q) =>
+            q.eq("userId", userId!).eq("projectId", project._id),
+          )
+          .collect()
+          .then((routines) => routines.length);
+
+        const totalContentCount = campaignsCount + routinesCount;
 
         return {
           ...project,
-          contentCount,
+          contentCount: totalContentCount,
         };
       }),
     );
@@ -159,9 +171,17 @@ export const getByIdWithStats = query({
     const project = await ctx.db.get(args.projectId);
     if (!project || project.userId !== userId) return null;
 
-    // Get contents count for this project
-    const contents = await ctx.db
-      .query("contents")
+    // Get content campaigns for this project
+    const campaigns = await ctx.db
+      .query("contentCampaigns")
+      .withIndex("by_user_project", (q) =>
+        q.eq("userId", userId).eq("projectId", args.projectId),
+      )
+      .collect();
+
+    // Get content routines for this project
+    const routines = await ctx.db
+      .query("contentRoutines")
       .withIndex("by_user_project", (q) =>
         q.eq("userId", userId).eq("projectId", args.projectId),
       )
@@ -176,23 +196,53 @@ export const getByIdWithStats = query({
       .collect();
 
     // Calculate content stats
-    const contentPhase = {
-      total: contents.length,
-      byPhase: {
-        plan: 0,
-        production: 0,
-        review: 0,
-        scheduled: 0,
-        published: 0,
-        done: 0,
+    const contentStats = {
+      total: campaigns.length + routines.length,
+      campaigns: {
+        total: campaigns.length,
+        byStatus: {
+          product_obtained: 0,
+          production: 0,
+          published: 0,
+          payment: 0,
+          done: 0,
+        },
+        byType: {
+          barter: 0,
+          paid: 0,
+        },
+        byPlatform: {} as Record<string, number>,
+      },
+      routines: {
+        total: routines.length,
+        byStatus: {
+          plan: 0,
+          in_progress: 0,
+          scheduled: 0,
+          published: 0,
+        },
+        byPlatform: {} as Record<string, number>,
       },
       byPlatform: {} as Record<string, number>,
     };
 
-    contents.forEach((content) => {
-      contentPhase.byPhase[content.phase]++;
-      contentPhase.byPlatform[content.platform] =
-        (contentPhase.byPlatform[content.platform] || 0) + 1;
+    // Process campaigns
+    campaigns.forEach((campaign) => {
+      contentStats.campaigns.byStatus[campaign.status]++;
+      contentStats.campaigns.byType[campaign.type]++;
+      contentStats.campaigns.byPlatform[campaign.platform] =
+        (contentStats.campaigns.byPlatform[campaign.platform] || 0) + 1;
+      contentStats.byPlatform[campaign.platform] =
+        (contentStats.byPlatform[campaign.platform] || 0) + 1;
+    });
+
+    // Process routines
+    routines.forEach((routine) => {
+      contentStats.routines.byStatus[routine.status]++;
+      contentStats.routines.byPlatform[routine.platform] =
+        (contentStats.routines.byPlatform[routine.platform] || 0) + 1;
+      contentStats.byPlatform[routine.platform] =
+        (contentStats.byPlatform[routine.platform] || 0) + 1;
     });
 
     // Calculate task stats
@@ -224,7 +274,7 @@ export const getByIdWithStats = query({
 
     return {
       project,
-      contentPhase,
+      contentStats,
       taskStats,
     };
   },

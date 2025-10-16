@@ -52,7 +52,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   const handleViewDetails = () => {
     const year = getYearFromContext();
-    router.push(`/${locale}/projects/${year}/${project._id}?view=table`);
+    router.push(
+      `/${locale}/projects/${year}/${project._id}?contentType=campaign&view=table`,
+    );
   };
 
   const formatDate = (dateString: string) => {

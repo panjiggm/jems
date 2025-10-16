@@ -12,49 +12,49 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { ContentCampaignType, CAMPAIGN_TYPE_LABELS } from "@/types/status";
 
-interface EditableTypeBadgeProps {
-  value: "campaign" | "series" | "routine";
-  contentId: Id<"contents">;
+interface EditableCampaignTypeBadgeProps {
+  value: ContentCampaignType;
+  campaignId: Id<"contentCampaigns">;
 }
 
-const typeOptions = [
+const typeOptions: Array<{
+  value: ContentCampaignType;
+  label: string;
+  color: string;
+  dotColor: string;
+}> = [
   {
-    value: "campaign",
-    label: "Campaign",
+    value: "barter",
+    label: "Barter",
     color: "bg-purple-100 text-purple-800 border-purple-200",
     dotColor: "bg-purple-500",
   },
   {
-    value: "series",
-    label: "Series",
+    value: "paid",
+    label: "Paid",
     color: "bg-green-100 text-green-800 border-green-200",
     dotColor: "bg-green-500",
   },
-  {
-    value: "routine",
-    label: "Routine",
-    color: "bg-blue-100 text-blue-800 border-blue-200",
-    dotColor: "bg-blue-500",
-  },
 ];
 
-export function EditableTypeBadge({
+export function EditableCampaignTypeBadge({
   value,
-  contentId,
-}: EditableTypeBadgeProps) {
-  const updateContent = useMutation(api.mutations.contents.update);
+  campaignId,
+}: EditableCampaignTypeBadgeProps) {
+  const updateCampaign = useMutation(api.mutations.contentCampaigns.update);
 
-  const handleChange = async (newType: "campaign" | "series" | "routine") => {
+  const handleChange = async (newType: ContentCampaignType) => {
     try {
-      await updateContent({
-        id: contentId,
+      await updateCampaign({
+        id: campaignId,
         patch: {
           type: newType,
         },
       });
     } catch (error) {
-      console.error("Failed to update type:", error);
+      console.error("Failed to update campaign type:", error);
     }
   };
 

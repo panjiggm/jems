@@ -10,8 +10,9 @@ export const logActivity = internalMutation({
     projectId: v.id("projects"),
     entityType: v.union(
       v.literal("project"),
-      v.literal("content"),
       v.literal("task"),
+      v.literal("content_campaign"),
+      v.literal("content_routine"),
     ),
     entityId: v.string(),
     action: v.union(
@@ -43,8 +44,9 @@ export const createActivity = mutation({
     projectId: v.id("projects"),
     entityType: v.union(
       v.literal("project"),
-      v.literal("content"),
       v.literal("task"),
+      v.literal("content_campaign"),
+      v.literal("content_routine"),
     ),
     entityId: v.string(),
     action: v.union(
@@ -92,8 +94,9 @@ export const deleteActivitiesByEntity = internalMutation({
   args: {
     entityType: v.union(
       v.literal("project"),
-      v.literal("content"),
       v.literal("task"),
+      v.literal("content_campaign"),
+      v.literal("content_routine"),
     ),
     entityId: v.string(),
   },

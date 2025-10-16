@@ -19,7 +19,7 @@ export function deploymentName() {
 export interface ActivityLogParams {
   userId: string;
   projectId: string;
-  entityType: "project" | "content" | "task";
+  entityType: "project" | "task" | "content_campaign" | "content_routine";
   entityId: string;
   action:
     | "created"
@@ -40,7 +40,19 @@ export function createActivityDescription(
   entityTitle?: string,
   metadata?: any,
 ): string {
-  const entity = entityType.charAt(0).toUpperCase() + entityType.slice(1);
+  // Handle the new entity types with proper formatting
+  let entity: string;
+  switch (entityType) {
+    case "content_campaign":
+      entity = "Campaign";
+      break;
+    case "content_routine":
+      entity = "Routine";
+      break;
+    default:
+      entity = entityType.charAt(0).toUpperCase() + entityType.slice(1);
+  }
+
   const title = entityTitle ? `"${entityTitle}"` : "";
 
   switch (action) {

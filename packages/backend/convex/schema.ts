@@ -40,10 +40,11 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_createdAt", ["userId", "createdAt"]),
 
-  contents: defineTable({
+  contentCampaigns: defineTable({
     userId: v.string(),
     projectId: v.id("projects"),
     title: v.string(),
+    sow: v.optional(v.string()), // Statement of Work
     platform: v.union(
       v.literal("tiktok"),
       v.literal("instagram"),
@@ -53,57 +54,77 @@ export default defineSchema({
       v.literal("threads"),
       v.literal("other"),
     ),
-    type: v.union(
-      v.literal("campaign"),
-      v.literal("series"),
-      v.literal("routine"),
-    ),
+    type: v.union(v.literal("barter"), v.literal("paid")),
     status: v.union(
-      v.literal("confirmed"),
-      v.literal("shipped"),
-      v.literal("received"),
-      v.literal("shooting"),
-      v.literal("drafting"),
-      v.literal("editing"),
-      v.literal("done"),
-      v.literal("pending_payment"),
-      v.literal("paid"),
-      v.literal("canceled"),
-      v.literal("ideation"),
-      v.literal("scripting"),
-      v.literal("scheduled"),
-      v.literal("published"),
-      v.literal("archived"),
-      v.literal("planned"),
-      v.literal("skipped"),
-    ),
-    phase: v.union(
-      v.literal("plan"),
+      v.literal("product_obtained"),
       v.literal("production"),
-      v.literal("review"),
       v.literal("published"),
+      v.literal("payment"),
       v.literal("done"),
     ),
-    dueDate: v.optional(v.string()),
-    scheduledAt: v.optional(v.string()),
-    publishedAt: v.optional(v.string()),
+    statusHistory: v.array(
+      v.object({
+        status: v.string(),
+        timestamp: v.number(),
+        publishedAt: v.optional(v.string()),
+        note: v.optional(v.string()),
+      }),
+    ),
+    statusDurations: v.optional(v.any()), // Map of status transitions to duration strings
     notes: v.optional(v.string()),
-    assetIds: v.optional(v.array(v.string())),
-    aiMetadata: v.optional(v.any()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_user", ["userId"])
     .index("by_user_project", ["userId", "projectId"])
     .index("by_user_status", ["userId", "status"])
-    .index("by_user_platform", ["userId", "platform"])
-    .index("by_user_dueDate", ["userId", "dueDate"])
-    .index("by_user_scheduledAt", ["userId", "scheduledAt"]),
+    .index("by_user_platform", ["userId", "platform"]),
+
+  contentRoutines: defineTable({
+    userId: v.string(),
+    projectId: v.id("projects"),
+    title: v.string(),
+    notes: v.optional(v.string()),
+    platform: v.union(
+      v.literal("tiktok"),
+      v.literal("instagram"),
+      v.literal("youtube"),
+      v.literal("x"),
+      v.literal("facebook"),
+      v.literal("threads"),
+      v.literal("other"),
+    ),
+    status: v.union(
+      v.literal("plan"),
+      v.literal("in_progress"),
+      v.literal("scheduled"),
+      v.literal("published"),
+    ),
+    statusHistory: v.array(
+      v.object({
+        status: v.string(),
+        timestamp: v.number(),
+        scheduledAt: v.optional(v.string()),
+        publishedAt: v.optional(v.string()),
+        note: v.optional(v.string()),
+      }),
+    ),
+    statusDurations: v.optional(v.any()), // Map of status transitions to duration strings
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_project", ["userId", "projectId"])
+    .index("by_user_status", ["userId", "status"])
+    .index("by_user_platform", ["userId", "platform"]),
 
   tasks: defineTable({
     userId: v.string(),
     projectId: v.id("projects"),
-    contentId: v.optional(v.id("contents")),
+    contentId: v.optional(v.string()), // Polymorphic reference
+    contentType: v.optional(
+      v.union(v.literal("campaign"), v.literal("routine")),
+    ),
     title: v.string(),
     status: v.union(
       v.literal("todo"),
@@ -125,7 +146,8 @@ export default defineSchema({
     projectId: v.id("projects"),
     entityType: v.union(
       v.literal("project"),
-      v.literal("content"),
+      v.literal("content_campaign"),
+      v.literal("content_routine"),
       v.literal("task"),
     ),
     entityId: v.string(), // ID of the project/content/task

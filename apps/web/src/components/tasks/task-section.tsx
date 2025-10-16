@@ -27,7 +27,8 @@ interface Task {
   _creationTime: number;
   userId: string;
   projectId: Id<"projects">;
-  contentId?: Id<"contents">;
+  contentId?: string;
+  contentType?: "campaign" | "routine";
   title: string;
   status: "todo" | "doing" | "done" | "skipped";
   dueDate?: string;
@@ -36,11 +37,16 @@ interface Task {
 }
 
 interface TaskSectionProps {
-  contentId: Id<"contents">;
+  contentId: string;
+  contentType: "campaign" | "routine";
   projectId: Id<"projects">;
 }
 
-export function TaskSection({ contentId, projectId }: TaskSectionProps) {
+export function TaskSection({
+  contentId,
+  contentType,
+  projectId,
+}: TaskSectionProps) {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isAddingTask, setIsAddingTask] = useState(false);
 
@@ -63,6 +69,7 @@ export function TaskSection({ contentId, projectId }: TaskSectionProps) {
       await createTask({
         projectId,
         contentId,
+        contentType,
         title: newTaskTitle.trim(),
       });
       setNewTaskTitle("");

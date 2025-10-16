@@ -16,7 +16,12 @@ import {
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
-import { FilterState } from "../project/search-filter-content";
+import { FilterState } from "../../project/search-filter-content";
+import {
+  ContentCampaignStatus,
+  ContentCampaignType,
+  Platform,
+} from "@/types/status";
 
 import {
   Table,
@@ -29,74 +34,50 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 
-import { EditableStatusCell } from "./editable-status-cell";
-import { EditablePhaseCell } from "./editable-phase-cell";
-import { EditableDateCell } from "./editable-date-cell";
-import { EditablePlatformCell } from "./editable-platform-cell";
-import { EditableTitleCell } from "./editable-title-cell";
-import { EditableNotesCell } from "./editable-notes-cell";
-import { EditableTypeCell } from "./editable-type-cell";
-import { ContentDetailsDrawer } from "../contents";
+import { EditableTitleCell } from "../editable-title-cell";
+import { EditableNotesCell } from "../editable-notes-cell";
+import { EditablePlatformCell } from "../editable-platform-cell";
+import { EditableCampaignStatusCell } from "../editable-campaign-status-cell";
+import { EditableCampaignTypeCell } from "../editable-campaign-type-cell";
+import { ContentDetailsDrawer } from "../../contents";
 
 import { Eye } from "lucide-react";
 
-type Content = {
-  _id: Id<"contents">;
+// Campaign content type
+type CampaignContent = {
+  _id: Id<"contentCampaigns">;
   _creationTime: number;
   userId: string;
   projectId: Id<"projects">;
   title: string;
-  platform:
-    | "tiktok"
-    | "instagram"
-    | "youtube"
-    | "x"
-    | "facebook"
-    | "threads"
-    | "other";
-  status:
-    | "confirmed"
-    | "shipped"
-    | "received"
-    | "shooting"
-    | "drafting"
-    | "editing"
-    | "done"
-    | "pending_payment"
-    | "paid"
-    | "canceled"
-    | "ideation"
-    | "scripting"
-    | "scheduled"
-    | "published"
-    | "archived"
-    | "planned"
-    | "skipped";
-  type: "campaign" | "series" | "routine";
-  phase: "plan" | "production" | "review" | "published" | "done";
-  dueDate?: string;
-  scheduledAt?: string;
-  publishedAt?: string;
+  sow?: string;
+  platform: Platform;
+  type: ContentCampaignType;
+  status: ContentCampaignStatus;
+  statusHistory: Array<{
+    status: string;
+    timestamp: number;
+    publishedAt?: string;
+    note?: string;
+  }>;
   notes?: string;
-  assetIds?: string[];
-  aiMetadata?: any;
   createdAt: number;
   updatedAt: number;
 };
 
-const columnHelper = createColumnHelper<Content>();
+const campaignColumnHelper = createColumnHelper<CampaignContent>();
 
-interface EditableTableProps {
+interface EditableCampaignTableProps {
   projectId: Id<"projects">;
   userId: string;
   filters: FilterState;
 }
 
-export function EditableTable({
+export function EditableCampaignTable({
   projectId,
   userId,
   filters,
-}: EditableTableProps) {
+}: EditableCampaignTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -104,31 +85,35 @@ export function EditableTable({
   const [globalFilter, setGlobalFilter] = useState("");
 
   // Drawer state
-  const [selectedContentId, setSelectedContentId] =
-    useState<Id<"contents"> | null>(null);
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(
+    null,
+  );
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Fetch data
-  const contents = useQuery(api.queries.contents.getByProject, {
+  // Fetch campaigns
+  const campaigns = useQuery(api.queries.contentCampaigns.getByProject, {
     projectId,
     search: filters.search || undefined,
     status: filters.status.length > 0 ? filters.status : undefined,
-    phase: filters.phase.length > 0 ? filters.phase : undefined,
     types: filters.types.length > 0 ? filters.types : undefined,
     platform: filters.platform.length > 0 ? filters.platform : undefined,
   });
-  const updateContent = useMutation(api.mutations.contents.update);
-  const setStatus = useMutation(api.mutations.contents.setStatus);
-  const setPhase = useMutation(api.mutations.contents.setPhase);
 
-  const handleOpenDrawer = (contentId: Id<"contents">) => {
+  // Mutations
+  const updateCampaign = useMutation(api.mutations.contentCampaigns.update);
+  const setCampaignStatus = useMutation(
+    api.mutations.contentCampaigns.setStatus,
+  );
+
+  const handleOpenDrawer = (contentId: string) => {
     setSelectedContentId(contentId);
     setDrawerOpen(true);
   };
 
-  const columns = [
+  // Campaign columns
+  const campaignColumns = [
     // Selection column
-    columnHelper.display({
+    campaignColumnHelper.display({
       id: "select",
       header: ({ table }) => (
         <Checkbox
@@ -149,28 +134,28 @@ export function EditableTable({
     }),
 
     // Title column
-    columnHelper.accessor("title", {
+    campaignColumnHelper.accessor("title", {
       header: "Name",
       cell: ({ row, getValue }) => (
         <EditableTitleCell
           value={getValue()}
           contentId={row.original._id}
           onUpdate={(newTitle) =>
-            updateContent({ id: row.original._id, patch: { title: newTitle } })
+            updateCampaign({ id: row.original._id, patch: { title: newTitle } })
           }
         />
       ),
     }),
 
     // Platform column
-    columnHelper.accessor("platform", {
+    campaignColumnHelper.accessor("platform", {
       header: "Platform",
       cell: ({ row, getValue }) => (
         <EditablePlatformCell
           value={getValue()}
           contentId={row.original._id}
           onUpdate={(newPlatform) =>
-            updateContent({
+            updateCampaign({
               id: row.original._id,
               patch: { platform: newPlatform },
             })
@@ -179,82 +164,44 @@ export function EditableTable({
       ),
     }),
 
-    // Status column
-    columnHelper.accessor("status", {
-      header: "Status",
-      cell: ({ row, getValue }) => (
-        <EditableStatusCell
-          value={getValue()}
-          contentId={row.original._id}
-          contentType={row.original.type}
-          onUpdate={(newStatus) =>
-            setStatus({ id: row.original._id, status: newStatus })
-          }
-        />
-      ),
-    }),
-
-    // Phase column
-    columnHelper.accessor("phase", {
-      header: "Phase",
-      cell: ({ row, getValue }) => (
-        <EditablePhaseCell
-          value={getValue()}
-          contentId={row.original._id}
-          onUpdate={(newPhase) =>
-            setPhase({ id: row.original._id, phase: newPhase })
-          }
-        />
-      ),
-    }),
-
-    // Type column
-    columnHelper.accessor("type", {
+    // Campaign Type column (barter/paid)
+    campaignColumnHelper.accessor("type", {
       header: "Type",
       cell: ({ row, getValue }) => (
-        <EditableTypeCell
+        <EditableCampaignTypeCell
           value={getValue()}
-          contentId={row.original._id}
-          onUpdate={(newType) =>
-            updateContent({
-              id: row.original._id,
-              patch: { type: newType },
-            })
-          }
+          campaignId={row.original._id}
         />
       ),
     }),
 
-    // Due Date column
-    columnHelper.accessor("dueDate", {
-      header: "Deadline",
+    // Status column
+    campaignColumnHelper.accessor("status", {
+      header: "Status",
       cell: ({ row, getValue }) => (
-        <EditableDateCell
+        <EditableCampaignStatusCell
           value={getValue()}
-          contentId={row.original._id}
-          onUpdate={(newDate) =>
-            updateContent({ id: row.original._id, patch: { dueDate: newDate } })
-          }
+          campaignId={row.original._id}
         />
       ),
     }),
 
     // Notes column
-    columnHelper.accessor("notes", {
+    campaignColumnHelper.accessor("notes", {
       header: "Notes",
       cell: ({ row, getValue }) => (
         <EditableNotesCell
           value={getValue() || ""}
           contentId={row.original._id}
           onUpdate={(newNotes) =>
-            updateContent({ id: row.original._id, patch: { notes: newNotes } })
+            updateCampaign({ id: row.original._id, patch: { notes: newNotes } })
           }
         />
       ),
     }),
 
     // Actions column
-    columnHelper.display({
+    campaignColumnHelper.display({
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
@@ -275,8 +222,8 @@ export function EditableTable({
   ];
 
   const table = useReactTable({
-    data: contents || [],
-    columns,
+    data: campaigns || [],
+    columns: campaignColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -296,7 +243,7 @@ export function EditableTable({
     },
   });
 
-  if (!contents) {
+  if (!campaigns) {
     return (
       <div className="flex items-center justify-center h-32">
         <div className="text-muted-foreground">Loading...</div>
@@ -353,10 +300,11 @@ export function EditableTable({
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={columns.length}
+                    colSpan={campaignColumns.length}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    No content found. Create your first content to get started.
+                    No campaigns found. Create your first campaign to get
+                    started.
                   </TableCell>
                 </TableRow>
               )}
@@ -396,6 +344,7 @@ export function EditableTable({
       {/* Content Details Drawer */}
       <ContentDetailsDrawer
         contentId={selectedContentId}
+        contentType="campaign"
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         onDeleted={() => {

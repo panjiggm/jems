@@ -5,7 +5,9 @@ import { currentUserId } from "../auth";
 export const list = query({
   args: {
     projectId: v.optional(v.id("projects")),
-    contentId: v.optional(v.id("contents")),
+    contentId: v.optional(
+      v.union(v.id("contentCampaigns"), v.id("contentRoutines")),
+    ),
     status: v.optional(v.array(v.string())),
     overdueOnly: v.optional(v.boolean()),
     cursor: v.optional(v.string()),
@@ -58,7 +60,9 @@ export const list = query({
 export const getStats = query({
   args: {
     projectId: v.optional(v.id("projects")),
-    contentId: v.optional(v.id("contents")),
+    contentId: v.optional(
+      v.union(v.id("contentCampaigns"), v.id("contentRoutines")),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await currentUserId(ctx);
@@ -186,7 +190,7 @@ export const getByProjectWithStats = query({
 // Get tasks by content with stats
 export const getByContentWithStats = query({
   args: {
-    contentId: v.id("contents"),
+    contentId: v.union(v.id("contentCampaigns"), v.id("contentRoutines")),
   },
   handler: async (ctx, args) => {
     const userId = await currentUserId(ctx);

@@ -6,7 +6,10 @@ import { internal } from "../_generated/api";
 export const create = mutation({
   args: {
     projectId: v.id("projects"),
-    contentId: v.optional(v.id("contents")),
+    contentId: v.optional(v.string()),
+    contentType: v.optional(
+      v.union(v.literal("campaign"), v.literal("routine")),
+    ),
     title: v.string(),
     dueDate: v.optional(v.string()),
   },
@@ -35,6 +38,7 @@ export const create = mutation({
         description: `Task "${args.title}" was created`,
         metadata: {
           contentId: args.contentId,
+          contentType: args.contentType,
           hasDueDate: !!args.dueDate,
         },
       },
@@ -50,7 +54,10 @@ export const update = mutation({
     patch: v.object({
       title: v.optional(v.string()),
       dueDate: v.optional(v.string()),
-      contentId: v.optional(v.id("contents")),
+      contentId: v.optional(v.string()),
+      contentType: v.optional(
+        v.union(v.literal("campaign"), v.literal("routine")),
+      ),
     }),
   },
   handler: async (ctx, { id, patch }) => {
@@ -63,6 +70,7 @@ export const update = mutation({
       title: doc.title,
       dueDate: doc.dueDate,
       contentId: doc.contentId,
+      contentType: doc.contentType,
     };
 
     await ctx.db.patch(id, { ...patch, updatedAt: Date.now() });

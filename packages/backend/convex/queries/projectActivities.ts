@@ -47,7 +47,12 @@ export const getUserActivities = query({
     limit: v.optional(v.number()),
     cursor: v.optional(v.string()),
     entityType: v.optional(
-      v.union(v.literal("project"), v.literal("content"), v.literal("task")),
+      v.union(
+        v.literal("project"),
+        v.literal("task"),
+        v.literal("content_campaign"),
+        v.literal("content_routine"),
+      ),
     ),
     action: v.optional(
       v.union(
@@ -109,8 +114,9 @@ export const getEntityActivities = query({
   args: {
     entityType: v.union(
       v.literal("project"),
-      v.literal("content"),
       v.literal("task"),
+      v.literal("content_campaign"),
+      v.literal("content_routine"),
     ),
     entityId: v.string(),
     limit: v.optional(v.number()),

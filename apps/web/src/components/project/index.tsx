@@ -22,12 +22,14 @@ export default function ProjectComponent({
   userId,
 }: ProjectComponentProps) {
   const [currentView] = useQueryState("view", { defaultValue: "table" });
+  const [contentType] = useQueryState("contentType", {
+    defaultValue: "campaign",
+  });
   const { openDialog } = useContentDialogStore();
   const { t } = useTranslations();
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     status: [],
-    phase: [],
     types: [],
     platform: [],
   });
@@ -47,15 +49,30 @@ export default function ProjectComponent({
     switch (currentView) {
       case "table":
         return (
-          <TableView projectId={projectId} userId={userId} filters={filters} />
+          <TableView
+            projectId={projectId}
+            userId={userId}
+            filters={filters}
+            contentType={contentType as "campaign" | "routine"}
+          />
         );
       case "kanban":
         return (
-          <KanbanView projectId={projectId} userId={userId} filters={filters} />
+          <KanbanView
+            projectId={projectId}
+            userId={userId}
+            filters={filters}
+            contentType={contentType as "campaign" | "routine"}
+          />
         );
       case "list":
         return (
-          <ListView projectId={projectId} userId={userId} filters={filters} />
+          <ListView
+            projectId={projectId}
+            userId={userId}
+            filters={filters}
+            contentType={contentType as "campaign" | "routine"}
+          />
         );
       case "calendar":
         return (
@@ -68,7 +85,12 @@ export default function ProjectComponent({
         );
       default:
         return (
-          <TableView projectId={projectId} userId={userId} filters={filters} />
+          <TableView
+            projectId={projectId}
+            userId={userId}
+            filters={filters}
+            contentType={contentType as "campaign" | "routine"}
+          />
         );
     }
   };

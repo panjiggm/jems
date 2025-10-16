@@ -3,70 +3,29 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ContentCard } from "./content-card";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 
-interface Content {
-  _id: Id<"contents">;
-  _creationTime: number;
-  userId: string;
-  projectId: Id<"projects">;
-  title: string;
-  platform:
-    | "tiktok"
-    | "instagram"
-    | "youtube"
-    | "x"
-    | "facebook"
-    | "threads"
-    | "other";
-  status:
-    | "confirmed"
-    | "shipped"
-    | "received"
-    | "shooting"
-    | "drafting"
-    | "editing"
-    | "done"
-    | "pending_payment"
-    | "paid"
-    | "canceled"
-    | "ideation"
-    | "scripting"
-    | "scheduled"
-    | "published"
-    | "archived"
-    | "planned"
-    | "skipped";
-  phase: "plan" | "production" | "review" | "published" | "done";
-  type: "campaign" | "series" | "routine";
-  dueDate?: string;
-  scheduledAt?: string;
-  publishedAt?: string;
-  notes?: string;
-  assetIds?: string[];
-  aiMetadata?: any;
-  createdAt: number;
-  updatedAt: number;
-}
-
-interface StatusSectionProps {
+interface StatusSectionProps<T> {
   title: string;
   color: string;
   count: number;
-  contents: Content[];
+  contents: T[];
   projectId: Id<"projects">;
   userId: string;
+  contentType: "campaign" | "routine";
+  renderContent: (content: T) => React.ReactNode;
 }
 
-export function StatusSection({
+export function StatusSection<T>({
   title,
   color,
   count,
   contents,
   projectId,
   userId,
-}: StatusSectionProps) {
+  contentType,
+  renderContent,
+}: StatusSectionProps<T>) {
   const [isExpanded, setIsExpanded] = useState(count > 0);
 
   return (
@@ -100,17 +59,12 @@ export function StatusSection({
         <div className="p-4">
           {contents.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm">No content in this status</p>
+              <p className="text-sm">No {contentType} content in this status</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {contents.map((content) => (
-                <ContentCard
-                  key={content._id}
-                  content={content}
-                  projectId={projectId}
-                  userId={userId}
-                />
+              {contents.map((content, index) => (
+                <div key={index}>{renderContent(content)}</div>
               ))}
             </div>
           )}

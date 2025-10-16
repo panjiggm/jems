@@ -6,20 +6,13 @@ import {
   Search,
   CheckCircle,
   Package,
-  PackageOpen,
   Wrench,
   Send,
   DollarSign,
   X as XIcon,
-  Lightbulb,
-  FileText,
   Calendar,
-  Archive,
   Target,
-  SkipForward,
-  Clapperboard,
   Play,
-  Eye,
   Layers,
   BadgeCheck,
   MonitorSmartphone,
@@ -45,26 +38,19 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { STATUS_LABELS, type ContentType } from "@/types/status";
 
-export type Status =
-  | "confirmed"
-  | "shipped"
-  | "received"
-  | "shooting"
-  | "drafting"
-  | "editing"
-  | "done"
-  | "pending_payment"
-  | "paid"
-  | "canceled"
-  | "ideation"
-  | "scripting"
-  | "scheduled"
+// Campaign statuses
+export type CampaignStatus =
+  | "product_obtained"
+  | "production"
   | "published"
-  | "archived"
-  | "planned"
-  | "skipped";
+  | "payment"
+  | "done";
 
-export type Phase = "plan" | "production" | "review" | "published" | "done";
+// Routine statuses
+export type RoutineStatus = "plan" | "in_progress" | "scheduled" | "published";
+
+// Combined for backward compatibility
+export type Status = CampaignStatus | RoutineStatus;
 
 export type Platform =
   | "tiktok"
@@ -78,7 +64,6 @@ export type Platform =
 export interface FilterState {
   search: string;
   status: Status[];
-  phase: Phase[];
   types: ContentType[];
   platform: Platform[];
 }
@@ -130,37 +115,6 @@ const platformConfig: Record<
   },
 };
 
-const phaseConfig: Record<
-  Phase,
-  { label: string; className: string; icon: LucideIcon }
-> = {
-  plan: {
-    label: "Plan",
-    icon: Target,
-    className: "bg-gray-100 text-gray-800 border-gray-200",
-  },
-  production: {
-    label: "Production",
-    icon: Play,
-    className: "bg-blue-100 text-blue-800 border-blue-200",
-  },
-  review: {
-    label: "Review",
-    icon: Eye,
-    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  },
-  published: {
-    label: "Published",
-    icon: Send,
-    className: "bg-green-100 text-green-800 border-green-200",
-  },
-  done: {
-    label: "Done",
-    icon: CheckCircle,
-    className: "bg-purple-100 text-purple-800 border-purple-200",
-  },
-};
-
 const typeConfig: Record<
   ContentType,
   { label: string; color: string; dotColor: string }
@@ -169,11 +123,6 @@ const typeConfig: Record<
     label: "Campaign",
     color: "bg-purple-100 text-purple-800 border-purple-200",
     dotColor: "bg-purple-500",
-  },
-  series: {
-    label: "Series",
-    color: "bg-green-100 text-green-800 border-green-200",
-    dotColor: "bg-green-500",
   },
   routine: {
     label: "Routine",
@@ -186,120 +135,74 @@ const statusConfig: Record<
   Status,
   { label: string; className: string; icon: LucideIcon }
 > = {
-  confirmed: {
-    label: STATUS_LABELS.confirmed,
-    className: "bg-green-100 text-green-800 border-green-200",
-    icon: CheckCircle,
-  },
-  shipped: {
-    label: STATUS_LABELS.shipped,
+  // Campaign statuses
+  product_obtained: {
+    label: STATUS_LABELS.product_obtained || "Product Obtained",
     className: "bg-blue-100 text-blue-800 border-blue-200",
     icon: Package,
   },
-  received: {
-    label: STATUS_LABELS.received,
-    className: "bg-purple-100 text-purple-800 border-purple-200",
-    icon: PackageOpen,
-  },
-  shooting: {
-    label: STATUS_LABELS.shooting,
+  production: {
+    label: STATUS_LABELS.production || "Production",
     className: "bg-orange-100 text-orange-800 border-orange-200",
-    icon: Clapperboard,
-  },
-  drafting: {
-    label: STATUS_LABELS.drafting,
-    className: "bg-gray-100 text-gray-800 border-gray-200",
-    icon: FileText,
-  },
-  editing: {
-    label: STATUS_LABELS.editing,
-    className: "bg-blue-100 text-blue-800 border-blue-200",
     icon: Wrench,
   },
-  done: {
-    label: STATUS_LABELS.done,
-    className: "bg-green-100 text-green-800 border-green-200",
-    icon: CheckCircle,
-  },
-  pending_payment: {
-    label: STATUS_LABELS.pending_payment,
+  payment: {
+    label: STATUS_LABELS.payment || "Payment",
     className: "bg-yellow-100 text-yellow-800 border-yellow-200",
     icon: DollarSign,
   },
-  paid: {
-    label: STATUS_LABELS.paid,
-    className: "bg-green-100 text-green-800 border-green-200",
-    icon: CheckCircle,
-  },
-  canceled: {
-    label: STATUS_LABELS.canceled,
-    className: "bg-red-100 text-red-800 border-red-200",
-    icon: XIcon,
-  },
-  ideation: {
-    label: STATUS_LABELS.ideation,
-    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    icon: Lightbulb,
-  },
-  scripting: {
-    label: STATUS_LABELS.scripting,
-    className: "bg-indigo-100 text-indigo-800 border-indigo-200",
-    icon: FileText,
-  },
-  scheduled: {
-    label: STATUS_LABELS.scheduled,
-    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    icon: Calendar,
-  },
-  published: {
-    label: STATUS_LABELS.published,
-    className: "bg-green-100 text-green-800 border-green-200",
-    icon: Send,
-  },
-  archived: {
-    label: STATUS_LABELS.archived,
-    className: "bg-gray-100 text-gray-800 border-gray-200",
-    icon: Archive,
-  },
-  planned: {
-    label: STATUS_LABELS.planned,
+  // Routine statuses
+  plan: {
+    label: STATUS_LABELS.plan || "Plan",
     className: "bg-blue-100 text-blue-800 border-blue-200",
     icon: Target,
   },
-  skipped: {
-    label: STATUS_LABELS.skipped,
-    className: "bg-gray-100 text-gray-600 border-gray-200",
-    icon: SkipForward,
+  in_progress: {
+    label: STATUS_LABELS.in_progress || "In Progress",
+    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    icon: Play,
+  },
+  scheduled: {
+    label: STATUS_LABELS.scheduled || "Scheduled",
+    className: "bg-purple-100 text-purple-800 border-purple-200",
+    icon: Calendar,
+  },
+  // Shared statuses
+  published: {
+    label: STATUS_LABELS.published || "Published",
+    className: "bg-green-100 text-green-800 border-green-200",
+    icon: Send,
+  },
+  done: {
+    label: STATUS_LABELS.done || "Done",
+    className: "bg-gray-100 text-gray-800 border-gray-200",
+    icon: CheckCircle,
   },
 };
 
-const statusOrder: Status[] = [
-  "confirmed",
-  "shipped",
-  "received",
-  "shooting",
-  "drafting",
-  "editing",
-  "done",
-  "pending_payment",
-  "paid",
-  "canceled",
-  "ideation",
-  "scripting",
-  "scheduled",
+// Campaign statuses order
+const campaignStatusOrder: CampaignStatus[] = [
+  "product_obtained",
+  "production",
   "published",
-  "archived",
-  "planned",
-  "skipped",
+  "payment",
+  "done",
 ];
 
-const phaseOrder: Phase[] = [
+// Routine statuses order
+const routineStatusOrder: RoutineStatus[] = [
   "plan",
-  "production",
-  "review",
+  "in_progress",
+  "scheduled",
   "published",
-  "done",
 ];
+
+// Combined status order
+const statusOrder: Status[] = [
+  ...campaignStatusOrder,
+  ...routineStatusOrder.filter((s) => !campaignStatusOrder.includes(s as any)),
+];
+
 const platformOrder: Platform[] = [
   "tiktok",
   "instagram",
@@ -309,7 +212,8 @@ const platformOrder: Platform[] = [
   "threads",
   "other",
 ];
-const typeOrder: ContentType[] = ["campaign", "series", "routine"];
+
+const typeOrder: ContentType[] = ["campaign", "routine"];
 
 export default function SearchFilterContent({
   filters,
@@ -335,10 +239,6 @@ export default function SearchFilterContent({
     updateFilter("status", toggleValue(filters.status, value));
   };
 
-  const handlePhaseToggle = (value: Phase) => {
-    updateFilter("phase", toggleValue(filters.phase, value));
-  };
-
   const handlePlatformToggle = (value: Platform) => {
     updateFilter("platform", toggleValue(filters.platform, value));
   };
@@ -355,7 +255,6 @@ export default function SearchFilterContent({
     onFiltersChange({
       search: "",
       status: [],
-      phase: [],
       types: [],
       platform: [],
     });
@@ -364,7 +263,6 @@ export default function SearchFilterContent({
   const activeFiltersCount =
     (filters.search ? 1 : 0) +
     filters.status.length +
-    filters.phase.length +
     filters.types.length +
     filters.platform.length;
 
@@ -465,37 +363,7 @@ export default function SearchFilterContent({
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Phase</label>
-                  <FilterSelect
-                    label="Phase"
-                    icon={Target}
-                    selectedValues={filters.phase}
-                    options={phaseOrder.map((phase) => {
-                      const config = phaseConfig[phase];
-                      const Icon = config.icon;
-                      return {
-                        value: phase,
-                        label: (
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "flex items-center gap-2 text-xs font-medium",
-                              config.className,
-                            )}
-                          >
-                            <Icon className="h-3.5 w-3.5" />
-                            {config.label}
-                          </Badge>
-                        ),
-                      } as const;
-                    })}
-                    onToggle={handlePhaseToggle}
-                    onClear={() => clearCategory("phase")}
-                  />
-                </div>
-
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-2">
                   <label className="text-sm font-medium">Type</label>
                   <FilterSelect
                     label="Type"
@@ -613,33 +481,6 @@ export default function SearchFilterContent({
           />
 
           <FilterSelect
-            label="Phase"
-            icon={Target}
-            selectedValues={filters.phase}
-            options={phaseOrder.map((phase) => {
-              const config = phaseConfig[phase];
-              const Icon = config.icon;
-              return {
-                value: phase,
-                label: (
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "flex items-center gap-2 text-xs font-medium",
-                      config.className,
-                    )}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {config.label}
-                  </Badge>
-                ),
-              } as const;
-            })}
-            onToggle={handlePhaseToggle}
-            onClear={() => clearCategory("phase")}
-          />
-
-          <FilterSelect
             label="Type"
             icon={Layers}
             selectedValues={filters.types}
@@ -732,32 +573,6 @@ export default function SearchFilterContent({
                 <button
                   type="button"
                   onClick={() => handleStatusToggle(status)}
-                  className="ml-1 rounded-full p-0.5 hover:bg-destructive/20"
-                >
-                  <XIcon className="h-3 w-3" />
-                </button>
-              </Badge>
-            );
-          })}
-
-          {(filters.phase || []).map((phase) => {
-            const config = phaseConfig[phase];
-            const Icon = config.icon;
-            return (
-              <Badge
-                key={phase}
-                variant="outline"
-                className={cn(
-                  "text-xs",
-                  "flex items-center gap-1 px-2 py-1",
-                  config.className,
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {config.label}
-                <button
-                  type="button"
-                  onClick={() => handlePhaseToggle(phase)}
                   className="ml-1 rounded-full p-0.5 hover:bg-destructive/20"
                 >
                   <XIcon className="h-3 w-3" />

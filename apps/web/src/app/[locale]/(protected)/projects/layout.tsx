@@ -10,10 +10,18 @@ import {
   ArrowLeft,
   Edit2,
   Trash2,
+  MoreVertical,
 } from "lucide-react";
 import ProjectStats from "@/components/projects/project-stats";
 import RecentActivity from "@/components/projects/recent-activity";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { CreateProjectDialog } from "@/components/projects/dialog-create-project";
 import { EditProjectDialog } from "@/components/projects/dialog-edit-project";
 import { DeleteProjectDialog } from "@/components/projects/dialog-delete-project";
@@ -31,6 +39,7 @@ import { ContentDialog } from "@/components/contents/dialog-content";
 import { TabsYear } from "@/components/tabs";
 import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
 import { ButtonGroupDropdown } from "@/components/ui/button-group";
+import { ViewDisplayDropdown } from "@/components/project/view-display-dropdown";
 import { useQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
 
@@ -86,6 +95,24 @@ export default function ProjectsLayout({
       : "skip",
   );
 
+  // Fetch campaign and routine counts
+  const campaignStats = useQuery(
+    api.queries.contentCampaigns.getStats,
+    routeInfo.isProjectRoute && routeInfo.projectId
+      ? { projectId: routeInfo.projectId as any }
+      : "skip",
+  );
+
+  const routineStats = useQuery(
+    api.queries.contentRoutines.getStats,
+    routeInfo.isProjectRoute && routeInfo.projectId
+      ? { projectId: routeInfo.projectId as any }
+      : "skip",
+  );
+
+  const campaignCount = campaignStats?.total || 0;
+  const routineCount = routineStats?.total || 0;
+
   // Handlers for edit and delete
   const handleEditProject = () => {
     if (projectStats && routeInfo.projectId) {
@@ -107,32 +134,20 @@ export default function ProjectsLayout({
   const getProjectsTabs = () => {
     const basePath = routeInfo.year
       ? `/${locale}/projects/${routeInfo.year}/${routeInfo.projectId}`
-      : `/${locale}/projects`;
+      : `/${locale}/projects/${routeInfo.projectId}`;
 
     return [
       {
-        id: "table",
-        label: "Table",
-        icon: Table,
-        href: `${basePath}?view=table`,
+        id: "campaign",
+        label: "Campaigns",
+        badge: campaignCount?.toString(),
+        href: `${basePath}?contentType=campaign`,
       },
       {
-        id: "kanban",
-        label: "Kanban",
-        icon: Kanban,
-        href: `${basePath}?view=kanban`,
-      },
-      {
-        id: "list",
-        label: "List",
-        icon: List,
-        href: `${basePath}?view=list`,
-      },
-      {
-        id: "calendar",
-        label: "Calendar",
-        icon: Calendar,
-        href: `${basePath}?view=calendar`,
+        id: "routine",
+        label: "Routines",
+        badge: routineCount?.toString(),
+        href: `${basePath}?contentType=routine`,
       },
     ];
   };
@@ -203,49 +218,28 @@ export default function ProjectsLayout({
 
               {/* Show Edit + Delete buttons for project detail */}
               {routeInfo.isProjectRoute && projectStats && (
-                <>
-                  {/* Desktop buttons with text */}
-                  <div className="hidden sm:flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleEditProject}
-                      className="h-9 px-3"
-                    >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="xs" className="h-9 w-9 p-0">
+                      <MoreVertical className="h-4 w-4" />
+                      <span className="sr-only">Open menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={handleEditProject}>
                       <Edit2 className="h-4 w-4 mr-2" />
                       {t("projects.editDialog.buttons.update")}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
                       onClick={handleDeleteProject}
-                      className="h-9 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50 dark:border-red-900/50"
+                      variant="destructive"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       {t("projects.deleteDialog.buttons.delete")}
-                    </Button>
-                  </div>
-
-                  {/* Mobile buttons - icon only */}
-                  <div className="sm:hidden flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleEditProject}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDeleteProject}
-                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50 dark:border-red-900/50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
@@ -262,14 +256,17 @@ export default function ProjectsLayout({
               <TabsYear useUrlNavigation={true} locale={locale} />
             )}
 
-            {/* Show TabsCustom for project detail routes */}
+            {/* Show TabsCustom + Display dropdown for project detail routes */}
             {routeInfo.isProjectRoute && (
-              <TabsCustom
-                tabs={projectsTabs}
-                defaultValue="info"
-                useUrlNavigation={true}
-                className="font-black"
-              />
+              <div className="flex items-center justify-between gap-2 px-3 sm:px-4">
+                <TabsCustom
+                  tabs={projectsTabs}
+                  defaultValue="campaign"
+                  useUrlNavigation={false}
+                  className="font-black flex-1"
+                />
+                <ViewDisplayDropdown />
+              </div>
             )}
           </div>
 

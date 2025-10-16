@@ -15,18 +15,18 @@ export interface ContentDialogState {
       | "facebook"
       | "threads"
       | "other";
-    type: "campaign" | "series" | "routine";
-    dueDate: string;
-    publishedAt: string;
+    sow?: string; // Campaign only
+    campaignType?: "barter" | "paid"; // Campaign only
+    campaignStatus?: string; // Campaign only
+    routineStatus?: string; // Routine only
     notes: string;
   };
   errors: {
     title?: string;
     platform?: string;
     projectId?: string;
-    dueDate?: string;
-    publishedAt?: string;
-    type?: string;
+    campaignType?: string;
+    sow?: string;
   };
 }
 
@@ -47,9 +47,10 @@ const initialFormData = {
   projectId: undefined,
   title: "",
   platform: "tiktok" as const,
-  type: "campaign" as const,
-  dueDate: "",
-  publishedAt: "",
+  sow: undefined,
+  campaignType: undefined,
+  campaignStatus: undefined,
+  routineStatus: undefined,
   notes: "",
 };
 
@@ -57,9 +58,8 @@ const initialErrors = {
   title: undefined,
   platform: undefined,
   projectId: undefined,
-  type: undefined,
-  dueDate: undefined,
-  publishedAt: undefined,
+  campaignType: undefined,
+  sow: undefined,
 };
 
 export const useContentDialogStore = create<
