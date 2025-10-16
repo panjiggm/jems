@@ -220,7 +220,7 @@ export default function ProjectsLayout({
               {routeInfo.isProjectRoute && projectStats && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="xs" className="h-9 w-9 p-0">
+                    <Button variant="outline" size="xs">
                       <MoreVertical className="h-4 w-4" />
                       <span className="sr-only">Open menu</span>
                     </Button>

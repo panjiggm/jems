@@ -25,7 +25,7 @@ export function ThemeToggle({ className, labels }: Props) {
       type="button"
       aria-label="Toggle theme"
       title="Toggle theme"
-      size="sm"
+      size="xs"
       variant="outline"
       className={className}
       onClick={() => setTheme(next)}

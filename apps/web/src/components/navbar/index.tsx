@@ -48,7 +48,7 @@ const Navbar = () => {
             <>
               <ButtonPrimary
                 asChild
-                size={"sm"}
+                size={"xs"}
                 className="hidden sm:inline-flex"
               >
                 <Link href={`/${locale}/dashboard`}>{t("nav.dashboard")}</Link>
@@ -65,7 +65,7 @@ const Navbar = () => {
           ) : isSignIn ? (
             <ButtonPrimary
               asChild
-              size={"sm"}
+              size={"xs"}
               className="hidden sm:inline-flex"
             >
               <Link href={`/${locale}/sign-up`}>{t("nav.gettingStarted")}</Link>
@@ -73,7 +73,7 @@ const Navbar = () => {
           ) : (
             <ButtonPrimary
               asChild
-              size={"sm"}
+              size={"xs"}
               tone={"outline"}
               className="hidden sm:inline-flex"
             >
