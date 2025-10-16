@@ -1,17 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Calendar,
-  Kanban,
-  Table,
-  List,
-  Sparkles,
-  ArrowLeft,
-  Edit2,
-  Trash2,
-  MoreVertical,
-} from "lucide-react";
+import { Sparkles, ArrowLeft, Edit2, Trash2, MoreVertical } from "lucide-react";
 import ProjectStats from "@/components/projects/project-stats";
 import RecentActivity from "@/components/projects/recent-activity";
 import { Button } from "@/components/ui/button";
