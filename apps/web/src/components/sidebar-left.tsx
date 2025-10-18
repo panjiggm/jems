@@ -68,33 +68,6 @@ const getNavData = (locale: Locale) => ({
       icon: Bell,
     },
   ],
-  chats: [
-    {
-      name: "Project Management & Task Tracking",
-      url: "#",
-      emoji: "📊",
-    },
-    {
-      name: "Family Recipe Collection & Meal Planning",
-      url: "#",
-      emoji: "🍳",
-    },
-    {
-      name: "Fitness Tracker & Workout Routines",
-      url: "#",
-      emoji: "💪",
-    },
-    {
-      name: "Book Notes & Reading List",
-      url: "#",
-      emoji: "📚",
-    },
-    {
-      name: "Sustainable Gardening Tips & Plant Care",
-      url: "#",
-      emoji: "🌱",
-    },
-  ],
 });
 
 export function SidebarLeft({
@@ -112,7 +85,6 @@ export function SidebarLeft({
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavAccount items={data.navAccount} />
-        <NavChats chats={data.chats} />
       </SidebarContent>
       <SidebarRail />
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useRouter, usePathname } from "next/navigation";
@@ -34,6 +33,7 @@ interface TabsCustomProps {
   variant?: "default" | "underline" | "pills";
   autoAssignIcons?: boolean;
   useUrlNavigation?: boolean; // Add flag for URL-based navigation
+  queryParamName?: string; // Custom query parameter name (default: "contentType")
 }
 
 // Helper function to get default icons based on tab ID
@@ -94,10 +94,11 @@ const TabsCustom = ({
   variant = "underline",
   autoAssignIcons = true,
   useUrlNavigation = false,
+  queryParamName = "contentType",
 }: TabsCustomProps) => {
   const router = useRouter();
   const pathname = usePathname();
-  const [contentTypeParam, setContentTypeParam] = useQueryState("contentType");
+  const [contentTypeParam, setContentTypeParam] = useQueryState(queryParamName);
 
   // Get current active tab based on URL
   const getCurrentTab = () => {
@@ -158,7 +159,7 @@ const TabsCustom = ({
     switch (variant) {
       case "underline":
         return cn(
-          "px-4 py-3 text-sm font-semibold border-b-2 border-transparent",
+          "px-0 text-xs font-normal border-b-2 border-transparent",
           "border-t-0 border-l-0 border-r-0 shadow-none",
           "data-[state=active]:border-b-[#f7a641] data-[state=active]:text-[#4a2e1a]",
           "data-[state=active]:border-t-0 data-[state=active]:border-l-0 data-[state=active]:border-r-0",
@@ -171,31 +172,31 @@ const TabsCustom = ({
         );
       case "pills":
         return cn(
-          "px-4 py-2 text-sm font-semibold rounded-md",
+          "text-xs font-normal rounded-md",
           "data-[state=active]:bg-[#f7a641] data-[state=active]:text-[#4a2e1a]",
           "dark:data-[state=active]:bg-[#4a2e1a] dark:data-[state=active]:text-[#f8e9b0]",
           "text-muted-foreground hover:text-foreground",
+          "hover:bg-gray-100 dark:hover:bg-gray-800",
           "transition-colors whitespace-nowrap",
         );
       default:
-        return "px-4 py-3 text-sm font-semibold";
+        return cn("text-xs", "transition-colors");
     }
   };
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn(className)}>
       <Tabs
         value={
           useUrlNavigation ? getCurrentTab() : contentTypeParam || defaultValue
         }
         onValueChange={handleTabChange}
-        className="w-full"
       >
         <div className="overflow-x-auto">
           <TabsList
             className={cn(
               getTabsListClass(),
-              "flex-nowrap gap-1 overflow-x-auto",
+              "flex-nowrap overflow-x-auto gap-1",
             )}
           >
             {tabs.map((tab) => {
@@ -208,14 +209,9 @@ const TabsCustom = ({
                   value={tab.id}
                   className={getTabsTriggerClass()}
                 >
-                  <div className="flex items-center gap-2">
-                    {IconComponent && <IconComponent className="h-4 w-4" />}
-                    {tab.label}
-                    {tab.badge && (
-                      <Badge variant="secondary" className="h-5 text-xs">
-                        {tab.badge}
-                      </Badge>
-                    )}
+                  <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
+                    {IconComponent && <IconComponent className="h-3 w-3" />}
+                    <span className="text-xs">{tab.label}</span>
                   </div>
                 </TabsTrigger>
               );

@@ -26,7 +26,7 @@ export function NavAccount({
             <SidebarMenuButton asChild>
               <Link href={item.url}>
                 <item.icon />
-                <span className="text-sm font-bold">{item.title}</span>
+                <span className="text-xs">{item.title}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

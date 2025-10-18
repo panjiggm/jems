@@ -3,10 +3,19 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { toast } from "sonner";
-import { Loader2, CalendarIcon } from "lucide-react";
+import {
+  Loader2,
+  Package,
+  Wrench,
+  Send,
+  DollarSign,
+  CheckCircle,
+  Target,
+  Play,
+  Calendar,
+} from "lucide-react";
 import Image from "next/image";
-import { format } from "date-fns";
-import { useState } from "react";
+import { useQueryState } from "nuqs";
 
 import {
   Dialog,
@@ -28,16 +37,11 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ButtonPrimary } from "@/components/ui/button-primary";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 import { useContentDialogStore } from "@/store/use-dialog-content-store";
 import { useTranslations } from "@/hooks/use-translations";
+import { cn } from "@/lib/utils";
 import {
   ContentType,
   ContentCampaignType,
@@ -61,7 +65,9 @@ export function ContentDialog() {
     resetForm,
   } = useContentDialogStore();
 
-  const [contentType, setContentType] = useState<ContentType>("campaign");
+  const [contentType] = useQueryState("contentType", {
+    defaultValue: "campaign",
+  });
 
   // Get projects list for dropdown (only when projectId is not provided)
   const projects = useQuery(
@@ -96,7 +102,7 @@ export function ContentDialog() {
     }
 
     // Campaign-specific validation
-    if (contentType === "campaign" && !formData.campaignType) {
+    if ((contentType || "campaign") === "campaign" && !formData.campaignType) {
       setError("campaignType", "Campaign type is required");
       hasErrors = true;
     }
@@ -108,7 +114,7 @@ export function ContentDialog() {
     try {
       setLoading(true);
 
-      if (contentType === "campaign") {
+      if ((contentType || "campaign") === "campaign") {
         await createCampaign({
           projectId: projectId as any,
           title: formData.title.trim(),
@@ -152,190 +158,254 @@ export function ContentDialog() {
     }
   };
 
-  const platformOptions = [
-    { value: "tiktok", label: "TikTok", icon: "/icons/tiktok.svg" },
-    { value: "instagram", label: "Instagram", icon: "/icons/instagram.svg" },
-    { value: "youtube", label: "YouTube", icon: "/icons/youtube.svg" },
-    { value: "x", label: "X (Twitter)", icon: "/icons/x.svg" },
-    { value: "facebook", label: "Facebook", icon: "/icons/facebook.svg" },
-    { value: "threads", label: "Threads", icon: "/icons/thread.svg" },
-    { value: "other", label: "Other", icon: null },
-  ];
+  // Platform configs
+  const platformConfigs = {
+    tiktok: { label: "TikTok", icon: "/icons/tiktok.svg" },
+    instagram: { label: "Instagram", icon: "/icons/instagram.svg" },
+    youtube: { label: "YouTube", icon: "/icons/youtube.svg" },
+    x: { label: "X (Twitter)", icon: "/icons/x.svg" },
+    facebook: { label: "Facebook", icon: "/icons/facebook.svg" },
+    threads: { label: "Threads", icon: "/icons/thread.svg" },
+    other: { label: "Other", icon: null },
+  };
 
-  const campaignTypeOptions = [
-    { value: "barter", label: "Barter" },
-    { value: "paid", label: "Paid" },
-  ];
+  // Campaign type configs
+  const campaignTypeConfigs = {
+    barter: {
+      label: "Barter",
+      icon: Package,
+      className: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    },
+    paid: {
+      label: "Paid",
+      icon: DollarSign,
+      className: "bg-amber-100 text-amber-800 border-amber-200",
+    },
+  };
 
-  const campaignStatusOptions = [
-    { value: "product_obtained", label: "Product Obtained" },
-    { value: "production", label: "Production" },
-    { value: "published", label: "Published" },
-    { value: "payment", label: "Payment" },
-    { value: "done", label: "Done" },
-  ];
+  // Campaign status configs
+  const campaignStatusConfigs = {
+    product_obtained: {
+      label: "Product Obtained",
+      icon: Package,
+      className: "bg-blue-100 text-blue-800 border-blue-200",
+    },
+    production: {
+      label: "Production",
+      icon: Wrench,
+      className: "bg-orange-100 text-orange-800 border-orange-200",
+    },
+    published: {
+      label: "Published",
+      icon: Send,
+      className: "bg-green-100 text-green-800 border-green-200",
+    },
+    payment: {
+      label: "Payment",
+      icon: DollarSign,
+      className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    },
+    done: {
+      label: "Done",
+      icon: CheckCircle,
+      className: "bg-gray-100 text-gray-800 border-gray-200",
+    },
+  };
 
-  const routineStatusOptions = [
-    { value: "plan", label: "Plan" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "scheduled", label: "Scheduled" },
-    { value: "published", label: "Published" },
-  ];
+  // Routine status configs
+  const routineStatusConfigs = {
+    plan: {
+      label: "Plan",
+      icon: Target,
+      className: "bg-blue-100 text-blue-800 border-blue-200",
+    },
+    in_progress: {
+      label: "In Progress",
+      icon: Play,
+      className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    },
+    scheduled: {
+      label: "Scheduled",
+      icon: Calendar,
+      className: "bg-purple-100 text-purple-800 border-purple-200",
+    },
+    published: {
+      label: "Published",
+      icon: Send,
+      className: "bg-green-100 text-green-800 border-green-200",
+    },
+  };
+
+  // Build options with Badges
+  const platformOptions = Object.entries(platformConfigs).map(
+    ([value, config]) => ({
+      value,
+      label: (
+        <div className="flex items-center gap-2">
+          {config.icon && (
+            <Image
+              src={config.icon}
+              alt={config.label}
+              width={16}
+              height={16}
+              className="h-3 w-3"
+            />
+          )}
+          {config.label}
+        </div>
+      ),
+    }),
+  );
+
+  const campaignTypeOptions = Object.entries(campaignTypeConfigs).map(
+    ([value, config]) => {
+      const IconComponent = config.icon;
+      return {
+        value,
+        label: (
+          <Badge
+            variant="outline"
+            className={cn(
+              "flex items-center gap-2 text-xs font-medium",
+              config.className,
+            )}
+          >
+            <IconComponent className="h-3 w-3" />
+            {config.label}
+          </Badge>
+        ),
+      };
+    },
+  );
+
+  const campaignStatusOptions = Object.entries(campaignStatusConfigs).map(
+    ([value, config]) => {
+      const IconComponent = config.icon;
+      return {
+        value,
+        label: (
+          <Badge
+            variant="outline"
+            className={cn(
+              "flex items-center gap-2 text-xs font-medium",
+              config.className,
+            )}
+          >
+            <IconComponent className="h-3 w-3" />
+            {config.label}
+          </Badge>
+        ),
+      };
+    },
+  );
+
+  const routineStatusOptions = Object.entries(routineStatusConfigs).map(
+    ([value, config]) => {
+      const IconComponent = config.icon;
+      return {
+        value,
+        label: (
+          <Badge
+            variant="outline"
+            className={cn(
+              "flex items-center gap-2 text-xs font-medium",
+              config.className,
+            )}
+          >
+            <IconComponent className="h-3 w-3" />
+            {config.label}
+          </Badge>
+        ),
+      };
+    },
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Create New Content</DialogTitle>
-            <DialogDescription>
-              {projectId
-                ? "Add content to your project"
-                : "Select a project and add content"}
-            </DialogDescription>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden flex flex-col">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-xl font-semibold">
+              Create New Content
+            </DialogTitle>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            {/* Content Type Selection */}
-            <div className="grid gap-2">
-              <Label>Content Type</Label>
-              <Tabs
-                value={contentType}
-                onValueChange={(value) => setContentType(value as ContentType)}
-              >
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="campaign">Campaign</TabsTrigger>
-                  <TabsTrigger value="routine">Routine</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-
-            {/* Project Selection - Only show when projectId is not provided */}
-            {!projectId && (
-              <div className="grid gap-2">
-                <Label htmlFor="project">
-                  Project <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={projectId}
-                  onValueChange={(value) =>
-                    updateFormData({ projectId: value as string })
-                  }
-                  disabled={isLoading}
-                >
-                  <SelectTrigger
-                    className={errors.projectId ? "border-red-500" : ""}
-                  >
-                    <SelectValue placeholder="Select a project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects?.map((project) => (
-                      <SelectItem key={project._id} value={project._id}>
-                        {project.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.projectId && (
-                  <p className="text-sm text-red-500">{errors.projectId}</p>
-                )}
-              </div>
-            )}
-
+          <div className="flex-1 overflow-y-auto space-y-4 py-2">
             {/* Content Title */}
-            <div className="grid gap-2">
-              <Label htmlFor="title">
-                Title <span className="text-red-500">*</span>
-              </Label>
+            <div className="space-y-2">
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => updateFormData({ title: e.target.value })}
-                placeholder="Enter content title"
+                placeholder="Content title"
                 disabled={isLoading}
-                className={errors.title ? "border-red-500" : ""}
+                className={`text-lg font-medium border-none shadow-none focus-visible:ring-0 focus:ring-0 focus:outline-none px-0 ${
+                  errors.title ? "placeholder:text-red-400" : ""
+                }`}
               />
               {errors.title && (
-                <p className="text-sm text-red-500">{errors.title}</p>
+                <p className="text-sm text-red-500 px-0">{errors.title}</p>
               )}
             </div>
 
-            {/* Campaign-specific fields */}
-            {contentType === "campaign" && (
-              <>
-                <div className="grid gap-2">
-                  <Label htmlFor="sow">Statement of Work (SOW)</Label>
-                  <Textarea
-                    id="sow"
-                    value={formData.sow || ""}
-                    onChange={(e) => updateFormData({ sow: e.target.value })}
-                    placeholder="Enter SOW details"
-                    disabled={isLoading}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="campaignType">
-                      Type <span className="text-red-500">*</span>
-                    </Label>
-                    <Select
-                      value={formData.campaignType}
-                      onValueChange={(value: any) =>
-                        updateFormData({ campaignType: value })
-                      }
-                      disabled={isLoading}
-                    >
-                      <SelectTrigger
-                        className={errors.campaignType ? "border-red-500" : ""}
-                      >
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {campaignTypeOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.campaignType && (
-                      <p className="text-sm text-red-500">
-                        {errors.campaignType}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="campaignStatus">Status</Label>
-                    <Select
-                      value={formData.campaignStatus || "product_obtained"}
-                      onValueChange={(value: any) =>
-                        updateFormData({ campaignStatus: value })
-                      }
-                      disabled={isLoading}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {campaignStatusOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </>
+            {/* Campaign-specific: SOW */}
+            {contentType === "campaign" ? (
+              <div className="space-y-2">
+                <Textarea
+                  id="sow"
+                  value={formData.sow || ""}
+                  onChange={(e) => updateFormData({ sow: e.target.value })}
+                  placeholder="Add statement of work (SOW)..."
+                  disabled={isLoading}
+                  rows={4}
+                  className="resize-none border-none shadow-none focus-visible:ring-0 focus:ring-0 focus:outline-none px-0"
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => updateFormData({ notes: e.target.value })}
+                  placeholder="Add description..."
+                  disabled={isLoading}
+                  rows={5}
+                  className="resize-none border-none shadow-none focus-visible:ring-0 focus:ring-0 focus:outline-none px-0"
+                />
+              </div>
             )}
 
-            {/* Routine-specific fields */}
-            {contentType === "routine" && (
-              <div className="grid gap-2">
-                <Label htmlFor="routineStatus">Status</Label>
+            {/* Notes/Description */}
+          </div>
+
+          {/* Bottom Action Bar */}
+          <div className="border-t pt-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Status */}
+              {(contentType || "campaign") === "campaign" ? (
+                <Select
+                  value={formData.campaignStatus || "product_obtained"}
+                  onValueChange={(value: any) =>
+                    updateFormData({ campaignStatus: value })
+                  }
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="w-auto h-7 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {campaignStatusOptions.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        className="text-xs py-1 px-2"
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
                 <Select
                   value={formData.routineStatus || "plan"}
                   onValueChange={(value: any) =>
@@ -343,25 +413,54 @@ export function ContentDialog() {
                   }
                   disabled={isLoading}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-auto h-7 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {routineStatusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        className="text-xs py-1 px-2"
+                      >
                         {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            )}
+              )}
 
-            {/* Platform Selection */}
-            <div className="grid gap-2">
-              <Label htmlFor="platform">
-                Platform <span className="text-red-500">*</span>
-              </Label>
+              {/* Campaign Type */}
+              {(contentType || "campaign") === "campaign" && (
+                <Select
+                  value={formData.campaignType}
+                  onValueChange={(value: any) =>
+                    updateFormData({ campaignType: value })
+                  }
+                  disabled={isLoading}
+                >
+                  <SelectTrigger
+                    className={`w-auto h-7 text-xs ${
+                      errors.campaignType ? "border-red-500" : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {campaignTypeOptions.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        className="text-xs py-1 px-2"
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {/* Platform */}
               <Select
                 value={formData.platform}
                 onValueChange={(value: any) =>
@@ -370,61 +469,80 @@ export function ContentDialog() {
                 disabled={isLoading}
               >
                 <SelectTrigger
-                  className={errors.platform ? "border-red-500" : ""}
+                  className={`w-auto h-7 text-xs ${
+                    errors.platform ? "border-red-500" : ""
+                  }`}
                 >
-                  <SelectValue placeholder="Select platform" />
+                  <SelectValue placeholder="Platform" />
                 </SelectTrigger>
                 <SelectContent>
                   {platformOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      <div className="flex items-center gap-2">
-                        {option.icon && (
-                          <Image
-                            src={option.icon}
-                            alt={option.label}
-                            width={16}
-                            height={16}
-                            className="w-4 h-4"
-                          />
-                        )}
-                        {option.label}
-                      </div>
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      className="text-xs py-1 px-2"
+                    >
+                      {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.platform && (
-                <p className="text-sm text-red-500">{errors.platform}</p>
+
+              {/* Project Selection - Only show when projectId is not provided */}
+              {!projectId && (
+                <Select
+                  value={projectId}
+                  onValueChange={(value) =>
+                    updateFormData({ projectId: value as string })
+                  }
+                  disabled={isLoading}
+                >
+                  <SelectTrigger
+                    className={`w-auto h-8 text-sm ${
+                      errors.projectId ? "border-red-500" : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects?.map((project) => (
+                      <SelectItem
+                        key={project._id}
+                        value={project._id}
+                        className="text-xs py-1 px-2"
+                      >
+                        {project.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
 
-            {/* Notes */}
-            <div className="grid gap-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => updateFormData({ notes: e.target.value })}
-                placeholder="Add any additional notes..."
-                disabled={isLoading}
-                rows={3}
-              />
-            </div>
+            {/* Error messages */}
+            {(errors.campaignType || errors.platform || errors.projectId) && (
+              <div className="text-sm text-red-500">
+                {errors.campaignType || errors.platform || errors.projectId}
+              </div>
+            )}
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <ButtonPrimary type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Content
-            </ButtonPrimary>
+          <DialogFooter className="pt-4">
+            <div className="flex items-center justify-between w-full">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleClose}
+                disabled={isLoading}
+                className="text-sm"
+              >
+                Cancel
+              </Button>
+              <ButtonPrimary type="submit" disabled={isLoading} className="h-9">
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Content
+              </ButtonPrimary>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

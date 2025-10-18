@@ -48,7 +48,7 @@ export function NavMain({
               <SidebarMenuButton asChild isActive={isActive}>
                 <Link href={item.url}>
                   <item.icon />
-                  <span className="text-sm font-bold">{item.title}</span>
+                  <span className="text-xs">{item.title}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -72,15 +72,10 @@ function normalizePath(path: string): string {
   return nextPath || "/";
 }
 
-function resolveIsActive(
-  currentPath: string,
-  targetPath: string,
-): boolean {
+function resolveIsActive(currentPath: string, targetPath: string): boolean {
   if (targetPath === "/") {
     return currentPath === "/";
   }
 
-  return (
-    currentPath === targetPath || currentPath.startsWith(`${targetPath}/`)
-  );
+  return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
 }

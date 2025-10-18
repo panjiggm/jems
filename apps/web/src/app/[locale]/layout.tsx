@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Montserrat, Lato } from "next/font/google";
+import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import ConvexClientProvider from "@/components/providers/convex-providers";
@@ -7,9 +7,10 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
-const inter = Inter({ subsets: ["latin"] });
-const montserrat = Montserrat({ subsets: ["latin"] });
-const lato = Lato({ weight: "400", subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+});
 
 export const metadata: Metadata = {
   title: "Holobiont | Home",
@@ -23,9 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body
-        className={cn(inter.className, montserrat.className, lato.className)}
-      >
+      <body className={cn(inter.className)}>
         <ThemeProvider attribute={"class"} defaultTheme="system" enableSystem>
           <ConvexClientProvider>
             <NuqsAdapter>{children}</NuqsAdapter>

@@ -295,13 +295,13 @@ export default function SearchFilterContent({
     <div className="flex flex-col gap-3 w-full">
       {/* Mobile Layout */}
       <div className="flex md:hidden items-center gap-2 w-full">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 transform text-muted-foreground" />
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 transform text-muted-foreground" />
           <Input
             placeholder="Search contents..."
             value={filters.search}
             onChange={(event) => handleSearchChange(event.target.value)}
-            className="pl-8 h-7 text-xs py-1"
+            className="pl-6 h-7 text-xs py-0.5 placeholder:text-xs"
           />
         </div>
 
@@ -441,13 +441,13 @@ export default function SearchFilterContent({
 
       {/* Desktop Layout */}
       <div className="hidden md:flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[220px] max-w-md">
-          <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 transform text-muted-foreground" />
+        <div className="relative flex-1 min-w-[180px] max-w-xs">
+          <Search className="absolute left-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 transform text-muted-foreground" />
           <Input
             placeholder="Search contents..."
             value={filters.search}
             onChange={(event) => handleSearchChange(event.target.value)}
-            className="pl-8 h-8 text-xs py-1"
+            className="pl-6 h-7 text-xs py-0.5 placeholder:text-xs"
           />
         </div>
 
@@ -676,7 +676,7 @@ function FilterSelect<T extends string>({
           <Icon className="h-3 w-3" />
           <div className="flex flex-wrap items-center gap-1">
             <span className="text-xs text-muted-foreground">
-              Select {label.toLowerCase()}{" "}
+              {label.toLowerCase()}{" "}
               {chips.length > 0 && (
                 <Badge
                   variant="secondary"

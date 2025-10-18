@@ -1,7 +1,19 @@
 "use client";
 
 import React from "react";
-import { Sparkles, ArrowLeft, Edit2, Trash2, MoreVertical } from "lucide-react";
+import {
+  Sparkles,
+  ArrowLeft,
+  Edit2,
+  Trash2,
+  MoreVertical,
+  Megaphone,
+  Repeat,
+  Table,
+  Kanban,
+  List,
+  Calendar,
+} from "lucide-react";
 import ProjectStats from "@/components/projects/project-stats";
 import RecentActivity from "@/components/projects/recent-activity";
 import { Button } from "@/components/ui/button";
@@ -9,6 +21,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -29,9 +43,9 @@ import { ContentDialog } from "@/components/contents/dialog-content";
 import { TabsYear } from "@/components/tabs";
 import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
 import { ButtonGroupDropdown } from "@/components/ui/button-group";
-import { ViewDisplayDropdown } from "@/components/project/view-display-dropdown";
 import { useQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";
+import { useQueryState } from "nuqs";
 
 export default function ProjectsLayout({
   children,
@@ -49,6 +63,9 @@ export default function ProjectsLayout({
     (state) => state.openDialog,
   );
   const { t } = useTranslations();
+  const [contentType, setContentType] = useQueryState("contentType", {
+    defaultValue: "campaign",
+  });
 
   // Determine current route type
   const getRouteInfo = () => {
@@ -85,24 +102,6 @@ export default function ProjectsLayout({
       : "skip",
   );
 
-  // Fetch campaign and routine counts
-  const campaignStats = useQuery(
-    api.queries.contentCampaigns.getStats,
-    routeInfo.isProjectRoute && routeInfo.projectId
-      ? { projectId: routeInfo.projectId as any }
-      : "skip",
-  );
-
-  const routineStats = useQuery(
-    api.queries.contentRoutines.getStats,
-    routeInfo.isProjectRoute && routeInfo.projectId
-      ? { projectId: routeInfo.projectId as any }
-      : "skip",
-  );
-
-  const campaignCount = campaignStats?.total || 0;
-  const routineCount = routineStats?.total || 0;
-
   // Handlers for edit and delete
   const handleEditProject = () => {
     if (projectStats && routeInfo.projectId) {
@@ -121,28 +120,22 @@ export default function ProjectsLayout({
     }
   };
 
-  const getProjectsTabs = () => {
-    const basePath = routeInfo.year
-      ? `/${locale}/projects/${routeInfo.year}/${routeInfo.projectId}`
-      : `/${locale}/projects/${routeInfo.projectId}`;
+  const contentOptions = [
+    { value: "campaign", label: "Campaigns", icon: Megaphone },
+    { value: "routine", label: "Routines", icon: Repeat },
+  ];
 
-    return [
-      {
-        id: "campaign",
-        label: "Campaigns",
-        badge: campaignCount?.toString(),
-        href: `${basePath}?contentType=campaign`,
-      },
-      {
-        id: "routine",
-        label: "Routines",
-        badge: routineCount?.toString(),
-        href: `${basePath}?contentType=routine`,
-      },
-    ];
-  };
+  const viewTabs = [
+    { id: "table", label: "Table", icon: Table },
+    { id: "kanban", label: "Kanban", icon: Kanban },
+    { id: "list", label: "List", icon: List },
+    { id: "calendar", label: "Calendar", icon: Calendar },
+  ];
 
-  const projectsTabs = getProjectsTabs();
+  const currentContentOption = contentOptions.find(
+    (opt) => opt.value === contentType,
+  );
+  const CurrentContentIcon = currentContentOption?.icon || Megaphone;
 
   // Handle back navigation
   const handleBack = () => {
@@ -252,16 +245,46 @@ export default function ProjectsLayout({
               <TabsYear useUrlNavigation={true} locale={locale} />
             )}
 
-            {/* Show TabsCustom + Display dropdown for project detail routes */}
+            {/* Show Content Type Dropdown + Display tabs for project detail routes */}
             {routeInfo.isProjectRoute && (
-              <div className="flex items-center justify-between gap-2 px-3 sm:px-4">
+              <div className="flex items-center gap-2 px-3 sm:px-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="xs" className="gap-2 text-xs">
+                      <CurrentContentIcon className="h-3 w-3" />
+                      <span>{currentContentOption?.label}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-40">
+                    <DropdownMenuRadioGroup
+                      value={contentType}
+                      onValueChange={setContentType}
+                    >
+                      {contentOptions.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <DropdownMenuRadioItem
+                            key={option.value}
+                            value={option.value}
+                            className="cursor-pointer text-xs pl-2 data-[state=checked]:bg-[#f7a641] data-[state=checked]:text-[#4a2e1a] dark:data-[state=checked]:bg-[#4a2e1a] dark:data-[state=checked]:text-[#f8e9b0] [&>span]:hidden"
+                          >
+                            <Icon className="h-3 w-3 mr-1" />
+                            {option.label}
+                          </DropdownMenuRadioItem>
+                        );
+                      })}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <div className="h-6 w-px bg-border" />
                 <TabsCustom
-                  tabs={projectsTabs}
-                  defaultValue="campaign"
+                  tabs={viewTabs}
+                  defaultValue="table"
                   useUrlNavigation={false}
-                  className="font-black flex-1"
+                  queryParamName="view"
+                  autoAssignIcons={false}
+                  className="shrink-0"
                 />
-                <ViewDisplayDropdown />
               </div>
             )}
           </div>
