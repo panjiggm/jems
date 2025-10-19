@@ -5,14 +5,14 @@ import { useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ContentCampaignType, CAMPAIGN_TYPE_LABELS } from "@/types/status";
+import { ContentCampaignType } from "@/types/status";
 
 interface EditableCampaignTypeBadgeProps {
   value: ContentCampaignType;
@@ -61,37 +61,43 @@ export function EditableCampaignTypeBadge({
   const currentConfig = typeOptions.find((option) => option.value === value);
 
   return (
-    <Select value={value} onValueChange={handleChange}>
-      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0 w-full">
-        <Badge
-          variant="outline"
-          className={cn(
-            "flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity w-full justify-center",
-            currentConfig?.color,
-          )}
-        >
-          <div
-            className={cn("w-2 h-2 rounded-full", currentConfig?.dotColor)}
-          />
-          <span className="">{currentConfig?.label}</span>
-        </Badge>
-      </SelectTrigger>
-      <SelectContent>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="cursor-pointer">
+          <Badge
+            variant="outline"
+            className={cn(
+              "flex items-center gap-1.5 px-2 py-1 text-xs font-medium hover:opacity-80 transition-opacity justify-center",
+              currentConfig?.color,
+            )}
+          >
+            <div
+              className={cn("w-2 h-2 rounded-full", currentConfig?.dotColor)}
+            />
+            <span className="">{currentConfig?.label}</span>
+          </Badge>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
         {typeOptions.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <DropdownMenuItem
+            key={option.value}
+            onClick={() => handleChange(option.value)}
+            className="p-1"
+          >
             <Badge
               variant="outline"
               className={cn(
-                "inline-flex items-center gap-2 text-xs font-medium",
+                "inline-flex items-center gap-2 text-xs font-medium w-full justify-center",
                 option.color,
               )}
             >
               <div className={cn("w-2 h-2 rounded-full", option.dotColor)} />
               {option.label}
             </Badge>
-          </SelectItem>
+          </DropdownMenuItem>
         ))}
-      </SelectContent>
-    </Select>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

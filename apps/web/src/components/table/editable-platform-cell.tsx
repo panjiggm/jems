@@ -3,11 +3,11 @@
 import Image from "next/image";
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -77,38 +77,44 @@ export function EditablePlatformCell({
   const currentConfig = platformConfig[value];
 
   return (
-    <Select value={value} onValueChange={handleChange}>
-      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-2">
-        <div className="flex flex-wrap items-center gap-1">
-          <span className="text-xs text-muted-foreground">
-            <Badge
-              variant="outline"
-              className={cn(
-                "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium",
-                currentConfig.className,
-              )}
-            >
-              {currentConfig.icon && (
-                <Image
-                  src={currentConfig.icon}
-                  alt={currentConfig.label}
-                  width={12}
-                  height={12}
-                  className="w-3 h-3 shrink-0"
-                />
-              )}
-              {currentConfig.label}
-            </Badge>
-          </span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="cursor-pointer">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="text-xs text-muted-foreground">
+              <Badge
+                variant="outline"
+                className={cn(
+                  "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium hover:opacity-80 transition-opacity",
+                  currentConfig.className,
+                )}
+              >
+                {currentConfig.icon && (
+                  <Image
+                    src={currentConfig.icon}
+                    alt={currentConfig.label}
+                    width={12}
+                    height={12}
+                    className="w-3 h-3 shrink-0"
+                  />
+                )}
+                {currentConfig.label}
+              </Badge>
+            </span>
+          </div>
         </div>
-      </SelectTrigger>
-      <SelectContent>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
         {Object.entries(platformConfig).map(([key, config]) => (
-          <SelectItem key={key} value={key}>
+          <DropdownMenuItem
+            key={key}
+            onClick={() => handleChange(key as Platform)}
+            className="p-1"
+          >
             <Badge
               variant="outline"
               className={cn(
-                "inline-flex items-center gap-2 text-xs font-medium",
+                "inline-flex items-center gap-2 text-xs font-medium w-full justify-center",
                 config.className,
               )}
             >
@@ -118,14 +124,14 @@ export function EditablePlatformCell({
                   alt={config.label}
                   width={14}
                   height={14}
-                  className="w-3.5 h-3.5"
+                  className="w-3 h-3"
                 />
               )}
               {config.label}
             </Badge>
-          </SelectItem>
+          </DropdownMenuItem>
         ))}
-      </SelectContent>
-    </Select>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

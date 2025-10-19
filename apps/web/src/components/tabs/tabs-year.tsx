@@ -81,7 +81,7 @@ const TabsYear = ({
     switch (variant) {
       case "underline":
         return cn(
-          "px-6 py-3 text-sm font-bold border-b-2 border-transparent",
+          "px-0 text-xs font-normal border-b-2 border-transparent",
           "border-t-0 border-l-0 border-r-0 shadow-none",
           "data-[state=active]:border-b-[#f7a641] data-[state=active]:text-[#4a2e1a]",
           "data-[state=active]:border-t-0 data-[state=active]:border-l-0 data-[state=active]:border-r-0",
@@ -94,14 +94,15 @@ const TabsYear = ({
         );
       case "pills":
         return cn(
-          "px-6 py-2 text-sm font-bold rounded-md",
+          "text-xs font-normal rounded-md",
           "data-[state=active]:bg-[#f7a641] data-[state=active]:text-[#4a2e1a]",
           "dark:data-[state=active]:bg-[#4a2e1a] dark:data-[state=active]:text-[#f8e9b0]",
           "text-muted-foreground hover:text-foreground",
+          "hover:bg-gray-100 dark:hover:bg-gray-800",
           "transition-colors whitespace-nowrap",
         );
       default:
-        return "px-4 py-3 text-sm font-bold";
+        return cn("text-xs", "transition-colors");
     }
   };
 
@@ -145,11 +146,11 @@ const TabsYear = ({
                 value={year}
                 className={getTabsTriggerClass()}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
                   {index === 0 ? (
-                    <FolderOpen className="h-4 w-4" />
+                    <FolderOpen className="h-3 w-3" />
                   ) : (
-                    <Calendar className="h-4 w-4" />
+                    <Calendar className="h-3 w-3" />
                   )}
                   <span>{label}</span>
                   <span className="ml-1 px-1.5 py-0.5 text-xs bg-muted text-muted-foreground rounded-full">

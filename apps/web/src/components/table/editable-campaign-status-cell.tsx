@@ -14,7 +14,7 @@ export function EditableCampaignStatusCell({
   campaignId,
 }: EditableCampaignStatusCellProps) {
   return (
-    <div className="min-w-[140px]">
+    <div>
       <EditableCampaignStatusBadge value={value} campaignId={campaignId} />
     </div>
   );

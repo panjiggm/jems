@@ -14,7 +14,7 @@ export function EditableCampaignTypeCell({
   campaignId,
 }: EditableCampaignTypeCellProps) {
   return (
-    <div className="min-w-[100px]">
+    <div>
       <EditableCampaignTypeBadge value={value} campaignId={campaignId} />
     </div>
   );

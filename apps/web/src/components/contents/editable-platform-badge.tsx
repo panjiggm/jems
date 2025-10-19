@@ -4,13 +4,14 @@ import { Id } from "@packages/backend/convex/_generated/dataModel";
 import Image from "next/image";
 import { useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
+import { useQueryState } from "nuqs";
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +26,7 @@ type Platform =
 
 interface EditablePlatformBadgeProps {
   value: Platform;
-  contentId: Id<"contents">;
+  contentId: Id<"contentCampaigns"> | Id<"contentRoutines">;
 }
 
 const platformConfig = {
@@ -71,16 +72,30 @@ export function EditablePlatformBadge({
   value,
   contentId,
 }: EditablePlatformBadgeProps) {
-  const updateContent = useMutation(api.mutations.contents.update);
+  const [contentType] = useQueryState("contentType", {
+    defaultValue: "campaign",
+  });
+
+  const updateCampaign = useMutation(api.mutations.contentCampaigns.update);
+  const updateRoutine = useMutation(api.mutations.contentRoutines.update);
 
   const handleChange = async (newPlatform: Platform) => {
     try {
-      await updateContent({
-        id: contentId,
-        patch: {
-          platform: newPlatform,
-        },
-      });
+      if ((contentType || "campaign") === "campaign") {
+        await updateCampaign({
+          id: contentId as Id<"contentCampaigns">,
+          patch: {
+            platform: newPlatform,
+          },
+        });
+      } else {
+        await updateRoutine({
+          id: contentId as Id<"contentRoutines">,
+          patch: {
+            platform: newPlatform,
+          },
+        });
+      }
     } catch (error) {
       console.error("Failed to update platform:", error);
     }
@@ -89,34 +104,40 @@ export function EditablePlatformBadge({
   const currentConfig = platformConfig[value];
 
   return (
-    <Select value={value} onValueChange={handleChange}>
-      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0 w-full">
-        <Badge
-          variant="outline"
-          className={cn(
-            "inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity w-full justify-center",
-            currentConfig.className,
-          )}
-        >
-          {currentConfig.icon && (
-            <Image
-              src={currentConfig.icon}
-              alt={currentConfig.label}
-              width={12}
-              height={12}
-              className="w-3 h-3"
-            />
-          )}
-          <span className="leading-none">{currentConfig.label}</span>
-        </Badge>
-      </SelectTrigger>
-      <SelectContent>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="cursor-pointer">
+          <Badge
+            variant="outline"
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium hover:opacity-80 transition-opacity justify-center",
+              currentConfig.className,
+            )}
+          >
+            {currentConfig.icon && (
+              <Image
+                src={currentConfig.icon}
+                alt={currentConfig.label}
+                width={12}
+                height={12}
+                className="w-3 h-3"
+              />
+            )}
+            <span className="leading-none">{currentConfig.label}</span>
+          </Badge>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
         {Object.entries(platformConfig).map(([key, config]) => (
-          <SelectItem key={key} value={key}>
+          <DropdownMenuItem
+            key={key}
+            onClick={() => handleChange(key as Platform)}
+            className="p-1"
+          >
             <Badge
               variant="outline"
               className={cn(
-                "inline-flex items-center gap-2 text-xs font-medium",
+                "inline-flex items-center gap-2 text-xs font-medium w-full justify-center",
                 config.className,
               )}
             >
@@ -131,9 +152,9 @@ export function EditablePlatformBadge({
               )}
               {config.label}
             </Badge>
-          </SelectItem>
+          </DropdownMenuItem>
         ))}
-      </SelectContent>
-    </Select>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

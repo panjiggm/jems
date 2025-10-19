@@ -20,6 +20,17 @@ export interface ContentDialogState {
     campaignStatus?: string; // Campaign only
     routineStatus?: string; // Routine only
     notes: string;
+    statusDurations?: {
+      // Campaign durations
+      product_obtained_to_production?: string;
+      production_to_published?: string;
+      published_to_payment?: string;
+      payment_to_done?: string;
+      // Routine durations
+      plan_to_in_progress?: string;
+      in_progress_to_scheduled?: string;
+      scheduled_to_published?: string;
+    };
   };
   errors: {
     title?: string;
@@ -52,6 +63,7 @@ const initialFormData = {
   campaignStatus: undefined,
   routineStatus: undefined,
   notes: "",
+  statusDurations: undefined,
 };
 
 const initialErrors = {

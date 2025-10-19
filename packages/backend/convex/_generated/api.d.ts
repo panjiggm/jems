@@ -32,6 +32,7 @@ import type * as queries_projectActivities from "../queries/projectActivities.js
 import type * as queries_projects from "../queries/projects.js";
 import type * as queries_stats from "../queries/stats.js";
 import type * as queries_tasks from "../queries/tasks.js";
+import type * as utils_duration from "../utils/duration.js";
 import type * as utils_validators from "../utils/validators.js";
 import type * as utils from "../utils.js";
 
@@ -74,6 +75,7 @@ declare const fullApi: ApiFromModules<{
   "queries/projects": typeof queries_projects;
   "queries/stats": typeof queries_stats;
   "queries/tasks": typeof queries_tasks;
+  "utils/duration": typeof utils_duration;
   "utils/validators": typeof utils_validators;
   utils: typeof utils;
 }>;

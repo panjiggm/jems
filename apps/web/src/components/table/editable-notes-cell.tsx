@@ -68,10 +68,10 @@ export function EditableNotesCell({
 
   return (
     <div
-      className="min-h-8 px-3 py-2 cursor-pointer hover:bg-muted/50 rounded transition-colors flex items-center"
+      className="h-7 px-3 py-2 cursor-pointer hover:bg-muted/50 rounded transition-colors flex items-center"
       onClick={() => setIsEditing(true)}
     >
-      <span className={cn("text-sm", !value && "text-muted-foreground italic")}>
+      <span className={cn("text-xs", !value && "text-muted-foreground italic")}>
         {value ? truncateText(value) : "No notes"}
       </span>
     </div>

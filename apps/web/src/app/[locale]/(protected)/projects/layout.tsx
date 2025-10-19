@@ -241,9 +241,11 @@ export default function ProjectsLayout({
           {/* Tabs */}
           <div className="bg-card border-b border-border overflow-x-auto">
             {/* Show TabsYear for base route and year route */}
-            {(routeInfo.isBaseRoute || routeInfo.isYearRoute) && (
-              <TabsYear useUrlNavigation={true} locale={locale} />
-            )}
+            <div className="flex items-center gap-2 px-3 sm:px-4">
+              {(routeInfo.isBaseRoute || routeInfo.isYearRoute) && (
+                <TabsYear useUrlNavigation={true} locale={locale} />
+              )}
+            </div>
 
             {/* Show Content Type Dropdown + Display tabs for project detail routes */}
             {routeInfo.isProjectRoute && (

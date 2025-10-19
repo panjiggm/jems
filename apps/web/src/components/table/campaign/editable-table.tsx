@@ -213,7 +213,7 @@ export function EditableCampaignTable({
             handleOpenDrawer(row.original._id);
           }}
         >
-          <Eye className="h-4 w-4" />
+          <Eye className="h-3 w-3" />
         </Button>
       ),
       enableSorting: false,
@@ -246,7 +246,7 @@ export function EditableCampaignTable({
   if (!campaigns) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-xs text-muted-foreground">Loading...</div>
       </div>
     );
   }
@@ -266,7 +266,7 @@ export function EditableCampaignTable({
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="font-semibold text-foreground"
+                      className="text-foreground text-xs"
                     >
                       {header.isPlaceholder
                         ? null
@@ -288,7 +288,7 @@ export function EditableCampaignTable({
                     className="hover:bg-muted/30 transition-colors border-b border-border"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="py-3">
+                      <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
@@ -301,7 +301,7 @@ export function EditableCampaignTable({
                 <TableRow>
                   <TableCell
                     colSpan={campaignColumns.length}
-                    className="h-24 text-center text-muted-foreground"
+                    className="h-16 text-xs text-center text-muted-foreground"
                   >
                     No campaigns found. Create your first campaign to get
                     started.
@@ -314,26 +314,26 @@ export function EditableCampaignTable({
 
         {/* Pagination */}
         <div className="flex items-center justify-between space-x-2 py-4 px-1">
-          <div className="flex-1 text-sm text-muted-foreground">
+          <div className="flex-1 text-xs text-muted-foreground">
             {table.getFilteredSelectedRowModel().rows.length} of{" "}
             {table.getFilteredRowModel().rows.length} row(s) selected.
           </div>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
-              size="sm"
+              size="xs"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="h-8"
+              className="h-7 text-xs"
             >
               Previous
             </Button>
             <Button
               variant="outline"
-              size="sm"
+              size="xs"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="h-8"
+              className="h-7 text-xs"
             >
               Next
             </Button>

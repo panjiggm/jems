@@ -25,7 +25,14 @@ export const create = mutation({
       v.literal("payment"),
       v.literal("done"),
     ),
-    statusDurations: v.optional(v.any()),
+    statusDurations: v.optional(
+      v.object({
+        product_obtained_to_production: v.optional(v.string()),
+        production_to_published: v.optional(v.string()),
+        published_to_payment: v.optional(v.string()),
+        payment_to_done: v.optional(v.string()),
+      }),
+    ),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -234,7 +241,12 @@ export const setStatus = mutation({
 export const setStatusDurations = mutation({
   args: {
     id: v.id("contentCampaigns"),
-    statusDurations: v.any(),
+    statusDurations: v.object({
+      product_obtained_to_production: v.optional(v.string()),
+      production_to_published: v.optional(v.string()),
+      published_to_payment: v.optional(v.string()),
+      payment_to_done: v.optional(v.string()),
+    }),
   },
   handler: async (ctx, { id, statusDurations }) => {
     const userId = await currentUserId(ctx);

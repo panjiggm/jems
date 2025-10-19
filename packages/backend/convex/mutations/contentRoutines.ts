@@ -23,7 +23,13 @@ export const create = mutation({
       v.literal("scheduled"),
       v.literal("published"),
     ),
-    statusDurations: v.optional(v.any()),
+    statusDurations: v.optional(
+      v.object({
+        plan_to_in_progress: v.optional(v.string()),
+        in_progress_to_scheduled: v.optional(v.string()),
+        scheduled_to_published: v.optional(v.string()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await currentUserId(ctx);
@@ -235,7 +241,11 @@ export const setStatus = mutation({
 export const setStatusDurations = mutation({
   args: {
     id: v.id("contentRoutines"),
-    statusDurations: v.any(),
+    statusDurations: v.object({
+      plan_to_in_progress: v.optional(v.string()),
+      in_progress_to_scheduled: v.optional(v.string()),
+      scheduled_to_published: v.optional(v.string()),
+    }),
   },
   handler: async (ctx, { id, statusDurations }) => {
     const userId = await currentUserId(ctx);

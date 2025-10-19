@@ -70,7 +70,14 @@ export default defineSchema({
         note: v.optional(v.string()),
       }),
     ),
-    statusDurations: v.optional(v.any()), // Map of status transitions to duration strings
+    statusDurations: v.optional(
+      v.object({
+        product_obtained_to_production: v.optional(v.string()),
+        production_to_published: v.optional(v.string()),
+        published_to_payment: v.optional(v.string()),
+        payment_to_done: v.optional(v.string()),
+      }),
+    ),
     notes: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -109,7 +116,13 @@ export default defineSchema({
         note: v.optional(v.string()),
       }),
     ),
-    statusDurations: v.optional(v.any()), // Map of status transitions to duration strings
+    statusDurations: v.optional(
+      v.object({
+        plan_to_in_progress: v.optional(v.string()),
+        in_progress_to_scheduled: v.optional(v.string()),
+        scheduled_to_published: v.optional(v.string()),
+      }),
+    ),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

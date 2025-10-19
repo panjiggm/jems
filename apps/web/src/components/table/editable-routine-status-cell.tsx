@@ -14,7 +14,7 @@ export function EditableRoutineStatusCell({
   routineId,
 }: EditableRoutineStatusCellProps) {
   return (
-    <div className="min-w-[140px]">
+    <div>
       <EditableRoutineStatusBadge value={value} routineId={routineId} />
     </div>
   );

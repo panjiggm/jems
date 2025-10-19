@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -60,7 +59,7 @@ export function EditableTitleCell({
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        className="h-8 border-0 shadow-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="h-7 text-xs border-0 shadow-none focus-visible:ring-1 focus-visible:ring-ring"
         autoFocus
       />
     );
@@ -68,12 +67,10 @@ export function EditableTitleCell({
 
   return (
     <div
-      className="h-8 px-3 py-2 cursor-pointer hover:bg-muted/50 rounded transition-colors flex items-center"
+      className="h-7 px-3 py-2 cursor-pointer hover:bg-muted/50 rounded transition-colors flex items-center"
       onClick={() => setIsEditing(true)}
     >
-      <span
-        className={cn("text-sm font-bold", !value && "text-muted-foreground")}
-      >
+      <span className={cn("text-sm", !value && "text-muted-foreground")}>
         {value ? truncateText(value) : "No title"}
       </span>
     </div>
