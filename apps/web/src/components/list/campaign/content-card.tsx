@@ -4,7 +4,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { PlatformBadge } from "../platform-badge";
-import { TypeBadge } from "../type-badge";
 import { ContentDetailsDrawer } from "../../contents";
 import { useState } from "react";
 import { ContentCampaignStatus, Platform } from "@/types/status";
@@ -87,11 +86,6 @@ export function CampaignContentCard({
             </Avatar>
           </span>
         </div>
-      </div>
-
-      {/* Type Badge - Campaign type (barter/paid) */}
-      <div className="flex-shrink-0">
-        <TypeBadge type={content.type} />
       </div>
 
       <ContentDetailsDrawer

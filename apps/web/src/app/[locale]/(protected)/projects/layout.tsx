@@ -37,7 +37,7 @@ import {
 } from "@/store/use-dialog-store";
 import { useTemplateDialogStore } from "@/store/use-dialog-template-store";
 import { useTranslations } from "@/hooks/use-translations";
-import TabsCustom from "@/components/tabs/tabs-custom";
+import TabsWithOverflow from "@/components/tabs/tabs-with-overflow";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ContentDialog } from "@/components/contents/dialog-content";
 import { TabsYear } from "@/components/tabs";
@@ -127,8 +127,8 @@ export default function ProjectsLayout({
 
   const viewTabs = [
     { id: "table", label: "Table", icon: Table },
-    { id: "kanban", label: "Kanban", icon: Kanban },
     { id: "list", label: "List", icon: List },
+    { id: "kanban", label: "Kanban", icon: Kanban },
     { id: "calendar", label: "Calendar", icon: Calendar },
   ];
 
@@ -249,10 +249,10 @@ export default function ProjectsLayout({
 
             {/* Show Content Type Dropdown + Display tabs for project detail routes */}
             {routeInfo.isProjectRoute && (
-              <div className="flex items-center gap-2 px-3 sm:px-4">
+              <div className="flex items-center gap-1 px-3 sm:px-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="xs" className="gap-2 text-xs">
+                    <Button variant="ghost" size="xs" className="gap-1 text-xs">
                       <CurrentContentIcon className="h-3 w-3" />
                       <span>{currentContentOption?.label}</span>
                     </Button>
@@ -279,13 +279,13 @@ export default function ProjectsLayout({
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <div className="h-6 w-px bg-border" />
-                <TabsCustom
+                <TabsWithOverflow
                   tabs={viewTabs}
                   defaultValue="table"
                   useUrlNavigation={false}
                   queryParamName="view"
                   autoAssignIcons={false}
-                  className="shrink-0"
+                  className="flex-1 min-w-0"
                 />
               </div>
             )}
