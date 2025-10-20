@@ -2,6 +2,7 @@ import { mutation } from "../_generated/server";
 import { v } from "convex/values";
 import { currentUserId } from "../auth";
 import { internal } from "../_generated/api";
+import { generateSlug, generateUniqueSlug } from "../utils/slug";
 
 export const create = mutation({
   args: {
@@ -39,10 +40,20 @@ export const create = mutation({
     const userId = await currentUserId(ctx);
     const now = Date.now();
 
+    // Generate unique slug
+    const baseSlug = generateSlug(args.title);
+    const existingCampaigns = await ctx.db
+      .query("contentCampaigns")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    const existingSlugs = existingCampaigns.map((c) => c.slug);
+    const slug = generateUniqueSlug(baseSlug, existingSlugs);
+
     const contentId = await ctx.db.insert("contentCampaigns", {
       userId,
       projectId: args.projectId,
       title: args.title,
+      slug,
       sow: args.sow,
       platform: args.platform,
       type: args.type,
@@ -119,7 +130,20 @@ export const update = mutation({
       notes: doc.notes,
     };
 
-    await ctx.db.patch(id, { ...patch, updatedAt: Date.now() });
+    // If title is being updated, regenerate slug
+    let updateData: any = { ...patch, updatedAt: Date.now() };
+    if (patch.title && patch.title !== doc.title) {
+      const baseSlug = generateSlug(patch.title);
+      const existingCampaigns = await ctx.db
+        .query("contentCampaigns")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .filter((q) => q.neq(q.field("_id"), id))
+        .collect();
+      const existingSlugs = existingCampaigns.map((c) => c.slug);
+      updateData.slug = generateUniqueSlug(baseSlug, existingSlugs);
+    }
+
+    await ctx.db.patch(id, updateData);
 
     // Log activity
     const changedFields = Object.keys(patch).filter(
@@ -293,5 +317,17 @@ export const remove = mutation({
 
     await ctx.db.delete(id);
     return true;
+  },
+});
+
+// Internal mutation for migration
+export const addSlug = mutation({
+  args: {
+    id: v.id("contentCampaigns"),
+    slug: v.string(),
+  },
+  handler: async (ctx, { id, slug }) => {
+    await ctx.db.patch(id, { slug, updatedAt: Date.now() });
+    return id;
   },
 });

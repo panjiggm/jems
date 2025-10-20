@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import {
   useReactTable,
   getCoreRowModel,
@@ -34,9 +35,9 @@ import { EditableTitleCell } from "../editable-title-cell";
 import { EditableNotesCell } from "../editable-notes-cell";
 import { EditablePlatformCell } from "../editable-platform-cell";
 import { EditableRoutineStatusCell } from "../editable-routine-status-cell";
-import { ContentDetailsDrawer } from "../../contents";
 
 import { Eye } from "lucide-react";
+import { MediaItem } from "@packages/backend/convex/schema";
 
 // Routine content type
 type RoutineContent = {
@@ -45,6 +46,7 @@ type RoutineContent = {
   userId: string;
   projectId: Id<"projects">;
   title: string;
+  slug?: string;
   notes?: string;
   platform: Platform;
   status: ContentRoutineStatus;
@@ -55,6 +57,12 @@ type RoutineContent = {
     publishedAt?: string;
     note?: string;
   }>;
+  mediaFiles?: Array<MediaItem>;
+  statusDurations?: {
+    plan_to_in_progress?: string;
+    in_progress_to_scheduled?: string;
+    scheduled_to_published?: string;
+  };
   createdAt: number;
   updatedAt: number;
 };
@@ -72,17 +80,15 @@ export function EditableRoutineTable({
   userId,
   filters,
 }: EditableRoutineTableProps) {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
-
-  // Drawer state
-  const [selectedContentId, setSelectedContentId] = useState<string | null>(
-    null,
-  );
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Fetch routines
   const routines = useQuery(api.queries.contentRoutines.getByProject, {
@@ -94,11 +100,9 @@ export function EditableRoutineTable({
 
   // Mutations
   const updateRoutine = useMutation(api.mutations.contentRoutines.update);
-  const setRoutineStatus = useMutation(api.mutations.contentRoutines.setStatus);
 
-  const handleOpenDrawer = (contentId: string) => {
-    setSelectedContentId(contentId);
-    setDrawerOpen(true);
+  const handleNavigate = (slug: string) => {
+    router.push(`/${locale}/routines/${slug}`);
   };
 
   // Routine columns
@@ -190,7 +194,7 @@ export function EditableRoutineTable({
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            handleOpenDrawer(row.original._id);
+            handleNavigate(row.original.slug || "");
           }}
         >
           <Eye className="h-3 w-3" />
@@ -319,18 +323,6 @@ export function EditableRoutineTable({
           </div>
         </div>
       </div>
-
-      {/* Content Details Drawer */}
-      <ContentDetailsDrawer
-        contentId={selectedContentId}
-        contentType="routine"
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        onDeleted={() => {
-          // Content is deleted, the query will automatically refetch
-          // due to Convex's reactive queries
-        }}
-      />
     </>
   );
 }

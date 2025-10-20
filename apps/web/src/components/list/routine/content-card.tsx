@@ -4,8 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { PlatformBadge } from "../platform-badge";
-import { ContentDetailsDrawer } from "../../contents";
-import { useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { ContentRoutineStatus, Platform } from "@/types/status";
 
 interface RoutineContent {
@@ -14,6 +13,7 @@ interface RoutineContent {
   userId: string;
   projectId: Id<"projects">;
   title: string;
+  slug: string;
   notes?: string;
   platform: Platform;
   status: ContentRoutineStatus;
@@ -39,13 +39,12 @@ export function RoutineContentCard({
   projectId,
   userId,
 }: RoutineContentCardProps) {
-  const [selectedContentId, setSelectedContentId] =
-    useState<Id<"contentRoutines"> | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
 
-  const handleOpenDrawer = (contentId: Id<"contentRoutines">) => {
-    setSelectedContentId(contentId);
-    setDrawerOpen(true);
+  const handleNavigate = () => {
+    router.push(`/${locale}/routines/${content.slug}`);
   };
 
   const formatDate = (timestamp: number) => {
@@ -62,10 +61,7 @@ export function RoutineContentCard({
       <Checkbox className="flex-shrink-0" />
 
       {/* Content Info */}
-      <div
-        className="flex-1 min-w-0 cursor-pointer"
-        onClick={() => handleOpenDrawer(content._id)}
-      >
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={handleNavigate}>
         <div className="flex items-center gap-3 mb-1">
           <h5 className="font-medium text-sm truncate">{content.title}</h5>
           <PlatformBadge platform={content.platform} />
@@ -86,19 +82,6 @@ export function RoutineContentCard({
           </span>
         </div>
       </div>
-
-      {/* No type badge for routines - they don't have barter/paid type */}
-
-      <ContentDetailsDrawer
-        contentId={selectedContentId}
-        contentType="routine"
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        onDeleted={() => {
-          // Content is deleted, the query will automatically refetch
-          // due to Convex's reactive queries
-        }}
-      />
     </div>
   );
 }

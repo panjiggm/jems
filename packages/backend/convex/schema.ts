@@ -1,10 +1,25 @@
 import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { Infer, v } from "convex/values";
 import { Auth } from "convex/server";
 
 export const getUserId = async (ctx: { auth: Auth }) => {
   return (await ctx.auth.getUserIdentity())?.subject;
 };
+
+// Reusable media item shape for file attachments stored in Convex Storage
+const mediaItem = v.object({
+  storageId: v.id("_storage"),
+  filename: v.string(),
+  size: v.number(), // bytes
+  contentType: v.string(), // e.g. video/mp4
+  extension: v.string(), // e.g. mp4
+  durationMs: v.optional(v.number()),
+  width: v.optional(v.number()),
+  height: v.optional(v.number()),
+  uploadedAt: v.number(),
+});
+
+export type MediaItem = Infer<typeof mediaItem>;
 
 export default defineSchema({
   profile: defineTable({
@@ -44,6 +59,7 @@ export default defineSchema({
     userId: v.string(),
     projectId: v.id("projects"),
     title: v.string(),
+    slug: v.optional(v.string()), // URL-safe slug for page routing (optional during migration)
     sow: v.optional(v.string()), // Statement of Work
     platform: v.union(
       v.literal("tiktok"),
@@ -78,6 +94,8 @@ export default defineSchema({
         payment_to_done: v.optional(v.string()),
       }),
     ),
+    // Multiple media files attached to the campaign (videos/images/documents)
+    mediaFiles: v.optional(v.array(mediaItem)),
     notes: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -85,12 +103,14 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_project", ["userId", "projectId"])
     .index("by_user_status", ["userId", "status"])
-    .index("by_user_platform", ["userId", "platform"]),
+    .index("by_user_platform", ["userId", "platform"])
+    .index("by_user_slug", ["userId", "slug"]),
 
   contentRoutines: defineTable({
     userId: v.string(),
     projectId: v.id("projects"),
     title: v.string(),
+    slug: v.optional(v.string()), // URL-safe slug for page routing (optional during migration)
     notes: v.optional(v.string()),
     platform: v.union(
       v.literal("tiktok"),
@@ -123,13 +143,16 @@ export default defineSchema({
         scheduled_to_published: v.optional(v.string()),
       }),
     ),
+    // Multiple media files attached to the routine (videos/images/documents)
+    mediaFiles: v.optional(v.array(mediaItem)),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_user", ["userId"])
     .index("by_user_project", ["userId", "projectId"])
     .index("by_user_status", ["userId", "status"])
-    .index("by_user_platform", ["userId", "platform"]),
+    .index("by_user_platform", ["userId", "platform"])
+    .index("by_user_slug", ["userId", "slug"]),
 
   tasks: defineTable({
     userId: v.string(),

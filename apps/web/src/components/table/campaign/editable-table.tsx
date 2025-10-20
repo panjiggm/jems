@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import {
   useReactTable,
   getCoreRowModel,
@@ -39,9 +40,9 @@ import { EditableNotesCell } from "../editable-notes-cell";
 import { EditablePlatformCell } from "../editable-platform-cell";
 import { EditableCampaignStatusCell } from "../editable-campaign-status-cell";
 import { EditableCampaignTypeCell } from "../editable-campaign-type-cell";
-import { ContentDetailsDrawer } from "../../contents";
 
 import { Eye } from "lucide-react";
+import { MediaItem } from "@packages/backend/convex/schema";
 
 // Campaign content type
 type CampaignContent = {
@@ -50,6 +51,7 @@ type CampaignContent = {
   userId: string;
   projectId: Id<"projects">;
   title: string;
+  slug?: string;
   sow?: string;
   platform: Platform;
   type: ContentCampaignType;
@@ -60,6 +62,13 @@ type CampaignContent = {
     publishedAt?: string;
     note?: string;
   }>;
+  mediaFiles?: Array<MediaItem>;
+  statusDurations?: {
+    product_obtained_to_production?: string;
+    production_to_published?: string;
+    published_to_payment?: string;
+    payment_to_done?: string;
+  };
   notes?: string;
   createdAt: number;
   updatedAt: number;
@@ -78,17 +87,15 @@ export function EditableCampaignTable({
   userId,
   filters,
 }: EditableCampaignTableProps) {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
-
-  // Drawer state
-  const [selectedContentId, setSelectedContentId] = useState<string | null>(
-    null,
-  );
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Fetch campaigns
   const campaigns = useQuery(api.queries.contentCampaigns.getByProject, {
@@ -105,9 +112,8 @@ export function EditableCampaignTable({
     api.mutations.contentCampaigns.setStatus,
   );
 
-  const handleOpenDrawer = (contentId: string) => {
-    setSelectedContentId(contentId);
-    setDrawerOpen(true);
+  const handleNavigate = (slug: string) => {
+    router.push(`/${locale}/campaigns/${slug}`);
   };
 
   // Campaign columns
@@ -210,7 +216,7 @@ export function EditableCampaignTable({
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            handleOpenDrawer(row.original._id);
+            handleNavigate(row.original.slug || "");
           }}
         >
           <Eye className="h-3 w-3" />
@@ -340,18 +346,6 @@ export function EditableCampaignTable({
           </div>
         </div>
       </div>
-
-      {/* Content Details Drawer */}
-      <ContentDetailsDrawer
-        contentId={selectedContentId}
-        contentType="campaign"
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        onDeleted={() => {
-          // Content is deleted, the query will automatically refetch
-          // due to Convex's reactive queries
-        }}
-      />
     </>
   );
 }

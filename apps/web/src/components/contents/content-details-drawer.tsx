@@ -35,6 +35,8 @@ import {
   EditableRoutineStatusBadge,
 } from "./editable-badges";
 import { toast } from "sonner";
+import { MediaAttachments } from "./media-attachments";
+import { ContentCampaignStatus, ContentRoutineStatus } from "@/types/status";
 
 interface ContentDetailsDrawerProps {
   contentId: string | null;
@@ -114,6 +116,10 @@ export function ContentDetailsDrawer({
   // Get the appropriate content based on type
   const content =
     contentType === "campaign" ? campaignData?.campaign : routineData?.routine;
+  // Typed narrowed references to avoid union status issues in JSX
+  const campaign =
+    contentType === "campaign" ? campaignData?.campaign : undefined;
+  const routine = contentType === "routine" ? routineData?.routine : undefined;
 
   if (!contentId || !content) {
     return null;
@@ -181,18 +187,18 @@ export function ContentDetailsDrawer({
                     {contentType === "campaign" && "type" in content && (
                       <>
                         <EditableCampaignTypeBadge
-                          value={content.type}
+                          value={campaign!.type}
                           campaignId={contentId as Id<"contentCampaigns">}
                         />
                         <EditableCampaignStatusBadge
-                          value={content.status}
+                          value={campaign!.status}
                           campaignId={contentId as Id<"contentCampaigns">}
                         />
                       </>
                     )}
                     {contentType === "routine" && (
                       <EditableRoutineStatusBadge
-                        value={content.status}
+                        value={routine!.status}
                         routineId={contentId as Id<"contentRoutines">}
                       />
                     )}
@@ -261,6 +267,18 @@ export function ContentDetailsDrawer({
                 </div>
 
                 <Separator />
+
+                {/* Media Attachments */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Media
+                  </h3>
+                  <MediaAttachments
+                    contentType={contentType}
+                    contentId={contentId as any}
+                    mediaFiles={(content as any).mediaFiles}
+                  />
+                </div>
 
                 {/* Tasks Section */}
                 <TaskSection

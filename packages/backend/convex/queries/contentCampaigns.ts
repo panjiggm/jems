@@ -206,6 +206,68 @@ export const getById = query({
   },
 });
 
+// Get campaign by slug with task stats
+export const getBySlug = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    const campaign = await ctx.db
+      .query("contentCampaigns")
+      .withIndex("by_user_slug", (q) =>
+        q.eq("userId", userId).eq("slug", args.slug),
+      )
+      .first();
+
+    if (!campaign) return null;
+
+    // Get tasks for this campaign
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("contentId"), campaign._id),
+          q.eq(q.field("contentType"), "campaign"),
+        ),
+      )
+      .collect();
+
+    // Calculate task stats
+    const taskStats = {
+      total: tasks.length,
+      byStatus: {
+        todo: 0,
+        doing: 0,
+        done: 0,
+        skipped: 0,
+      },
+      withDueDate: 0,
+      overdue: 0,
+    };
+
+    const today = new Date().toISOString().split("T")[0];
+
+    tasks.forEach((task) => {
+      taskStats.byStatus[task.status]++;
+      if (task.dueDate) {
+        taskStats.withDueDate++;
+        if (task.dueDate < today && task.status !== "done") {
+          taskStats.overdue++;
+        }
+      }
+    });
+
+    return {
+      campaign,
+      taskStats,
+    };
+  },
+});
+
 // Get campaigns by project
 export const getByProject = query({
   args: {
@@ -292,5 +354,27 @@ export const getByProjectWithStats = query({
       campaigns,
       stats,
     };
+  },
+});
+
+// Internal queries for migration
+export const getWithoutSlugs = query({
+  args: {},
+  handler: async (ctx) => {
+    const campaigns = await ctx.db.query("contentCampaigns").collect();
+    return campaigns.filter((c) => !c.slug);
+  },
+});
+
+export const getAllSlugsForUser = query({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const campaigns = await ctx.db
+      .query("contentCampaigns")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+    return campaigns.map((c) => c.slug).filter(Boolean);
   },
 });

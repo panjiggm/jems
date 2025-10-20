@@ -4,8 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { PlatformBadge } from "../platform-badge";
-import { ContentDetailsDrawer } from "../../contents";
-import { useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { ContentCampaignStatus, Platform } from "@/types/status";
 
 interface CampaignContent {
@@ -14,6 +13,7 @@ interface CampaignContent {
   userId: string;
   projectId: Id<"projects">;
   title: string;
+  slug: string;
   sow?: string;
   platform: Platform;
   type: "barter" | "paid";
@@ -40,13 +40,12 @@ export function CampaignContentCard({
   projectId,
   userId,
 }: CampaignContentCardProps) {
-  const [selectedContentId, setSelectedContentId] =
-    useState<Id<"contentCampaigns"> | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
 
-  const handleOpenDrawer = (contentId: Id<"contentCampaigns">) => {
-    setSelectedContentId(contentId);
-    setDrawerOpen(true);
+  const handleNavigate = () => {
+    router.push(`/${locale}/campaigns/${content.slug}`);
   };
 
   const formatDate = (timestamp: number) => {
@@ -63,10 +62,7 @@ export function CampaignContentCard({
       <Checkbox className="flex-shrink-0" />
 
       {/* Content Info */}
-      <div
-        className="flex-1 min-w-0 cursor-pointer"
-        onClick={() => handleOpenDrawer(content._id)}
-      >
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={handleNavigate}>
         <div className="flex items-center gap-3 mb-1">
           <h5 className="font-medium text-sm truncate">{content.title}</h5>
           <PlatformBadge platform={content.platform} />
@@ -87,17 +83,6 @@ export function CampaignContentCard({
           </span>
         </div>
       </div>
-
-      <ContentDetailsDrawer
-        contentId={selectedContentId}
-        contentType="campaign"
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        onDeleted={() => {
-          // Content is deleted, the query will automatically refetch
-          // due to Convex's reactive queries
-        }}
-      />
     </div>
   );
 }

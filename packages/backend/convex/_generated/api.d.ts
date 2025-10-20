@@ -8,13 +8,16 @@
  * @module
  */
 
+import type * as actions_addSlugs from "../actions/addSlugs.js";
 import type * as actions_ai from "../actions/ai.js";
 import type * as actions_onboarding from "../actions/onboarding.js";
 import type * as actions_seed from "../actions/seed.js";
+import type * as actions_storage from "../actions/storage.js";
 import type * as auth from "../auth.js";
 import type * as models from "../models.js";
 import type * as mutations_contentCampaigns from "../mutations/contentCampaigns.js";
 import type * as mutations_contentRoutines from "../mutations/contentRoutines.js";
+import type * as mutations_media from "../mutations/media.js";
 import type * as mutations_onboarding from "../mutations/onboarding.js";
 import type * as mutations_persona from "../mutations/persona.js";
 import type * as mutations_profile from "../mutations/profile.js";
@@ -25,6 +28,7 @@ import type * as mutations_templates from "../mutations/templates.js";
 import type * as openai from "../openai.js";
 import type * as queries_contentCampaigns from "../queries/contentCampaigns.js";
 import type * as queries_contentRoutines from "../queries/contentRoutines.js";
+import type * as queries_media from "../queries/media.js";
 import type * as queries_niches from "../queries/niches.js";
 import type * as queries_persona from "../queries/persona.js";
 import type * as queries_profile from "../queries/profile.js";
@@ -33,6 +37,7 @@ import type * as queries_projects from "../queries/projects.js";
 import type * as queries_stats from "../queries/stats.js";
 import type * as queries_tasks from "../queries/tasks.js";
 import type * as utils_duration from "../utils/duration.js";
+import type * as utils_slug from "../utils/slug.js";
 import type * as utils_validators from "../utils/validators.js";
 import type * as utils from "../utils.js";
 
@@ -51,13 +56,16 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "actions/addSlugs": typeof actions_addSlugs;
   "actions/ai": typeof actions_ai;
   "actions/onboarding": typeof actions_onboarding;
   "actions/seed": typeof actions_seed;
+  "actions/storage": typeof actions_storage;
   auth: typeof auth;
   models: typeof models;
   "mutations/contentCampaigns": typeof mutations_contentCampaigns;
   "mutations/contentRoutines": typeof mutations_contentRoutines;
+  "mutations/media": typeof mutations_media;
   "mutations/onboarding": typeof mutations_onboarding;
   "mutations/persona": typeof mutations_persona;
   "mutations/profile": typeof mutations_profile;
@@ -68,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   openai: typeof openai;
   "queries/contentCampaigns": typeof queries_contentCampaigns;
   "queries/contentRoutines": typeof queries_contentRoutines;
+  "queries/media": typeof queries_media;
   "queries/niches": typeof queries_niches;
   "queries/persona": typeof queries_persona;
   "queries/profile": typeof queries_profile;
@@ -76,6 +85,7 @@ declare const fullApi: ApiFromModules<{
   "queries/stats": typeof queries_stats;
   "queries/tasks": typeof queries_tasks;
   "utils/duration": typeof utils_duration;
+  "utils/slug": typeof utils_slug;
   "utils/validators": typeof utils_validators;
   utils: typeof utils;
 }>;

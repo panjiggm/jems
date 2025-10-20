@@ -193,6 +193,68 @@ export const getById = query({
   },
 });
 
+// Get routine by slug with task stats
+export const getBySlug = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    const routine = await ctx.db
+      .query("contentRoutines")
+      .withIndex("by_user_slug", (q) =>
+        q.eq("userId", userId).eq("slug", args.slug),
+      )
+      .first();
+
+    if (!routine) return null;
+
+    // Get tasks for this routine
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("contentId"), routine._id),
+          q.eq(q.field("contentType"), "routine"),
+        ),
+      )
+      .collect();
+
+    // Calculate task stats
+    const taskStats = {
+      total: tasks.length,
+      byStatus: {
+        todo: 0,
+        doing: 0,
+        done: 0,
+        skipped: 0,
+      },
+      withDueDate: 0,
+      overdue: 0,
+    };
+
+    const today = new Date().toISOString().split("T")[0];
+
+    tasks.forEach((task) => {
+      taskStats.byStatus[task.status]++;
+      if (task.dueDate) {
+        taskStats.withDueDate++;
+        if (task.dueDate < today && task.status !== "done") {
+          taskStats.overdue++;
+        }
+      }
+    });
+
+    return {
+      routine,
+      taskStats,
+    };
+  },
+});
+
 // Get routines by project
 export const getByProject = query({
   args: {
@@ -268,5 +330,27 @@ export const getByProjectWithStats = query({
       routines,
       stats,
     };
+  },
+});
+
+// Internal queries for migration
+export const getWithoutSlugs = query({
+  args: {},
+  handler: async (ctx) => {
+    const routines = await ctx.db.query("contentRoutines").collect();
+    return routines.filter((r) => !r.slug);
+  },
+});
+
+export const getAllSlugsForUser = query({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const routines = await ctx.db
+      .query("contentRoutines")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+    return routines.map((r) => r.slug).filter(Boolean);
   },
 });

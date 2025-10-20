@@ -5,12 +5,12 @@ import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { useState } from "react";
-import { ContentDetailsDrawer } from "../contents";
+import { useRouter, useParams } from "next/navigation";
 
 interface KanbanCardProps {
   id: string;
   title: string;
+  slug: string;
   platform:
     | "tiktok"
     | "instagram"
@@ -49,11 +49,16 @@ const platformIcons = {
 export function KanbanCard({
   id,
   title,
+  slug,
   platform,
   status,
   type,
   notes,
 }: KanbanCardProps) {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+
   const {
     attributes,
     listeners,
@@ -63,24 +68,16 @@ export function KanbanCard({
     isDragging,
   } = useSortable({ id });
 
-  // Drawer state
-  const [selectedContentId, setSelectedContentId] = useState<string | null>(
-    null,
-  );
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const handleOpenDrawer = (contentId: string) => {
-    setSelectedContentId(contentId);
-    setDrawerOpen(true);
+  const handleNavigate = () => {
+    // Determine content type: campaigns have type field, routines don't
+    const contentType = type !== undefined ? "campaign" : "routine";
+    router.push(`/${locale}/${contentType}s/${slug}`);
   };
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  // Determine content type: campaigns have type field, routines don't
-  const contentType = type !== undefined ? "campaign" : "routine";
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -126,7 +123,7 @@ export function KanbanCard({
           "w-full bg-card rounded-lg border border-border p-4 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing",
           isDragging && "opacity-50 rotate-2 scale-105",
         )}
-        onClick={() => handleOpenDrawer(id)}
+        onClick={handleNavigate}
       >
         {/* Header with title and status */}
         <div className="flex items-start justify-between mb-3">
@@ -174,21 +171,10 @@ export function KanbanCard({
         {/* Content type badge */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <Badge variant="outline" className="text-xs">
-            {contentType === "campaign" ? "Campaign" : "Routine"}
+            {type !== undefined ? "Campaign" : "Routine"}
           </Badge>
         </div>
       </div>
-
-      <ContentDetailsDrawer
-        contentId={selectedContentId}
-        contentType={contentType}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        onDeleted={() => {
-          // Content is deleted, the query will automatically refetch
-          // due to Convex's reactive queries
-        }}
-      />
     </>
   );
 }
