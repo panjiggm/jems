@@ -211,6 +211,11 @@ export const getBySlug = query({
 
     if (!routine) return null;
 
+    // Get project info
+    const project = routine.projectId
+      ? await ctx.db.get(routine.projectId)
+      : null;
+
     // Get tasks for this routine
     const tasks = await ctx.db
       .query("tasks")
@@ -250,6 +255,7 @@ export const getBySlug = query({
 
     return {
       routine,
+      project,
       taskStats,
     };
   },

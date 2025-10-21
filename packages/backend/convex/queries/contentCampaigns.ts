@@ -224,6 +224,11 @@ export const getBySlug = query({
 
     if (!campaign) return null;
 
+    // Get project info
+    const project = campaign.projectId
+      ? await ctx.db.get(campaign.projectId)
+      : null;
+
     // Get tasks for this campaign
     const tasks = await ctx.db
       .query("tasks")
@@ -263,6 +268,7 @@ export const getBySlug = query({
 
     return {
       campaign,
+      project,
       taskStats,
     };
   },

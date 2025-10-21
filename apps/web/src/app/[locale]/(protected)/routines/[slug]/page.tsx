@@ -16,6 +16,8 @@ import { TaskSection } from "@/components/tasks";
 import { EditablePlatformBadge } from "@/components/contents/editable-platform-badge";
 import { EditableRoutineStatusBadge } from "@/components/contents/editable-badges";
 import { MediaAttachments } from "@/components/contents/media-attachments";
+import { ContentActivity } from "@/components/contents";
+import TabsCustom from "@/components/tabs/tabs-custom";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function RoutineDetailPage() {
   const params = useParams();
@@ -102,13 +105,15 @@ export default function RoutineDetailPage() {
   }
 
   const routine = routineData.routine;
+  const project = routineData.project;
+  const locale = params.locale as string;
 
   return (
     <>
       <div className="flex flex-col h-[calc(100vh-3.5rem)]">
         {/* Header */}
-        <div className="border-b bg-background sticky top-14 z-10">
-          <div className="container max-w-5xl mx-auto px-6 py-4">
+        <div className="bg-background sticky top-14 z-10">
+          <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-4">
             <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" size="xs" onClick={handleBack}>
                 <ArrowLeft className="h-3 w-3 mr-1" />
@@ -123,13 +128,26 @@ export default function RoutineDetailPage() {
                 Delete
               </Button>
             </div>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 mb-4">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <h1 className="text-2xl font-bold break-words">
+                {/* Parent Project Badge */}
+                {project && (
+                  <div className="mb-2">
+                    <Badge variant="outline" size="xs" asChild>
+                      <Link
+                        href={`/${locale}/projects/${project._id}`}
+                        className="hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        {project.title}
+                      </Link>
+                    </Badge>
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                  <h1 className="text-xl sm:text-2xl font-bold break-words">
                     {routine.title}
                   </h1>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs w-fit">
                     Routine
                   </Badge>
                 </div>
@@ -146,105 +164,103 @@ export default function RoutineDetailPage() {
           </div>
         </div>
 
-        {/* Main Content */}
-        <ScrollArea className="flex-1">
-          <div className="container max-w-5xl mx-auto px-6 py-6 space-y-6">
-            {/* Details Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">Details</h3>
+        {/* Main Content with Tabs */}
+        <TabsCustom
+          containerMaxWidth="max-w-5xl"
+          tabs={[
+            {
+              id: "detail",
+              label: "Detail",
+              content: (
+                <div className="space-y-6">
+                  {/* Details Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      Details
+                    </h3>
 
-              {/* Editable Badges */}
-              <div className="grid grid-cols-2 gap-2">
-                <EditablePlatformBadge
-                  value={routine.platform}
-                  contentId={routine._id as any}
-                />
-                <EditableRoutineStatusBadge
-                  value={routine.status}
-                  routineId={routine._id as Id<"contentRoutines">}
-                />
-              </div>
+                    {/* Editable Badges */}
+                    <div className="flex flex-wrap gap-2">
+                      <EditablePlatformBadge
+                        value={routine.platform}
+                        contentId={routine._id as any}
+                      />
+                      <EditableRoutineStatusBadge
+                        value={routine.status}
+                        routineId={routine._id as Id<"contentRoutines">}
+                      />
+                    </div>
 
-              {/* Status History */}
-              {routine.statusHistory && routine.statusHistory.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">
-                    Status History
-                  </Label>
-                  <div className="space-y-2">
-                    {routine.statusHistory.map((history, index) => (
-                      <div
-                        key={index}
-                        className="flex items-start gap-2 text-xs"
-                      >
-                        <Clock className="h-3 w-3 text-muted-foreground mt-0.5" />
-                        <div className="flex-1">
-                          <Badge variant="outline" className="text-xs mr-2">
-                            {history.status}
-                          </Badge>
-                          <span className="text-muted-foreground">
-                            {formatTimestamp(history.timestamp)}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">
+                          Created
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>
+                            {new Date(routine.createdAt).toLocaleDateString()}
                           </span>
-                          {history.note && (
-                            <p className="text-muted-foreground mt-1">
-                              {history.note}
-                            </p>
-                          )}
                         </div>
                       </div>
-                    ))}
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">
+                          Updated
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>
+                            {new Date(routine.updatedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Media Attachments */}
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      Media
+                    </h3>
+                    <MediaAttachments
+                      contentType="routine"
+                      contentId={routine._id as any}
+                      mediaFiles={routine.mediaFiles}
+                    />
                   </div>
                 </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">
-                    Created
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      {new Date(routine.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">
-                    Updated
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      {new Date(routine.updatedAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Media Attachments */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-foreground">Media</h3>
-              <MediaAttachments
-                contentType="routine"
-                contentId={routine._id as any}
-                mediaFiles={routine.mediaFiles}
-              />
-            </div>
-
-            <Separator />
-
-            {/* Tasks Section */}
-            <TaskSection
-              contentId={routine._id}
-              contentType="routine"
-              projectId={routine.projectId}
-            />
-          </div>
-        </ScrollArea>
+              ),
+            },
+            {
+              id: "tasks",
+              label: "Tasks",
+              content: (
+                <TaskSection
+                  contentId={routine._id}
+                  contentType="routine"
+                  projectId={routine.projectId}
+                />
+              ),
+            },
+            {
+              id: "activity",
+              label: "Activity",
+              content: (
+                <ContentActivity
+                  contentId={routine._id}
+                  contentType="content_routine"
+                  statusHistory={routine.statusHistory}
+                />
+              ),
+            },
+          ]}
+          defaultValue="detail"
+          variant="underline"
+          autoAssignIcons={true}
+          queryParamName="tab"
+        />
       </div>
 
       {/* Delete Confirmation Dialog */}

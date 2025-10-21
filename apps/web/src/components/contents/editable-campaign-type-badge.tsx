@@ -67,14 +67,14 @@ export function EditableCampaignTypeBadge({
           <Badge
             variant="outline"
             className={cn(
-              "flex items-center gap-1.5 px-2 py-1 text-xs font-medium hover:opacity-80 transition-opacity justify-center",
+              "inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium hover:opacity-80 transition-opacity justify-center",
               currentConfig?.color,
             )}
           >
             <div
-              className={cn("w-2 h-2 rounded-full", currentConfig?.dotColor)}
+              className={cn("w-3 h-3 rounded-full", currentConfig?.dotColor)}
             />
-            <span className="">{currentConfig?.label}</span>
+            <span className="leading-none">{currentConfig?.label}</span>
           </Badge>
         </div>
       </DropdownMenuTrigger>
@@ -88,11 +88,11 @@ export function EditableCampaignTypeBadge({
             <Badge
               variant="outline"
               className={cn(
-                "inline-flex items-center gap-2 text-xs font-medium w-full justify-center",
+                "inline-flex items-center gap-1.5 text-xs font-medium w-full justify-center",
                 option.color,
               )}
             >
-              <div className={cn("w-2 h-2 rounded-full", option.dotColor)} />
+              <div className={cn("w-3 h-3 rounded-full", option.dotColor)} />
               {option.label}
             </Badge>
           </DropdownMenuItem>

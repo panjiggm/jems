@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface TabItem {
   id: string;
@@ -34,6 +35,7 @@ interface TabsCustomProps {
   autoAssignIcons?: boolean;
   useUrlNavigation?: boolean; // Add flag for URL-based navigation
   queryParamName?: string; // Custom query parameter name (default: "contentType")
+  containerMaxWidth?: string; // Custom max width for container (default: "max-w-4xl")
 }
 
 // Helper function to get default icons based on tab ID
@@ -95,6 +97,7 @@ const TabsCustom = ({
   autoAssignIcons = true,
   useUrlNavigation = false,
   queryParamName = "contentType",
+  containerMaxWidth = "max-w-4xl",
 }: TabsCustomProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -185,51 +188,62 @@ const TabsCustom = ({
   };
 
   return (
-    <div className={cn(className)}>
-      <Tabs
-        value={
-          useUrlNavigation ? getCurrentTab() : contentTypeParam || defaultValue
-        }
-        onValueChange={handleTabChange}
-      >
-        <div className="overflow-x-auto">
-          <TabsList
-            className={cn(
-              getTabsListClass(),
-              "flex-nowrap overflow-x-auto gap-1",
-            )}
-          >
-            {tabs.map((tab) => {
-              const IconComponent =
-                tab.icon ||
-                (autoAssignIcons ? getDefaultIcon(tab.id) : undefined);
-              return (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className={getTabsTriggerClass()}
-                >
-                  <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
-                    {IconComponent && <IconComponent className="h-3 w-3" />}
-                    <span className="text-xs">{tab.label}</span>
-                  </div>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
+    <Tabs
+      value={
+        useUrlNavigation ? getCurrentTab() : contentTypeParam || defaultValue
+      }
+      onValueChange={handleTabChange}
+      className={cn("flex flex-col min-h-0", className)}
+    >
+      {/* Tabs Navigation with full-width border */}
+      <div className="border-b bg-background">
+        <div
+          className={cn("container mx-auto px-4 sm:px-6", containerMaxWidth)}
+        >
+          <div className="overflow-x-auto">
+            <TabsList
+              className={cn(
+                getTabsListClass(),
+                "flex-nowrap overflow-x-auto gap-1",
+              )}
+            >
+              {tabs.map((tab) => {
+                const IconComponent =
+                  tab.icon ||
+                  (autoAssignIcons ? getDefaultIcon(tab.id) : undefined);
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className={getTabsTriggerClass()}
+                  >
+                    <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
+                      {IconComponent && <IconComponent className="h-3 w-3" />}
+                      <span className="text-xs">{tab.label}</span>
+                    </div>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </div>
         </div>
+      </div>
 
-        {tabs.some((tab) => tab.content) && (
-          <>
+      {/* Tabs Content with scroll */}
+      {tabs.some((tab) => tab.content) && (
+        <ScrollArea className="flex-1">
+          <div
+            className={cn("container mx-auto px-4 sm:px-6", containerMaxWidth)}
+          >
             {tabs.map((tab) => (
               <TabsContent key={tab.id} value={tab.id} className="mt-4">
                 {tab.content}
               </TabsContent>
             ))}
-          </>
-        )}
-      </Tabs>
-    </div>
+          </div>
+        </ScrollArea>
+      )}
+    </Tabs>
   );
 };
 
