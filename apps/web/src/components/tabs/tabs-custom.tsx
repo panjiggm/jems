@@ -36,6 +36,7 @@ interface TabsCustomProps {
   useUrlNavigation?: boolean; // Add flag for URL-based navigation
   queryParamName?: string; // Custom query parameter name (default: "contentType")
   containerMaxWidth?: string; // Custom max width for container (default: "max-w-4xl")
+  stickyTabs?: boolean; // Make tabs navigation sticky
 }
 
 // Helper function to get default icons based on tab ID
@@ -98,6 +99,7 @@ const TabsCustom = ({
   useUrlNavigation = false,
   queryParamName = "contentType",
   containerMaxWidth = "max-w-4xl",
+  stickyTabs = false,
 }: TabsCustomProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -196,7 +198,12 @@ const TabsCustom = ({
       className={cn("flex flex-col min-h-0", className)}
     >
       {/* Tabs Navigation with full-width border */}
-      <div className="border-b bg-background">
+      <div
+        className={cn(
+          "border-b",
+          stickyTabs ? "bg-background" : "bg-background",
+        )}
+      >
         <div
           className={cn("container mx-auto px-4 sm:px-6", containerMaxWidth)}
         >

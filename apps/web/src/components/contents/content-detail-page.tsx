@@ -11,7 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Clock, Trash2, FileText, ArrowLeft, Loader2 } from "lucide-react";
+import {
+  Clock,
+  Trash2,
+  FileText,
+  ArrowLeft,
+  Loader2,
+  CheckSquare,
+} from "lucide-react";
 import { TaskSection } from "@/components/tasks";
 import { EditablePlatformBadge } from "@/components/contents/editable-platform-badge";
 import {
@@ -21,7 +28,9 @@ import {
 } from "@/components/contents/editable-badges";
 import { MediaAttachments } from "@/components/contents/media-attachments";
 import { ContentActivity } from "@/components/contents";
-import TabsCustom from "@/components/tabs/tabs-custom";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useQueryState } from "nuqs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +70,7 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
   const router = useRouter();
   const params = useParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useQueryState("tab");
   const locale = (params.locale as string) || "en";
 
   // Use preloaded query based on content type
@@ -188,11 +198,18 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
   const contentTypeName = isCampaign ? "Campaign" : "Routine";
   const maxWidth = isCampaign ? "max-w-4xl" : "max-w-5xl";
 
+  const currentTab = activeTab || "detail";
+
   return (
     <>
-      <div className="flex flex-col h-[calc(100vh-3.5rem)]">
-        {/* Header */}
+      <Tabs
+        value={currentTab}
+        onValueChange={(value) => setActiveTab(value)}
+        className="flex flex-col h-[calc(100vh-3.5rem)]"
+      >
+        {/* Header + Tabs Navigation - Sticky */}
         <div className="bg-background sticky top-14 z-10">
+          {/* Header */}
           <div className={`container ${maxWidth} mx-auto px-4 sm:px-6 py-4`}>
             <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" size="xs" onClick={handleBack}>
@@ -253,138 +270,158 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
               </div>
             </div>
           </div>
+
+          {/* Tabs Navigation */}
+          <div className="border-b">
+            <div className={`container ${maxWidth} mx-auto px-4 sm:px-6`}>
+              <TabsList className="h-auto p-0 bg-transparent justify-start border-0 flex-nowrap overflow-x-auto gap-1">
+                <TabsTrigger
+                  value="detail"
+                  className="px-0 text-xs font-normal border-b-2 border-transparent border-t-0 border-l-0 border-r-0 shadow-none data-[state=active]:border-b-[#f7a641] data-[state=active]:text-[#4a2e1a] data-[state=active]:border-t-0 data-[state=active]:border-l-0 data-[state=active]:border-r-0 data-[state=active]:shadow-none text-muted-foreground hover:text-foreground rounded-none transition-colors whitespace-nowrap"
+                >
+                  <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
+                    <FileText className="h-3 w-3" />
+                    <span className="text-xs">Detail</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="tasks"
+                  className="px-0 text-xs font-normal border-b-2 border-transparent border-t-0 border-l-0 border-r-0 shadow-none data-[state=active]:border-b-[#f7a641] data-[state=active]:text-[#4a2e1a] data-[state=active]:border-t-0 data-[state=active]:border-l-0 data-[state=active]:border-r-0 data-[state=active]:shadow-none text-muted-foreground hover:text-foreground rounded-none transition-colors whitespace-nowrap"
+                >
+                  <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
+                    <CheckSquare className="h-3 w-3" />
+                    <span className="text-xs">Tasks</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="activity"
+                  className="px-0 text-xs font-normal border-b-2 border-transparent border-t-0 border-l-0 border-r-0 shadow-none data-[state=active]:border-b-[#f7a641] data-[state=active]:text-[#4a2e1a] data-[state=active]:border-t-0 data-[state=active]:border-l-0 data-[state=active]:border-r-0 data-[state=active]:shadow-none text-muted-foreground hover:text-foreground rounded-none transition-colors whitespace-nowrap"
+                >
+                  <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
+                    <FileText className="h-3 w-3" />
+                    <span className="text-xs">Activity</span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
         </div>
 
-        {/* Main Content with Tabs */}
-        <TabsCustom
-          containerMaxWidth={maxWidth}
-          tabs={[
-            {
-              id: "detail",
-              label: "Detail",
-              content: (
-                <div className="space-y-6">
-                  {/* Details Section */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      Details
-                    </h3>
+        {/* Scrollable Tabs Content */}
+        <ScrollArea className="flex-1">
+          <div className={`container ${maxWidth} mx-auto px-4 sm:px-6`}>
+            <TabsContent value="detail" className="mt-4">
+              <div className="space-y-6">
+                {/* Details Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Details
+                  </h3>
 
-                    {/* Editable Badges */}
-                    <div className="flex flex-wrap gap-2">
-                      <EditablePlatformBadge
-                        value={content.platform}
-                        contentId={content._id as any}
-                      />
-                      {isCampaign && "type" in content ? (
-                        <>
-                          <EditableCampaignTypeBadge
-                            value={content.type}
-                            campaignId={content._id as Id<"contentCampaigns">}
-                          />
-                          <EditableCampaignStatusBadge
-                            value={
-                              content.status as
-                                | "product_obtained"
-                                | "production"
-                                | "published"
-                                | "payment"
-                                | "done"
-                            }
-                            campaignId={content._id as Id<"contentCampaigns">}
-                          />
-                        </>
-                      ) : (
-                        <EditableRoutineStatusBadge
+                  {/* Editable Badges */}
+                  <div className="flex flex-wrap gap-2">
+                    <EditablePlatformBadge
+                      value={content.platform}
+                      contentId={content._id as any}
+                    />
+                    {isCampaign && "type" in content ? (
+                      <>
+                        <EditableCampaignTypeBadge
+                          value={content.type}
+                          campaignId={content._id as Id<"contentCampaigns">}
+                        />
+                        <EditableCampaignStatusBadge
                           value={
                             content.status as
-                              | "plan"
-                              | "in_progress"
-                              | "scheduled"
+                              | "product_obtained"
+                              | "production"
                               | "published"
+                              | "payment"
+                              | "done"
                           }
-                          routineId={content._id as Id<"contentRoutines">}
+                          campaignId={content._id as Id<"contentCampaigns">}
                         />
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">
-                          Created
-                        </Label>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>
-                            {new Date(content.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">
-                          Updated
-                        </Label>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>
-                            {new Date(content.updatedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                      </>
+                    ) : (
+                      <EditableRoutineStatusBadge
+                        value={
+                          content.status as
+                            | "plan"
+                            | "in_progress"
+                            | "scheduled"
+                            | "published"
+                        }
+                        routineId={content._id as Id<"contentRoutines">}
+                      />
+                    )}
                   </div>
 
-                  <Separator />
-
-                  {/* Media Attachments */}
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      Media
-                    </h3>
-                    <MediaAttachments
-                      contentType={contentType}
-                      contentId={
-                        contentType === "campaign"
-                          ? (content._id as Id<"contentCampaigns">)
-                          : (content._id as Id<"contentRoutines">)
-                      }
-                      mediaFiles={content.mediaFiles}
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">
+                        Created
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>
+                          {new Date(content.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">
+                        Updated
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>
+                          {new Date(content.updatedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ),
-            },
-            {
-              id: "tasks",
-              label: "Tasks",
-              content: (
-                <TaskSection
-                  contentId={content._id}
-                  contentType={contentType}
-                  projectId={content.projectId}
-                />
-              ),
-            },
-            {
-              id: "activity",
-              label: "Activity",
-              content: (
-                <ContentActivity
-                  contentId={content._id}
-                  contentType={
-                    isCampaign ? "content_campaign" : "content_routine"
-                  }
-                  statusHistory={content.statusHistory}
-                />
-              ),
-            },
-          ]}
-          defaultValue="detail"
-          variant="underline"
-          autoAssignIcons={true}
-          queryParamName="tab"
-        />
-      </div>
+
+                <Separator />
+
+                {/* Media Attachments */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Media
+                  </h3>
+                  <MediaAttachments
+                    contentType={contentType}
+                    contentId={
+                      contentType === "campaign"
+                        ? (content._id as Id<"contentCampaigns">)
+                        : (content._id as Id<"contentRoutines">)
+                    }
+                    mediaFiles={content.mediaFiles}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="tasks" className="mt-4">
+              <TaskSection
+                contentId={content._id}
+                contentType={contentType}
+                projectId={content.projectId}
+              />
+            </TabsContent>
+
+            <TabsContent value="activity" className="mt-4">
+              <ContentActivity
+                contentId={content._id}
+                contentType={
+                  isCampaign ? "content_campaign" : "content_routine"
+                }
+                statusHistory={content.statusHistory}
+              />
+            </TabsContent>
+          </div>
+        </ScrollArea>
+      </Tabs>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
