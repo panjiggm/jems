@@ -343,7 +343,11 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
                     </h3>
                     <MediaAttachments
                       contentType={contentType}
-                      contentId={content._id as any}
+                      contentId={
+                        contentType === "campaign"
+                          ? (content._id as Id<"contentCampaigns">)
+                          : (content._id as Id<"contentRoutines">)
+                      }
                       mediaFiles={content.mediaFiles}
                     />
                   </div>

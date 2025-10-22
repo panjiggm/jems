@@ -4,11 +4,11 @@ import * as React from "react";
 import { useAction, useMutation, useConvex } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { Upload } from "lucide-react";
 import { toast } from "sonner";
+import { MediaCard } from "@/components/contents/media-card";
 
 type MediaItem = {
   storageId: Id<"_storage">;
@@ -85,31 +85,89 @@ export function MediaAttachments({
   );
 
   const [isUploading, setIsUploading] = React.useState(false);
+  const [isDragOver, setIsDragOver] = React.useState(false);
+  const [uploadProgress, setUploadProgress] = React.useState<{
+    current: number;
+    total: number;
+    percentage: number;
+    fileName: string;
+  } | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const onSelectFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  // Helper function to upload file with progress tracking
+  const uploadFileWithProgress = (
+    uploadUrl: string,
+    file: File,
+    mimeType: string,
+  ): Promise<Id<"_storage">> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) {
+          const percentage = Math.round((e.loaded / e.total) * 100);
+          setUploadProgress({
+            current: e.loaded,
+            total: e.total,
+            percentage,
+            fileName: file.name,
+          });
+        }
+      });
+
+      xhr.addEventListener("load", () => {
+        if (xhr.status === 200) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response.storageId);
+          } catch (err) {
+            reject(new Error("Failed to parse upload response"));
+          }
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      });
+
+      xhr.addEventListener("error", () => {
+        reject(new Error("Upload failed"));
+      });
+
+      xhr.addEventListener("abort", () => {
+        reject(new Error("Upload aborted"));
+      });
+
+      xhr.open("POST", uploadUrl);
+      xhr.setRequestHeader("Content-Type", mimeType);
+      xhr.send(file);
+    });
+  };
+
+  const processFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
+    setUploadProgress(null);
+
     try {
+      console.log(
+        `[MediaAttachments] Starting upload for ${contentType}:`,
+        contentId,
+      );
+
       for (const file of Array.from(files)) {
         // 1) get upload URL
         const { uploadUrl } = await generateUploadUrl({});
 
-        // 2) upload file bytes
-        const res = await fetch(uploadUrl, {
-          method: "POST",
-          headers: { "Content-Type": file.type || "application/octet-stream" },
-          body: file,
-        });
-        if (!res.ok) throw new Error("Upload failed");
-        const { storageId } = (await res.json()) as {
-          storageId: Id<"_storage">;
-        };
+        // 2) upload file bytes with progress tracking
+        const mimeType = file.type || "application/octet-stream";
+        const storageId = await uploadFileWithProgress(
+          uploadUrl,
+          file,
+          mimeType,
+        );
 
         const filename = file.name;
         const size = file.size;
-        const contentType = file.type || "application/octet-stream";
         const extension = filename.includes(".")
           ? filename.split(".").pop()!.toLowerCase()
           : "";
@@ -118,12 +176,12 @@ export function MediaAttachments({
         let durationMs: number | undefined;
         let width: number | undefined;
         let height: number | undefined;
-        if (contentType.startsWith("video/")) {
+        if (mimeType.startsWith("video/")) {
           const meta = await extractVideoMetadata(file);
           durationMs = meta.durationMs;
           width = meta.width;
           height = meta.height;
-        } else if (contentType.startsWith("image/")) {
+        } else if (mimeType.startsWith("image/")) {
           const meta = await extractImageMetadata(file);
           width = meta.width;
           height = meta.height;
@@ -133,7 +191,7 @@ export function MediaAttachments({
           storageId,
           filename,
           size,
-          contentType,
+          contentType: mimeType,
           extension,
           durationMs,
           width,
@@ -142,27 +200,64 @@ export function MediaAttachments({
         };
 
         // 4) attach to content
+        console.log(
+          `[MediaAttachments] Attaching ${file.name} to ${contentType}`,
+        );
+
         if (contentType === "campaign") {
           await attachCampaignMedia({
             campaignId: contentId as Id<"contentCampaigns">,
             file: media,
           });
-        } else {
+        } else if (contentType === "routine") {
           await attachRoutineMedia({
             routineId: contentId as Id<"contentRoutines">,
             file: media,
           });
+        } else {
+          throw new Error(`Unknown content type: ${contentType}`);
         }
+
+        console.log(`[MediaAttachments] Successfully attached ${file.name}`);
       }
       toast.success("Upload completed");
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to upload media");
+      console.error("[MediaAttachments] Upload error:", err);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Failed to upload media: ${errorMessage}`);
     } finally {
       setIsUploading(false);
-      // Reset input value to allow re-uploading same file name
-      e.target.value = "";
+      setUploadProgress(null);
     }
+  };
+
+  const onSelectFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await processFiles(e.target.files);
+    // Reset input value to allow re-uploading same file name
+    e.target.value = "";
+  };
+
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const onDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const onDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    await processFiles(e.dataTransfer.files);
+  };
+
+  const onClickUploadBox = () => {
+    fileInputRef.current?.click();
   };
 
   const handleView = async (storageId: Id<"_storage">) => {
@@ -199,65 +294,82 @@ export function MediaAttachments({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <Label className="text-xs text-muted-foreground">Attachments</Label>
-        <div className="flex items-center gap-2">
+      {/* Drag & Drop Upload Box */}
+      {!uploadProgress && (
+        <div
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          onClick={onClickUploadBox}
+          className={`
+          relative flex flex-col items-center justify-center
+          rounded-sm border-2 border-dashed p-6
+          transition-colors cursor-pointer
+          ${
+            isDragOver
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50 hover:bg-accent/50"
+          }
+          ${isUploading ? "opacity-50 cursor-not-allowed" : ""}
+        `}
+        >
           <input
+            ref={fileInputRef}
             type="file"
             multiple
             onChange={onSelectFiles}
+            className="hidden"
             aria-label="Upload files"
             disabled={isUploading}
+            accept="image/*,video/*"
           />
+          <Upload className="mb-3 h-4 w-4 text-muted-foreground" />
+          <p className="mb-0.5 text-xs font-medium">
+            {isUploading ? "Uploading..." : "Click to upload or drag and drop"}
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            Images and videos supported
+          </p>
         </div>
-      </div>
-      <Separator />
+      )}
 
+      {/* Upload Progress Indicator */}
+      {uploadProgress && (
+        <div className="space-y-2 rounded-lg border bg-muted/50 p-4">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-medium truncate flex-1 mr-2">
+              {uploadProgress.fileName}
+            </span>
+            <span className="font-semibold text-primary">
+              {uploadProgress.percentage}%
+            </span>
+          </div>
+          <Progress value={uploadProgress.percentage} className="h-2" />
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>
+              {(uploadProgress.current / (1024 * 1024)).toFixed(2)} MB
+            </span>
+            <span>{(uploadProgress.total / (1024 * 1024)).toFixed(2)} MB</span>
+          </div>
+        </div>
+      )}
+
+      {/* Media Grid */}
       {(!mediaFiles || mediaFiles.length === 0) && (
-        <p className="text-xs text-muted-foreground">No media attached.</p>
+        <div className="flex items-center justify-center rounded-lg border border-dashed py-12">
+          <p className="text-sm text-muted-foreground">No media attached yet</p>
+        </div>
       )}
 
       {mediaFiles && mediaFiles.length > 0 && (
-        <div className="space-y-2">
-          {mediaFiles.map((m) => (
-            <div
-              key={m.storageId as unknown as string}
-              className="flex items-center justify-between gap-2 text-sm"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-medium">{m.filename}</div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{(m.size / (1024 * 1024)).toFixed(2)} MB</span>
-                  <Badge variant="outline" className="text-2xs">
-                    {m.contentType}
-                  </Badge>
-                  {m.durationMs !== undefined && (
-                    <span>{Math.round((m.durationMs || 0) / 1000)}s</span>
-                  )}
-                  {m.width && m.height && (
-                    <span>
-                      {m.width}x{m.height}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleView(m.storageId)}
-                >
-                  View
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(m.storageId)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {mediaFiles.map((media) => (
+            <MediaCard
+              key={media.storageId as unknown as string}
+              media={media}
+              onView={handleView}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
