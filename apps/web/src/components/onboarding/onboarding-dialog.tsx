@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/../../packages/backend/convex/_generated/api";
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogPortal,
+  DialogOverlay,
 } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { cn } from "@/lib/utils";
 import { Step0Welcome } from "./step0-welcome";
 import { Step1Profile } from "./step1-profile";
 import { Step2Categories } from "./step2-categories";
@@ -17,6 +20,36 @@ import { Step4Bio } from "./step4-bio";
 import { toast } from "sonner";
 import type { Id } from "@/../../packages/backend/convex/_generated/dataModel";
 import { useTranslations } from "@/hooks/use-translations";
+import { useClerk } from "@clerk/nextjs";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// Custom DialogContent without the default close button
+// This removes the default X close button from the dialog
+const CustomDialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </DialogPrimitive.Content>
+  </DialogPortal>
+));
+CustomDialogContent.displayName = DialogPrimitive.Content.displayName;
 
 interface OnboardingDialogProps {
   isOpen: boolean;
@@ -35,6 +68,7 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
   const [isCompleting, setIsCompleting] = useState(false);
   const { t, locale } = useTranslations();
+  const { signOut } = useClerk();
 
   const completeOnboarding = useMutation(
     api.mutations.onboarding.completeOnboarding,
@@ -155,15 +189,32 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
   };
 
   return (
-    <Dialog open={isOpen}>
-      <DialogContent
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <CustomDialogContent
         className="sm:max-w-lg max-h-[90vh] overflow-hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader>
+        {/* Custom header with logout button instead of close button */}
+        <DialogHeader className="relative">
           <DialogTitle>{t("onboarding.title")}</DialogTitle>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-8 w-8 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                onClick={() => signOut()}
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="sr-only">Log out</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Log out</p>
+            </TooltipContent>
+          </Tooltip>
         </DialogHeader>
 
         <div className="pb-4">
@@ -207,7 +258,7 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
             )}
           </div>
         </div>
-      </DialogContent>
+      </CustomDialogContent>
     </Dialog>
   );
 }

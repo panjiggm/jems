@@ -3,9 +3,10 @@
 import * as React from "react";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useMutation } from "convex/react";
+import { useMutation, Preloaded, usePreloadedQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
-import { Id } from "@packages/backend/convex/_generated/dataModel";
+import { Id, Doc } from "@packages/backend/convex/_generated/dataModel";
+import { FunctionReturnType } from "convex/server";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -34,20 +35,57 @@ import Link from "next/link";
 
 type ContentType = "campaign" | "routine";
 
-interface ContentDetailPageProps {
-  contentType: ContentType;
-  data: any;
-  isLoading?: boolean;
+// Infer types from Convex queries
+type CampaignData = FunctionReturnType<
+  typeof api.queries.contentCampaigns.getBySlug
+>;
+type RoutineData = FunctionReturnType<
+  typeof api.queries.contentRoutines.getBySlug
+>;
+
+// Props interface for preloaded data
+interface CampaignDetailPageProps {
+  contentType: "campaign";
+  preloadedData: Preloaded<typeof api.queries.contentCampaigns.getBySlug>;
 }
 
-export function ContentDetailPage({
-  contentType,
-  data,
-  isLoading = false,
-}: ContentDetailPageProps) {
-  const params = useParams();
+interface RoutineDetailPageProps {
+  contentType: "routine";
+  preloadedData: Preloaded<typeof api.queries.contentRoutines.getBySlug>;
+}
+
+type ContentDetailPageProps = CampaignDetailPageProps | RoutineDetailPageProps;
+
+export function ContentDetailPage(props: ContentDetailPageProps) {
+  const { contentType, preloadedData } = props;
   const router = useRouter();
+  const params = useParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const locale = (params.locale as string) || "en";
+
+  // Use preloaded query based on content type
+  const campaignData =
+    contentType === "campaign"
+      ? usePreloadedQuery(
+          preloadedData as Preloaded<
+            typeof api.queries.contentCampaigns.getBySlug
+          >,
+        )
+      : null;
+
+  const routineData =
+    contentType === "routine"
+      ? usePreloadedQuery(
+          preloadedData as Preloaded<
+            typeof api.queries.contentRoutines.getBySlug
+          >,
+        )
+      : null;
+
+  const data = (campaignData || routineData) as
+    | CampaignData
+    | RoutineData
+    | null;
 
   // Mutations
   const deleteCampaign = useMutation(api.mutations.contentCampaigns.remove);
@@ -77,7 +115,7 @@ export function ContentDetailPage({
   };
 
   // Loading state
-  if (isLoading || data === undefined) {
+  if (data === undefined) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
         <div className="text-center">
@@ -90,10 +128,40 @@ export function ContentDetailPage({
     );
   }
 
-  // Extract content and project based on type
-  const content = contentType === "campaign" ? data.campaign : data.routine;
-  const project = data.project;
-  const locale = params.locale as string;
+  // Handle null data
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">
+            {contentType === "campaign" ? "Campaign" : "Routine"} Not Found
+          </h1>
+          <p className="text-muted-foreground mb-4">
+            The {contentType} you&apos;re looking for doesn&apos;t exist or you
+            don&apos;t have access to it.
+          </p>
+          <Button onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Extract content and project based on type with proper type narrowing
+  let content: Doc<"contentCampaigns"> | Doc<"contentRoutines"> | null;
+  let project: Doc<"projects"> | null;
+
+  if (contentType === "campaign") {
+    const campaignResult = data as CampaignData;
+    content = campaignResult?.campaign ?? null;
+    project = campaignResult?.project ?? null;
+  } else {
+    const routineResult = data as RoutineData;
+    content = routineResult?.routine ?? null;
+    project = routineResult?.project ?? null;
+  }
 
   // Not found state
   if (!content) {
@@ -172,7 +240,7 @@ export function ContentDetailPage({
                   </div>
                 )}
                 {/* Campaign-specific SOW field */}
-                {isCampaign && content.sow && (
+                {isCampaign && "sow" in content && content.sow && (
                   <div className="mt-3">
                     <Label className="text-xs text-muted-foreground">
                       Statement of Work
@@ -208,20 +276,33 @@ export function ContentDetailPage({
                         value={content.platform}
                         contentId={content._id as any}
                       />
-                      {isCampaign ? (
+                      {isCampaign && "type" in content ? (
                         <>
                           <EditableCampaignTypeBadge
                             value={content.type}
                             campaignId={content._id as Id<"contentCampaigns">}
                           />
                           <EditableCampaignStatusBadge
-                            value={content.status}
+                            value={
+                              content.status as
+                                | "product_obtained"
+                                | "production"
+                                | "published"
+                                | "payment"
+                                | "done"
+                            }
                             campaignId={content._id as Id<"contentCampaigns">}
                           />
                         </>
                       ) : (
                         <EditableRoutineStatusBadge
-                          value={content.status}
+                          value={
+                            content.status as
+                              | "plan"
+                              | "in_progress"
+                              | "scheduled"
+                              | "published"
+                          }
                           routineId={content._id as Id<"contentRoutines">}
                         />
                       )}

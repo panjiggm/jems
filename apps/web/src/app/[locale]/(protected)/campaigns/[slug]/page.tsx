@@ -1,18 +1,24 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
+import { preloadQuery } from "convex/nextjs";
 import { api } from "@packages/backend/convex/_generated/api";
-import { ContentDetailPage } from "@/components/contents/content-detail-page";
+import { ContentDetailPage } from "@/components/contents";
 
-export default function CampaignDetailPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+type PageProps = {
+  params: Promise<{ slug: string; locale: string }>;
+};
 
-  // Query campaign by slug
-  const campaignData = useQuery(api.queries.contentCampaigns.getBySlug, {
-    slug,
-  });
+export default async function CampaignDetailPage({ params }: PageProps) {
+  const { slug } = await params;
 
-  return <ContentDetailPage contentType="campaign" data={campaignData} />;
+  // Preload campaign data on server
+  const preloadedCampaignData = await preloadQuery(
+    api.queries.contentCampaigns.getBySlug,
+    { slug },
+  );
+
+  return (
+    <ContentDetailPage
+      contentType="campaign"
+      preloadedData={preloadedCampaignData}
+    />
+  );
 }

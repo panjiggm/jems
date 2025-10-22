@@ -1,18 +1,24 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
+import { preloadQuery } from "convex/nextjs";
 import { api } from "@packages/backend/convex/_generated/api";
-import { ContentDetailPage } from "@/components/contents/content-detail-page";
+import { ContentDetailPage } from "@/components/contents";
 
-export default function RoutineDetailPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+type PageProps = {
+  params: Promise<{ slug: string; locale: string }>;
+};
 
-  // Query routine by slug
-  const routineData = useQuery(api.queries.contentRoutines.getBySlug, {
-    slug,
-  });
+export default async function RoutineDetailPage({ params }: PageProps) {
+  const { slug } = await params;
 
-  return <ContentDetailPage contentType="routine" data={routineData} />;
+  // Preload routine data on server
+  const preloadedRoutineData = await preloadQuery(
+    api.queries.contentRoutines.getBySlug,
+    { slug },
+  );
+
+  return (
+    <ContentDetailPage
+      contentType="routine"
+      preloadedData={preloadedRoutineData}
+    />
+  );
 }
