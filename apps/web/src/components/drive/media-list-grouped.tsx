@@ -101,10 +101,14 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
 
   const handleView = async (storageId: Id<"_storage">) => {
     try {
-      const { url } = await convex.query(api.queries.media.getFileUrl, {
+      const result = await convex.query(api.queries.media.getFileUrl, {
         storageId,
       });
-      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      if (!result || !result.url) {
+        toast.error(result ? "File not found" : "Not authenticated");
+        return;
+      }
+      window.open(result.url, "_blank", "noopener,noreferrer");
     } catch (err) {
       console.error(err);
       toast.error("Failed to open file");
@@ -116,18 +120,20 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
     filename: string,
   ) => {
     try {
-      const { url } = await convex.query(api.queries.media.getFileUrl, {
+      const result = await convex.query(api.queries.media.getFileUrl, {
         storageId,
       });
-      if (url) {
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        toast.success("Download started");
+      if (!result || !result.url) {
+        toast.error(result ? "File not found" : "Not authenticated");
+        return;
       }
+      const a = document.createElement("a");
+      a.href = result.url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success("Download started");
     } catch (err) {
       console.error(err);
       toast.error("Failed to download file");

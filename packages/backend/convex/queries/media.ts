@@ -1,12 +1,13 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { currentUserId } from "../auth";
+import { getUserId } from "../schema";
 
 export const getFileUrl = query({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, { storageId }) => {
     // Ensure user is authenticated
-    await currentUserId(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
     const url = await ctx.storage.getUrl(storageId);
     if (!url) throw new Error("NOT_FOUND");
     return { url };
@@ -19,7 +20,8 @@ export const getAllMediaGrouped = query({
     search: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
 
     // Fetch all campaigns with media
     let campaigns = await ctx.db
@@ -100,7 +102,17 @@ export const getAllMediaGrouped = query({
 export const getMediaStats = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId)
+      return {
+        totalFiles: 0,
+        totalStorage: 0,
+        videoCount: 0,
+        imageCount: 0,
+        recentUploads: 0,
+        campaignFiles: 0,
+        routineFiles: 0,
+      };
 
     // Fetch all campaigns and routines
     const campaigns = await ctx.db
@@ -181,7 +193,8 @@ export const getMediaStats = query({
 export const getContentList = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
 
     // Fetch all campaigns
     const campaigns = await ctx.db

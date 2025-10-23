@@ -262,10 +262,14 @@ export function MediaAttachments({
 
   const handleView = async (storageId: Id<"_storage">) => {
     try {
-      const { url } = await convex.query(api.queries.media.getFileUrl, {
+      const result = await convex.query(api.queries.media.getFileUrl, {
         storageId,
       });
-      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      if (!result || !result.url) {
+        toast.error(result ? "File not found" : "Not authenticated");
+        return;
+      }
+      window.open(result.url, "_blank", "noopener,noreferrer");
     } catch (err) {
       console.error(err);
       toast.error("Failed to open file");
