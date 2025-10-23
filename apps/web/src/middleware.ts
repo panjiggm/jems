@@ -10,6 +10,7 @@ const isProtectedRoute = createRouteMatcher([
   "/:locale/projects/:year",
   "/:locale/projects/:year/:projectId",
   "/:locale/profile",
+  "/:locale/drive",
 ]);
 
 const isAuthRoute = createRouteMatcher([
