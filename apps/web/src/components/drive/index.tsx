@@ -13,22 +13,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface DriveClientProps {
   locale: string;
   preloadedMediaGrouped: Preloaded<typeof api.queries.media.getAllMediaGrouped>;
-  preloadedStats: Preloaded<typeof api.queries.media.getMediaStats>;
 }
 
 export function DriveClient({
   locale,
   preloadedMediaGrouped,
-  preloadedStats,
 }: DriveClientProps) {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
   const [uploadDialogOpen, setUploadDialogOpen] = React.useState(false);
 
   // Use preloaded queries
   const mediaGrouped = usePreloadedQuery(preloadedMediaGrouped);
-  const stats = usePreloadedQuery(preloadedStats);
 
-  if (!mediaGrouped || !stats) {
+  if (!mediaGrouped) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-10 w-full" />
@@ -50,7 +47,6 @@ export function DriveClient({
           searchValue={search}
           onSearchChange={setSearch}
           onUploadClick={() => setUploadDialogOpen(true)}
-          totalFiles={stats.totalFiles}
         />
 
         {/* Content Cards - Only show items with media */}

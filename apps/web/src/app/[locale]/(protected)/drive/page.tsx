@@ -22,16 +22,10 @@ export default async function DrivePage({
     },
   );
 
-  const preloadedStats = await preloadQuery(
-    api.queries.media.getMediaStats,
-    {},
-  );
-
   return (
     <DriveClient
       locale={locale}
       preloadedMediaGrouped={preloadedMediaGrouped}
-      preloadedStats={preloadedStats}
     />
   );
 }

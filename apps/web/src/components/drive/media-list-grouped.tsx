@@ -24,7 +24,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Trash2, Download } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Eye, Trash2, Download, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -81,6 +89,13 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [mediaToDelete, setMediaToDelete] = React.useState<{
+    contentId: string;
+    contentType: "campaign" | "routine";
+    storageId: Id<"_storage">;
+    filename: string;
+  } | null>(null);
 
   // Flatten the data structure
   const flattenedData = React.useMemo(() => {
@@ -140,24 +155,34 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
     }
   };
 
-  const handleDelete = async (
+  const openDeleteDialog = (
     contentId: string,
     contentType: "campaign" | "routine",
     storageId: Id<"_storage">,
+    filename: string,
   ) => {
+    setMediaToDelete({ contentId, contentType, storageId, filename });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!mediaToDelete) return;
+
     try {
-      if (contentType === "campaign") {
+      if (mediaToDelete.contentType === "campaign") {
         await removeCampaignMedia({
-          campaignId: contentId as Id<"contentCampaigns">,
-          storageId,
+          campaignId: mediaToDelete.contentId as Id<"contentCampaigns">,
+          storageId: mediaToDelete.storageId,
         });
       } else {
         await removeRoutineMedia({
-          routineId: contentId as Id<"contentRoutines">,
-          storageId,
+          routineId: mediaToDelete.contentId as Id<"contentRoutines">,
+          storageId: mediaToDelete.storageId,
         });
       }
-      toast.success("Media deleted");
+      toast.success("Media deleted successfully");
+      setDeleteDialogOpen(false);
+      setMediaToDelete(null);
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete media");
@@ -250,35 +275,36 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={() => handleView(row.original.storageId)}
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0"
           >
             <Eye className="h-4 w-4" />
             <span className="sr-only">View</span>
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={() =>
               handleDownload(row.original.storageId, row.original.filename)
             }
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0"
           >
             <Download className="h-4 w-4" />
             <span className="sr-only">Download</span>
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={() =>
-              handleDelete(
+              openDeleteDialog(
                 row.original.contentId,
                 row.original.contentType,
                 row.original.storageId,
+                row.original.filename,
               )
             }
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
           >
             <Trash2 className="h-4 w-4" />
             <span className="sr-only">Delete</span>
@@ -321,91 +347,128 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
   }
 
   return (
-    <div className="w-full space-y-4">
-      {/* Table */}
-      <div className="rounded-lg border border-border bg-card">
-        <Table>
-          <TableHeader className="bg-muted/70">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b border-border">
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="text-foreground text-xs"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+    <>
+      <div className="w-full space-y-4">
+        {/* Table */}
+        <div className="rounded-lg border border-border bg-card">
+          <Table>
+            <TableHeader className="bg-muted/70">
+              {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
-                  key={row.id}
-                  className="hover:bg-muted/30 transition-colors border-b border-border"
+                  key={headerGroup.id}
+                  className="border-b border-border"
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="text-foreground text-xs"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-16 text-xs text-center text-muted-foreground"
-                >
-                  No media files found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className="hover:bg-muted/30 transition-colors border-b border-border"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-16 text-xs text-center text-muted-foreground"
+                  >
+                    No media files found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between space-x-2 py-4 px-1">
+          <div className="flex-1 text-xs text-muted-foreground">
+            Showing {table.getRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} file(s)
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="h-7 text-xs"
+            >
+              Previous
+            </Button>
+            <div className="text-xs text-muted-foreground">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
+            </div>
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="h-7 text-xs"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between space-x-2 py-4 px-1">
-        <div className="flex-1 text-xs text-muted-foreground">
-          Showing {table.getRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} file(s)
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="h-7 text-xs"
-          >
-            Previous
-          </Button>
-          <div className="text-xs text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </div>
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="h-7 text-xs"
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    </div>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <DialogTitle>Delete Media File</DialogTitle>
+            </div>
+            <DialogDescription className="pt-3">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-foreground">
+                {mediaToDelete?.filename}
+              </span>
+              ? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

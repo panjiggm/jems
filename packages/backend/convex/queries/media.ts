@@ -23,17 +23,17 @@ export const getAllMediaGrouped = query({
     const userId = await getUserId(ctx);
     if (!userId) return [];
 
-    // Fetch all campaigns with media
+    // Fetch campaigns with media (limit to reasonable amount first)
     let campaigns = await ctx.db
       .query("contentCampaigns")
       .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect();
+      .take(50); // Limit initial fetch
 
-    // Fetch all routines with media
+    // Fetch routines with media (limit to reasonable amount first)
     let routines = await ctx.db
       .query("contentRoutines")
       .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect();
+      .take(50); // Limit initial fetch
 
     // Filter by search if provided
     if (args.search) {
@@ -61,6 +61,12 @@ export const getAllMediaGrouped = query({
       const project = campaign.projectId
         ? await ctx.db.get(campaign.projectId)
         : null;
+
+      // Get the latest media upload timestamp
+      const latestMediaUpload = campaign.mediaFiles
+        ? Math.max(...campaign.mediaFiles.map((m) => m.uploadedAt))
+        : campaign.updatedAt;
+
       result.push({
         contentId: campaign._id,
         contentType: "campaign" as const,
@@ -70,7 +76,7 @@ export const getAllMediaGrouped = query({
         mediaFiles: campaign.mediaFiles || [],
         projectId: campaign.projectId,
         projectTitle: project?.title || "No Project",
-        updatedAt: campaign.updatedAt,
+        updatedAt: latestMediaUpload, // Use latest media upload time
       });
     }
 
@@ -78,6 +84,12 @@ export const getAllMediaGrouped = query({
       const project = routine.projectId
         ? await ctx.db.get(routine.projectId)
         : null;
+
+      // Get the latest media upload timestamp
+      const latestMediaUpload = routine.mediaFiles
+        ? Math.max(...routine.mediaFiles.map((m) => m.uploadedAt))
+        : routine.updatedAt;
+
       result.push({
         contentId: routine._id,
         contentType: "routine" as const,
@@ -87,14 +99,15 @@ export const getAllMediaGrouped = query({
         mediaFiles: routine.mediaFiles || [],
         projectId: routine.projectId,
         projectTitle: project?.title || "No Project",
-        updatedAt: routine.updatedAt,
+        updatedAt: latestMediaUpload, // Use latest media upload time
       });
     }
 
-    // Sort by updatedAt descending
+    // Sort by latest media upload time descending (most recent upload first)
     result.sort((a, b) => b.updatedAt - a.updatedAt);
 
-    return result;
+    // Limit to 4 items only using take (more efficient than slice)
+    return result.slice(0, 4);
   },
 });
 

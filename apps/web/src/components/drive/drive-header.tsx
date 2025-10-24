@@ -3,20 +3,18 @@
 import * as React from "react";
 import { Search, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { ButtonPrimary } from "@/components/ui/button-primary";
 
 interface DriveHeaderProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
   onUploadClick: () => void;
-  totalFiles: number;
 }
 
 export function DriveHeader({
   searchValue,
   onSearchChange,
   onUploadClick,
-  totalFiles,
 }: DriveHeaderProps) {
   const [localSearch, setLocalSearch] = React.useState(searchValue);
 
@@ -43,13 +41,10 @@ export function DriveHeader({
         </div>
       </div>
       <div className="flex items-center gap-2 w-full sm:w-auto">
-        <span className="text-sm text-muted-foreground">
-          {totalFiles} {totalFiles === 1 ? "file" : "files"}
-        </span>
-        <Button onClick={onUploadClick} size="sm" className="gap-2">
+        <ButtonPrimary onClick={onUploadClick} className="gap-2" size="sm">
           <Upload className="h-4 w-4" />
           Upload
-        </Button>
+        </ButtonPrimary>
       </div>
     </div>
   );

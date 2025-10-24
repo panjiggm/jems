@@ -6,7 +6,16 @@ import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Upload, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { MediaCard } from "@/components/contents/media-card";
 
@@ -91,6 +100,11 @@ export function MediaAttachments({
     total: number;
     percentage: number;
     fileName: string;
+  } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [mediaToDelete, setMediaToDelete] = React.useState<{
+    storageId: Id<"_storage">;
+    filename: string;
   } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -276,20 +290,29 @@ export function MediaAttachments({
     }
   };
 
-  const handleDelete = async (storageId: Id<"_storage">) => {
+  const openDeleteDialog = (storageId: Id<"_storage">, filename: string) => {
+    setMediaToDelete({ storageId, filename });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!mediaToDelete) return;
+
     try {
       if (contentType === "campaign") {
         await removeCampaignMedia({
           campaignId: contentId as Id<"contentCampaigns">,
-          storageId,
+          storageId: mediaToDelete.storageId,
         });
       } else {
         await removeRoutineMedia({
           routineId: contentId as Id<"contentRoutines">,
-          storageId,
+          storageId: mediaToDelete.storageId,
         });
       }
-      toast.success("Media deleted");
+      toast.success("Media deleted successfully");
+      setDeleteDialogOpen(false);
+      setMediaToDelete(null);
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete media");
@@ -340,11 +363,11 @@ export function MediaAttachments({
       {/* Upload Progress Indicator */}
       {uploadProgress && (
         <div className="space-y-2 rounded-lg border bg-muted/50 p-4">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-medium truncate flex-1 mr-2">
-              {uploadProgress.fileName}
-            </span>
-            <span className="font-semibold text-primary">
+          <div className="flex items-center gap-2 text-xs">
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium">{uploadProgress.fileName}</p>
+            </div>
+            <span className="font-semibold text-primary shrink-0">
               {uploadProgress.percentage}%
             </span>
           </div>
@@ -372,11 +395,43 @@ export function MediaAttachments({
               key={media.storageId as unknown as string}
               media={media}
               onView={handleView}
-              onDelete={handleDelete}
+              onDelete={() => openDeleteDialog(media.storageId, media.filename)}
             />
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <DialogTitle>Delete Media File</DialogTitle>
+            </div>
+            <DialogDescription className="pt-3">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-foreground">
+                {mediaToDelete?.filename}
+              </span>
+              ? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

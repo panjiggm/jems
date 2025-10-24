@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -22,8 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Upload, Check } from "lucide-react";
+import { Upload, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { ButtonPrimary } from "../ui/button-primary";
+import { Button } from "@/components/ui/button";
 
 interface UploadDialogProps {
   open: boolean;
@@ -77,9 +78,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
   );
 
   const [selectedContent, setSelectedContent] = React.useState<string>("");
-  const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(
-    null,
-  );
+  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const [uploadProgress, setUploadProgress] = React.useState<{
     current: number;
@@ -88,16 +87,18 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
     fileName: string;
   } | null>(null);
   const [uploadComplete, setUploadComplete] = React.useState(false);
+  const [isDragOver, setIsDragOver] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Reset state when dialog closes
   React.useEffect(() => {
     if (!open) {
       setSelectedContent("");
-      setSelectedFiles(null);
+      setSelectedFiles([]);
       setIsUploading(false);
       setUploadProgress(null);
       setUploadComplete(false);
+      setIsDragOver(false);
     }
   }, [open]);
 
@@ -145,7 +146,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
   };
 
   const handleUpload = async () => {
-    if (!selectedContent || !selectedFiles) {
+    if (!selectedContent || selectedFiles.length === 0) {
       toast.error("Please select content and files");
       return;
     }
@@ -157,7 +158,19 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
       const content = contentList?.find((c) => c.id === selectedContent);
       if (!content) throw new Error("Content not found");
 
-      for (const file of Array.from(selectedFiles)) {
+      const fileArray = selectedFiles;
+      toast.info(
+        `Uploading ${fileArray.length} file${fileArray.length > 1 ? "s" : ""}...`,
+      );
+
+      for (let i = 0; i < fileArray.length; i++) {
+        const file = fileArray[i];
+        toast.loading(
+          `Processing ${file.name} (${i + 1}/${fileArray.length})`,
+          {
+            id: "upload-progress",
+          },
+        );
         // Get upload URL
         const { uploadUrl } = await generateUploadUrl({});
 
@@ -214,10 +227,16 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
             file: media,
           });
         }
+
+        toast.success(`${file.name} uploaded successfully`, {
+          id: "upload-progress",
+        });
       }
 
       setUploadComplete(true);
-      toast.success("Upload completed");
+      toast.success(
+        `All ${fileArray.length} file${fileArray.length > 1 ? "s" : ""} uploaded successfully!`,
+      );
 
       // Close dialog after a brief delay
       setTimeout(() => {
@@ -226,19 +245,105 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
     } catch (err) {
       console.error(err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      toast.error(`Upload failed: ${errorMessage}`);
+      toast.error(`Upload failed: ${errorMessage}`, {
+        id: "upload-progress",
+      });
       setIsUploading(false);
       setUploadProgress(null);
     }
+  };
+
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isUploading) {
+      setIsDragOver(true);
+    }
+  };
+
+  const onDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const onDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    if (!isUploading) {
+      const files = Array.from(e.dataTransfer.files);
+      setSelectedFiles((prev) => [...prev, ...files]);
+    }
+  };
+
+  const onClickUploadBox = () => {
+    if (!isUploading) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setSelectedFiles((prev) => [...prev, ...files]);
+      // Reset input value to allow selecting the same file again
+      e.target.value = "";
+    }
+  };
+
+  const handleRemoveFile = (indexToRemove: number) => {
+    setSelectedFiles((prev) =>
+      prev.filter((_, index) => index !== indexToRemove),
+    );
+    toast.success("File removed");
   };
 
   const selectedContentItem = contentList?.find(
     (c) => c.id === selectedContent,
   );
 
+  // Prevent closing dialog during upload
+  const handleOpenChange = (newOpen: boolean) => {
+    // If trying to close and uploading, show confirmation
+    if (!newOpen && isUploading) {
+      if (
+        window.confirm(
+          "Upload is in progress. Closing will cancel the upload. Are you sure?",
+        )
+      ) {
+        // User confirmed, cancel upload and close
+        setIsUploading(false);
+        setUploadProgress(null);
+        onOpenChange(false);
+        toast.error("Upload cancelled");
+      }
+      // If user cancelled confirmation, do nothing (keep dialog open)
+      return;
+    }
+    // Normal close when not uploading
+    onOpenChange(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="sm:max-w-lg md:max-w-xl lg:max-w-2xl max-w-[95vw]"
+        onInteractOutside={(e) => {
+          // Prevent closing by clicking outside when uploading
+          if (isUploading) {
+            e.preventDefault();
+            toast.warning("Please wait for upload to complete");
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          // Prevent closing with ESC key when uploading
+          if (isUploading) {
+            e.preventDefault();
+            toast.warning("Please wait for upload to complete");
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Upload Files</DialogTitle>
           <DialogDescription>
@@ -279,50 +384,110 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
             )}
           </div>
 
-          {/* File Selection */}
+          {/* File Selection - Drag & Drop Box */}
           <div className="space-y-2">
             <Label htmlFor="file-input">Files</Label>
-            <input
-              ref={fileInputRef}
-              id="file-input"
-              type="file"
-              multiple
-              onChange={(e) => setSelectedFiles(e.target.files)}
-              className="hidden"
-              accept="image/*,video/*"
-              disabled={isUploading}
-            />
-            <Button
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="w-full"
+            <div
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              onClick={onClickUploadBox}
+              className={`
+                relative flex flex-col items-center justify-center
+                rounded-lg border-2 border-dashed p-8
+                transition-all cursor-pointer
+                ${
+                  isDragOver
+                    ? "border-primary bg-primary/5 scale-[1.02]"
+                    : "border-muted-foreground/25 hover:border-primary/50 hover:bg-accent/50"
+                }
+                ${isUploading ? "opacity-50 cursor-not-allowed" : ""}
+              `}
             >
-              {selectedFiles
-                ? `${selectedFiles.length} file${selectedFiles.length > 1 ? "s" : ""} selected`
-                : "Choose files"}
-            </Button>
-            {selectedFiles && (
-              <p className="text-xs text-muted-foreground">
-                {Array.from(selectedFiles)
-                  .map((f) => f.name)
-                  .join(", ")}
+              <input
+                ref={fileInputRef}
+                id="file-input"
+                type="file"
+                multiple
+                onChange={handleFileInputChange}
+                className="hidden"
+                accept="image/*,video/*"
+                disabled={isUploading}
+              />
+              <Upload
+                className={`mb-3 h-8 w-8 ${isDragOver ? "text-primary" : "text-muted-foreground"}`}
+              />
+              <p className="mb-1 text-sm font-medium text-center">
+                {isUploading
+                  ? "Uploading..."
+                  : selectedFiles.length > 0
+                    ? `${selectedFiles.length} file${selectedFiles.length > 1 ? "s" : ""} selected`
+                    : isDragOver
+                      ? "Drop files here"
+                      : "Drag & Drop or Choose file"}
               </p>
+              <p className="text-xs text-muted-foreground text-center">
+                Images and videos supported
+              </p>
+            </div>
+            {selectedFiles.length > 0 && !isUploading && (
+              <div className="mt-2 space-y-1">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Selected files:
+                </p>
+                <div className="max-h-32 overflow-y-auto space-y-2">
+                  {selectedFiles.map((file, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-2 rounded-md border bg-muted/30 p-2 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex-1 min-w-0 space-y-0.5">
+                        <p className="text-xs text-foreground truncate font-medium">
+                          {file.name}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {(file.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => handleRemoveFile(idx)}
+                        title="Remove file"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
           {/* Upload Progress */}
           {uploadProgress && (
             <div className="space-y-2 rounded-lg border bg-muted/50 p-4">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium truncate flex-1 mr-2">
-                  {uploadProgress.fileName}
-                </span>
-                <span className="font-semibold text-primary">
+              <div className="flex items-center gap-2 text-xs">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">
+                    {uploadProgress.fileName}
+                  </p>
+                </div>
+                <span className="font-semibold text-primary shrink-0">
                   {uploadProgress.percentage}%
                 </span>
               </div>
               <Progress value={uploadProgress.percentage} className="h-2" />
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>
+                  {(uploadProgress.current / (1024 * 1024)).toFixed(2)} MB
+                </span>
+                <span>
+                  {(uploadProgress.total / (1024 * 1024)).toFixed(2)} MB
+                </span>
+              </div>
             </div>
           )}
 
@@ -337,18 +502,21 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
 
         {/* Actions */}
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
+          <ButtonPrimary
+            tone="outline"
+            size="sm"
+            onClick={() => handleOpenChange(false)}
             disabled={isUploading}
+            title={isUploading ? "Please wait for upload to complete" : ""}
           >
-            Cancel
-          </Button>
-          <Button
+            {isUploading ? "Uploading..." : "Cancel"}
+          </ButtonPrimary>
+          <ButtonPrimary
+            size="sm"
             onClick={handleUpload}
             disabled={
               !selectedContent ||
-              !selectedFiles ||
+              selectedFiles.length === 0 ||
               isUploading ||
               uploadComplete
             }
@@ -364,7 +532,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
                 Upload
               </>
             )}
-          </Button>
+          </ButtonPrimary>
         </div>
       </DialogContent>
     </Dialog>
