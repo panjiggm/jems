@@ -62,10 +62,10 @@ export function ContentCard({
       onClick={handleClick}
       className={cn(
         "cursor-pointer transition-all hover:shadow-md rounded-lg",
-        "group relative overflow-hidden shadow-none border",
+        "group relative overflow-hidden shadow-none border p-4",
       )}
     >
-      <CardContent className="px-4 py-0">
+      <CardContent className="p-0">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0 flex items-center justify-center">
