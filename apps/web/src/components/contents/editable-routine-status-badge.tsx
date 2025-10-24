@@ -7,11 +7,11 @@ import { useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -61,42 +61,48 @@ export function EditableRoutineStatusBadge({
   const currentLabel = STATUS_LABELS[value];
 
   return (
-    <Select value={value} onValueChange={handleChange}>
-      <SelectTrigger className="h-auto border-0 shadow-none focus:ring-1 focus:ring-ring p-0 w-full">
-        <Badge
-          variant="outline"
-          className={cn(
-            "inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity w-full justify-center",
-            currentColor,
-          )}
-        >
-          {React.createElement(currentIcon, {
-            className: "h-3 w-3",
-          })}
-          <span className="leading-none">{currentLabel}</span>
-        </Badge>
-      </SelectTrigger>
-      <SelectContent>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="cursor-pointer">
+          <Badge
+            variant="outline"
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium hover:opacity-80 transition-opacity justify-center",
+              currentColor,
+            )}
+          >
+            {React.createElement(currentIcon, {
+              className: "h-3 w-3",
+            })}
+            <span className="leading-none">{currentLabel}</span>
+          </Badge>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
         {ROUTINE_STATUSES.map((status) => {
           const Icon = statusIcons[status];
           const label = STATUS_LABELS[status];
           const color = statusColors[status];
           return (
-            <SelectItem key={status} value={status}>
+            <DropdownMenuItem
+              key={status}
+              onClick={() => handleChange(status)}
+              className="p-1"
+            >
               <Badge
                 variant="outline"
                 className={cn(
-                  "inline-flex items-center gap-2 text-xs font-medium",
+                  "inline-flex items-center gap-2 text-xs font-medium w-full justify-center",
                   color,
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
                 {label}
               </Badge>
-            </SelectItem>
+            </DropdownMenuItem>
           );
         })}
-      </SelectContent>
-    </Select>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
