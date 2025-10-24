@@ -442,7 +442,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
                       className="flex items-start gap-2 rounded-md border bg-muted/30 p-2 hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex-1 min-w-0 space-y-0.5">
-                        <p className="text-xs text-foreground truncate font-medium">
+                        <p className="text-xs text-foreground break-words font-medium leading-relaxed">
                           {file.name}
                         </p>
                         <p className="text-[11px] text-muted-foreground">
