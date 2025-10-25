@@ -25,6 +25,7 @@ import { Upload, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { ButtonPrimary } from "../ui/button-primary";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface UploadDialogProps {
   open: boolean;
@@ -68,6 +69,7 @@ async function extractImageMetadata(file: File): Promise<{
 }
 
 export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
+  const { t } = useTranslations();
   const contentList = useQuery(api.queries.media.getContentList, {});
   const generateUploadUrl = useAction(api.actions.storage.generateUploadUrl);
   const attachCampaignMedia = useMutation(
@@ -147,7 +149,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
 
   const handleUpload = async () => {
     if (!selectedContent || selectedFiles.length === 0) {
-      toast.error("Please select content and files");
+      toast.error(t("drive.errors.pleaseSelectContentAndFiles"));
       return;
     }
 
@@ -156,17 +158,17 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
 
     try {
       const content = contentList?.find((c) => c.id === selectedContent);
-      if (!content) throw new Error("Content not found");
+      if (!content) throw new Error(t("drive.errors.contentNotFound"));
 
       const fileArray = selectedFiles;
       toast.info(
-        `Uploading ${fileArray.length} file${fileArray.length > 1 ? "s" : ""}...`,
+        `${t("drive.upload.uploading")} ${fileArray.length} ${fileArray.length > 1 ? t("drive.upload.filesSelected") : "file"}...`,
       );
 
       for (let i = 0; i < fileArray.length; i++) {
         const file = fileArray[i];
         toast.loading(
-          `Processing ${file.name} (${i + 1}/${fileArray.length})`,
+          `${t("drive.upload.uploadProgress")} ${file.name} (${i + 1}/${fileArray.length})`,
           {
             id: "upload-progress",
           },
@@ -228,15 +230,13 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
           });
         }
 
-        toast.success(`${file.name} uploaded successfully`, {
+        toast.success(`${file.name} ${t("drive.upload.uploadSuccess")}`, {
           id: "upload-progress",
         });
       }
 
       setUploadComplete(true);
-      toast.success(
-        `All ${fileArray.length} file${fileArray.length > 1 ? "s" : ""} uploaded successfully!`,
-      );
+      toast.success(`${t("drive.upload.allFilesUploaded")}`);
 
       // Close dialog after a brief delay
       setTimeout(() => {
@@ -244,8 +244,9 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
       }, 1500);
     } catch (err) {
       console.error(err);
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      toast.error(`Upload failed: ${errorMessage}`, {
+      const errorMessage =
+        err instanceof Error ? err.message : t("drive.errors.unknownError");
+      toast.error(`${t("drive.upload.uploadFailed")} ${errorMessage}`, {
         id: "upload-progress",
       });
       setIsUploading(false);
@@ -296,7 +297,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
     setSelectedFiles((prev) =>
       prev.filter((_, index) => index !== indexToRemove),
     );
-    toast.success("File removed");
+    toast.success(t("drive.upload.removeFile"));
   };
 
   const selectedContentItem = contentList?.find(
@@ -307,16 +308,12 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
   const handleOpenChange = (newOpen: boolean) => {
     // If trying to close and uploading, show confirmation
     if (!newOpen && isUploading) {
-      if (
-        window.confirm(
-          "Upload is in progress. Closing will cancel the upload. Are you sure?",
-        )
-      ) {
+      if (window.confirm(t("drive.upload.uploadInProgress"))) {
         // User confirmed, cancel upload and close
         setIsUploading(false);
         setUploadProgress(null);
         onOpenChange(false);
-        toast.error("Upload cancelled");
+        toast.error(t("drive.upload.uploadCancelled"));
       }
       // If user cancelled confirmation, do nothing (keep dialog open)
       return;
@@ -333,35 +330,35 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
           // Prevent closing by clicking outside when uploading
           if (isUploading) {
             e.preventDefault();
-            toast.warning("Please wait for upload to complete");
+            toast.warning(t("drive.upload.pleaseWaitForUpload"));
           }
         }}
         onEscapeKeyDown={(e) => {
           // Prevent closing with ESC key when uploading
           if (isUploading) {
             e.preventDefault();
-            toast.warning("Please wait for upload to complete");
+            toast.warning(t("drive.upload.pleaseWaitForUpload"));
           }
         }}
       >
         <DialogHeader>
-          <DialogTitle>Upload Files</DialogTitle>
-          <DialogDescription>
-            Select a campaign or routine to upload files to
-          </DialogDescription>
+          <DialogTitle>{t("drive.upload.title")}</DialogTitle>
+          <DialogDescription>{t("drive.upload.description")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {/* Content Selection */}
           <div className="space-y-2">
-            <Label htmlFor="content-select">Content</Label>
+            <Label htmlFor="content-select">{t("drive.upload.content")}</Label>
             <Select
               value={selectedContent}
               onValueChange={setSelectedContent}
               disabled={isUploading}
             >
               <SelectTrigger id="content-select">
-                <SelectValue placeholder="Select campaign or routine" />
+                <SelectValue
+                  placeholder={t("drive.upload.contentPlaceholder")}
+                />
               </SelectTrigger>
               <SelectContent>
                 {contentList?.map((content) => (
@@ -379,14 +376,15 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
             {selectedContentItem && (
               <p className="text-xs text-muted-foreground">
                 {selectedContentItem.projectTitle} •{" "}
-                {selectedContentItem.mediaCount} existing files
+                {selectedContentItem.mediaCount}{" "}
+                {t("drive.upload.existingFiles")}
               </p>
             )}
           </div>
 
           {/* File Selection - Drag & Drop Box */}
           <div className="space-y-2">
-            <Label htmlFor="file-input">Files</Label>
+            <Label htmlFor="file-input">{t("drive.upload.files")}</Label>
             <div
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
@@ -419,21 +417,21 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
               />
               <p className="mb-1 text-sm font-medium text-center">
                 {isUploading
-                  ? "Uploading..."
+                  ? t("drive.upload.uploading")
                   : selectedFiles.length > 0
-                    ? `${selectedFiles.length} file${selectedFiles.length > 1 ? "s" : ""} selected`
+                    ? `${selectedFiles.length} ${selectedFiles.length > 1 ? t("drive.upload.filesSelected") : "file"}`
                     : isDragOver
-                      ? "Drop files here"
-                      : "Drag & Drop or Choose file"}
+                      ? t("drive.upload.dropFilesHere")
+                      : t("drive.upload.dragAndDrop")}
               </p>
               <p className="text-xs text-muted-foreground text-center">
-                Images and videos supported
+                {t("drive.upload.supportedFormats")}
               </p>
             </div>
             {selectedFiles.length > 0 && !isUploading && (
               <div className="mt-2 space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">
-                  Selected files:
+                  {t("drive.upload.selectedFiles")}
                 </p>
                 <div className="max-h-32 overflow-y-auto space-y-2">
                   {selectedFiles.map((file, idx) => (
@@ -455,7 +453,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
                         size="icon"
                         className="h-6 w-6 shrink-0 hover:bg-destructive/10 hover:text-destructive"
                         onClick={() => handleRemoveFile(idx)}
-                        title="Remove file"
+                        title={t("drive.upload.removeFile")}
                       >
                         <X className="h-3.5 w-3.5" />
                       </Button>
@@ -495,7 +493,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
           {uploadComplete && (
             <div className="flex items-center gap-2 rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-700 dark:text-green-400">
               <Check className="h-4 w-4" />
-              <span>Upload completed successfully!</span>
+              <span>{t("drive.upload.uploadComplete")}</span>
             </div>
           )}
         </div>
@@ -507,9 +505,11 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
             size="sm"
             onClick={() => handleOpenChange(false)}
             disabled={isUploading}
-            title={isUploading ? "Please wait for upload to complete" : ""}
+            title={isUploading ? t("drive.upload.pleaseWaitForUpload") : ""}
           >
-            {isUploading ? "Uploading..." : "Cancel"}
+            {isUploading
+              ? t("drive.upload.uploading")
+              : t("drive.upload.cancel")}
           </ButtonPrimary>
           <ButtonPrimary
             size="sm"
@@ -524,12 +524,12 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
             {isUploading ? (
               <>
                 <Upload className="mr-2 h-4 w-4 animate-pulse" />
-                Uploading...
+                {t("drive.upload.uploading")}
               </>
             ) : (
               <>
                 <Upload className="mr-2 h-4 w-4" />
-                Upload
+                {t("drive.upload.upload")}
               </>
             )}
           </ButtonPrimary>

@@ -4,6 +4,7 @@ import * as React from "react";
 import { Search, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ButtonPrimary } from "@/components/ui/button-primary";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface DriveHeaderProps {
   searchValue: string;
@@ -16,6 +17,7 @@ export function DriveHeader({
   onSearchChange,
   onUploadClick,
 }: DriveHeaderProps) {
+  const { t } = useTranslations();
   const [localSearch, setLocalSearch] = React.useState(searchValue);
 
   // Debounce search
@@ -33,7 +35,7 @@ export function DriveHeader({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search content..."
+            placeholder={t("drive.header.searchPlaceholder")}
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             className="pl-9"
@@ -43,7 +45,7 @@ export function DriveHeader({
       <div className="flex items-center gap-2 w-full sm:w-auto">
         <ButtonPrimary onClick={onUploadClick} className="gap-2" size="sm">
           <Upload className="h-4 w-4" />
-          Upload
+          {t("drive.header.upload")}
         </ButtonPrimary>
       </div>
     </div>

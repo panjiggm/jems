@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/hooks/use-translations";
 
 type MediaItem = {
   storageId: Id<"_storage">;
@@ -52,6 +53,7 @@ interface MediaCardProps {
 }
 
 export function MediaCard({ media }: MediaCardProps) {
+  const { t } = useTranslations();
   const convex = useConvex();
   const removeCampaignMedia = useMutation(
     api.mutations.media.removeCampaignMedia,
@@ -86,13 +88,17 @@ export function MediaCard({ media }: MediaCardProps) {
         storageId: media.storageId,
       });
       if (!result || !result.url) {
-        toast.error(result ? "File not found" : "Not authenticated");
+        toast.error(
+          result
+            ? t("drive.errors.fileNotFound")
+            : t("drive.errors.notAuthenticated"),
+        );
         return;
       }
       window.open(result.url, "_blank", "noopener,noreferrer");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to open file");
+      toast.error(t("drive.errors.failedToOpenFile"));
     }
   };
 
@@ -102,7 +108,11 @@ export function MediaCard({ media }: MediaCardProps) {
         storageId: media.storageId,
       });
       if (!result || !result.url) {
-        toast.error(result ? "File not found" : "Not authenticated");
+        toast.error(
+          result
+            ? t("drive.errors.fileNotFound")
+            : t("drive.errors.notAuthenticated"),
+        );
         return;
       }
       const a = document.createElement("a");
@@ -111,10 +121,10 @@ export function MediaCard({ media }: MediaCardProps) {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      toast.success("Download started");
+      toast.success(t("drive.errors.downloadStarted"));
     } catch (err) {
       console.error(err);
-      toast.error("Failed to download file");
+      toast.error(t("drive.errors.failedToDownloadFile"));
     }
   };
 
@@ -131,11 +141,11 @@ export function MediaCard({ media }: MediaCardProps) {
           storageId: media.storageId,
         });
       }
-      toast.success("Media deleted successfully");
+      toast.success(t("drive.errors.mediaDeletedSuccessfully"));
       setDeleteDialogOpen(false);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to delete media");
+      toast.error(t("drive.errors.failedToDeleteMedia"));
     }
   };
 
@@ -202,24 +212,26 @@ export function MediaCard({ media }: MediaCardProps) {
                   className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <MoreVertical className="h-4 w-4" />
-                  <span className="sr-only">More options</span>
+                  <span className="sr-only">
+                    {t("drive.media.moreOptions")}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={handleView}>
                   <Eye className="h-4 w-4" />
-                  View
+                  {t("drive.media.actions.view")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleDownload}>
                   <Download className="h-4 w-4" />
-                  Download
+                  {t("drive.media.actions.download")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   onClick={() => setDeleteDialogOpen(true)}
                 >
                   <Trash2 className="h-4 w-4" />
-                  Delete
+                  {t("drive.media.actions.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -241,14 +253,14 @@ export function MediaCard({ media }: MediaCardProps) {
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
-              <DialogTitle>Delete Media File</DialogTitle>
+              <DialogTitle>{t("drive.media.deleteDialog.title")}</DialogTitle>
             </div>
             <DialogDescription className="pt-3">
-              Are you sure you want to delete{" "}
+              {t("drive.media.deleteDialog.description")}{" "}
               <span className="font-semibold text-foreground">
                 {media.filename}
               </span>
-              ? This action cannot be undone.
+              ? {t("drive.media.deleteDialog.warning")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -256,10 +268,10 @@ export function MediaCard({ media }: MediaCardProps) {
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              {t("drive.media.deleteDialog.cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
-              Delete
+              {t("drive.media.deleteDialog.confirmDelete")}
             </Button>
           </DialogFooter>
         </DialogContent>

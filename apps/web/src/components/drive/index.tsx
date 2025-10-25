@@ -11,6 +11,7 @@ import { MediaCardGrid } from "./media-card-grid";
 import { ViewToggle } from "./view-toggle";
 import { UploadDialog } from "./upload-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface DriveClientProps {
   locale: string;
@@ -21,6 +22,7 @@ export function DriveClient({
   locale,
   preloadedMediaGrouped,
 }: DriveClientProps) {
+  const { t } = useTranslations();
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
   const [view, setView] = useQueryState("view", { defaultValue: "table" });
   const [uploadDialogOpen, setUploadDialogOpen] = React.useState(false);
@@ -55,7 +57,9 @@ export function DriveClient({
         {/* Content Cards - Only show items with media */}
         {mediaGrouped.length > 0 && (
           <div>
-            <h2 className="text-sm font-semibold mb-3">Content Library</h2>
+            <h2 className="text-sm font-semibold mb-3">
+              {t("drive.contentLibrary.title")}
+            </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {mediaGrouped.map((content) => (
                 <ContentCard
@@ -77,7 +81,9 @@ export function DriveClient({
         {/* All Media Files - Table or Grid View */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold">All Files</h2>
+            <h2 className="text-sm font-semibold">
+              {t("drive.allFiles.title")}
+            </h2>
             <ViewToggle
               view={view as "table" | "grid"}
               onViewChange={(newView) => setView(newView)}

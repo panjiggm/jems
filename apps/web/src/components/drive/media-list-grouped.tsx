@@ -35,6 +35,7 @@ import {
 import { Eye, Trash2, Download, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useTranslations } from "@/hooks/use-translations";
 
 type MediaItem = {
   storageId: Id<"_storage">;
@@ -75,6 +76,7 @@ type FlatMediaItem = MediaItem & {
 const mediaColumnHelper = createColumnHelper<FlatMediaItem>();
 
 export function MediaListTable({ contents }: MediaListGroupedProps) {
+  const { t } = useTranslations();
   const convex = useConvex();
   const removeCampaignMedia = useMutation(
     api.mutations.media.removeCampaignMedia,
@@ -120,13 +122,17 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
         storageId,
       });
       if (!result || !result.url) {
-        toast.error(result ? "File not found" : "Not authenticated");
+        toast.error(
+          result
+            ? t("drive.errors.fileNotFound")
+            : t("drive.errors.notAuthenticated"),
+        );
         return;
       }
       window.open(result.url, "_blank", "noopener,noreferrer");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to open file");
+      toast.error(t("drive.errors.failedToOpenFile"));
     }
   };
 
@@ -139,7 +145,11 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
         storageId,
       });
       if (!result || !result.url) {
-        toast.error(result ? "File not found" : "Not authenticated");
+        toast.error(
+          result
+            ? t("drive.errors.fileNotFound")
+            : t("drive.errors.notAuthenticated"),
+        );
         return;
       }
       const a = document.createElement("a");
@@ -148,10 +158,10 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      toast.success("Download started");
+      toast.success(t("drive.errors.downloadStarted"));
     } catch (err) {
       console.error(err);
-      toast.error("Failed to download file");
+      toast.error(t("drive.errors.failedToDownloadFile"));
     }
   };
 
@@ -180,12 +190,12 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
           storageId: mediaToDelete.storageId,
         });
       }
-      toast.success("Media deleted successfully");
+      toast.success(t("drive.errors.mediaDeletedSuccessfully"));
       setDeleteDialogOpen(false);
       setMediaToDelete(null);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to delete media");
+      toast.error(t("drive.errors.failedToDeleteMedia"));
     }
   };
 
@@ -220,7 +230,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
       size: 40,
     }),
     mediaColumnHelper.accessor("filename", {
-      header: "Filename",
+      header: t("drive.table.filename"),
       cell: ({ getValue }) => (
         <div className="font-medium text-sm truncate max-w-[200px]">
           {getValue()}
@@ -228,13 +238,13 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
       ),
     }),
     mediaColumnHelper.accessor("contentTitle", {
-      header: "Content",
+      header: t("drive.table.content"),
       cell: ({ getValue }) => (
         <div className="text-sm truncate max-w-[150px]">{getValue()}</div>
       ),
     }),
     mediaColumnHelper.accessor("projectTitle", {
-      header: "Project",
+      header: t("drive.table.project"),
       cell: ({ getValue }) => (
         <div className="text-sm text-muted-foreground truncate max-w-[150px]">
           {getValue()}
@@ -242,7 +252,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
       ),
     }),
     mediaColumnHelper.accessor("size", {
-      header: "Size",
+      header: t("drive.table.size"),
       cell: ({ getValue }) => (
         <div className="text-sm text-muted-foreground">
           {formatFileSize(getValue())}
@@ -251,7 +261,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
       size: 80,
     }),
     mediaColumnHelper.accessor("extension", {
-      header: "Type",
+      header: t("drive.table.type"),
       cell: ({ getValue }) => (
         <div className="text-sm text-muted-foreground uppercase">
           {getValue()}
@@ -260,7 +270,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
       size: 60,
     }),
     mediaColumnHelper.accessor("uploadedAt", {
-      header: "Uploaded",
+      header: t("drive.table.uploaded"),
       cell: ({ getValue }) => (
         <div className="text-sm text-muted-foreground">
           {format(new Date(getValue()), "MMM d, yyyy")}
@@ -270,7 +280,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
     }),
     mediaColumnHelper.display({
       id: "actions",
-      header: "Actions",
+      header: t("drive.table.actions"),
       cell: ({ row }) => (
         <div className="flex items-center gap-1">
           <Button
@@ -280,7 +290,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
             className="h-7 w-7 p-0"
           >
             <Eye className="h-4 w-4" />
-            <span className="sr-only">View</span>
+            <span className="sr-only">{t("drive.media.actions.view")}</span>
           </Button>
           <Button
             variant="ghost"
@@ -291,7 +301,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
             className="h-7 w-7 p-0"
           >
             <Download className="h-4 w-4" />
-            <span className="sr-only">Download</span>
+            <span className="sr-only">{t("drive.media.actions.download")}</span>
           </Button>
           <Button
             variant="ghost"
@@ -307,7 +317,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
             className="h-7 w-7 p-0 text-destructive hover:text-destructive"
           >
             <Trash2 className="h-4 w-4" />
-            <span className="sr-only">Delete</span>
+            <span className="sr-only">{t("drive.media.actions.delete")}</span>
           </Button>
         </div>
       ),
@@ -338,9 +348,11 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
   if (flattenedData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-        <p className="text-sm text-muted-foreground">No media files found</p>
+        <p className="text-sm text-muted-foreground">
+          {t("drive.allFiles.noFilesFound")}
+        </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Upload files to get started
+          {t("drive.allFiles.uploadFilesToGetStarted")}
         </p>
       </div>
     );
@@ -397,7 +409,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
                     colSpan={columns.length}
                     className="h-16 text-xs text-center text-muted-foreground"
                   >
-                    No media files found.
+                    {t("drive.allFiles.noFilesFound")}.
                   </TableCell>
                 </TableRow>
               )}
@@ -408,8 +420,9 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
         {/* Pagination */}
         <div className="flex items-center justify-between space-x-2 py-4 px-1">
           <div className="flex-1 text-xs text-muted-foreground">
-            Showing {table.getRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} file(s)
+            {t("drive.table.showing")} {table.getRowModel().rows.length}{" "}
+            {t("drive.table.of")} {table.getFilteredRowModel().rows.length}{" "}
+            {t("drive.table.file")}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -419,10 +432,11 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
               disabled={!table.getCanPreviousPage()}
               className="h-7 text-xs"
             >
-              Previous
+              {t("drive.table.previous")}
             </Button>
             <div className="text-xs text-muted-foreground">
-              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {t("drive.table.page")}{" "}
+              {table.getState().pagination.pageIndex + 1} {t("drive.table.of")}{" "}
               {table.getPageCount()}
             </div>
             <Button
@@ -432,7 +446,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
               disabled={!table.getCanNextPage()}
               className="h-7 text-xs"
             >
-              Next
+              {t("drive.table.next")}
             </Button>
           </div>
         </div>
@@ -446,14 +460,14 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
-              <DialogTitle>Delete Media File</DialogTitle>
+              <DialogTitle>{t("drive.media.deleteDialog.title")}</DialogTitle>
             </div>
             <DialogDescription className="pt-3">
-              Are you sure you want to delete{" "}
+              {t("drive.media.deleteDialog.description")}{" "}
               <span className="font-semibold text-foreground">
                 {mediaToDelete?.filename}
               </span>
-              ? This action cannot be undone.
+              ? {t("drive.media.deleteDialog.warning")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -461,10 +475,10 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              {t("drive.media.deleteDialog.cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
-              Delete
+              {t("drive.media.deleteDialog.confirmDelete")}
             </Button>
           </DialogFooter>
         </DialogContent>

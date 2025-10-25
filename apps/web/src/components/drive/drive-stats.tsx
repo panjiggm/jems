@@ -13,6 +13,7 @@ import {
   Megaphone,
   Repeat,
 } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 Bytes";
@@ -23,6 +24,7 @@ function formatBytes(bytes: number): string {
 }
 
 export function DriveStats() {
+  const { t } = useTranslations();
   const stats = useQuery(api.queries.media.getMediaStats, {});
 
   if (!stats) {
@@ -56,12 +58,12 @@ export function DriveStats() {
                 <div className="flex items-center justify-center gap-1.5 mb-2">
                   <Files className="h-3 w-3 text-muted-foreground" />
                   <span className="text-xs font-medium text-muted-foreground">
-                    Total Files
+                    {t("drive.stats.totalFiles")}
                   </span>
                 </div>
                 <div className="text-lg font-bold">{stats.totalFiles}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {stats.recentUploads} this week
+                  {stats.recentUploads} {t("drive.stats.thisWeek")}
                 </p>
               </div>
 
@@ -70,14 +72,14 @@ export function DriveStats() {
                 <div className="flex items-center justify-center gap-1.5 mb-2">
                   <HardDrive className="h-3 w-3 text-muted-foreground" />
                   <span className="text-xs font-medium text-muted-foreground">
-                    Storage Used
+                    {t("drive.stats.storageUsed")}
                   </span>
                 </div>
                 <div className="text-lg font-bold">
                   {formatBytes(stats.totalStorage)}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Across all content
+                  {t("drive.stats.acrossAllContent")}
                 </p>
               </div>
             </div>
@@ -92,13 +94,13 @@ export function DriveStats() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Files className="h-3.5 w-3.5" />
-              Total Files
+              {t("drive.stats.totalFiles")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalFiles}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {stats.recentUploads} uploaded this week
+              {stats.recentUploads} {t("drive.stats.uploadedThisWeek")}
             </p>
           </CardContent>
         </Card>
@@ -108,7 +110,7 @@ export function DriveStats() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <HardDrive className="h-3.5 w-3.5" />
-              Storage Used
+              {t("drive.stats.storageUsed")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -116,7 +118,7 @@ export function DriveStats() {
               {formatBytes(stats.totalStorage)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Across all content
+              {t("drive.stats.acrossAllContent")}
             </p>
           </CardContent>
         </Card>
@@ -125,14 +127,14 @@ export function DriveStats() {
         <Card className="shadow-none border">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
-              File Types
+              {t("drive.stats.fileTypes")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs">
                 <Video className="h-3.5 w-3.5" />
-                <span>Videos</span>
+                <span>{t("drive.stats.videos")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium">{stats.videoCount}</span>
@@ -144,7 +146,7 @@ export function DriveStats() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs">
                 <FileImage className="h-3.5 w-3.5" />
-                <span>Images</span>
+                <span>{t("drive.stats.images")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium">{stats.imageCount}</span>
@@ -160,21 +162,21 @@ export function DriveStats() {
         <Card className="shadow-none border">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
-              Content Distribution
+              {t("drive.stats.contentDistribution")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs">
                 <Megaphone className="h-3.5 w-3.5" />
-                <span>Campaigns</span>
+                <span>{t("drive.stats.campaigns")}</span>
               </div>
               <span className="text-xs font-medium">{stats.campaignFiles}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs">
                 <Repeat className="h-3.5 w-3.5" />
-                <span>Routines</span>
+                <span>{t("drive.stats.routines")}</span>
               </div>
               <span className="text-xs font-medium">{stats.routineFiles}</span>
             </div>
@@ -186,13 +188,13 @@ export function DriveStats() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
-              Recent Activity
+              {t("drive.stats.recentActivity")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.recentUploads}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Files uploaded in last 7 days
+              {t("drive.stats.filesUploadedLast7Days")}
             </p>
           </CardContent>
         </Card>

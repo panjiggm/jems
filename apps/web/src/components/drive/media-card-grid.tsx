@@ -3,6 +3,7 @@
 import * as React from "react";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import { MediaCard } from "./media-card";
+import { useTranslations } from "@/hooks/use-translations";
 
 type MediaItem = {
   storageId: Id<"_storage">;
@@ -41,6 +42,8 @@ type FlatMediaItem = MediaItem & {
 };
 
 export function MediaCardGrid({ contents }: MediaCardGridProps) {
+  const { t } = useTranslations();
+
   // Flatten the data structure
   const flattenedData = React.useMemo(() => {
     const flattened: FlatMediaItem[] = [];
@@ -62,9 +65,11 @@ export function MediaCardGrid({ contents }: MediaCardGridProps) {
   if (flattenedData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-        <p className="text-sm text-muted-foreground">No media files found</p>
+        <p className="text-sm text-muted-foreground">
+          {t("drive.allFiles.noFilesFound")}
+        </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Upload files to get started
+          {t("drive.allFiles.uploadFilesToGetStarted")}
         </p>
       </div>
     );

@@ -6,6 +6,7 @@ import { onboarding } from "./onboarding";
 import { projects } from "./projects";
 import { mobileApp } from "./mobile";
 import { contents } from "./contents";
+import { drive } from "./drive";
 
 export const dictionary = {
   nav,
@@ -16,4 +17,5 @@ export const dictionary = {
   projects,
   mobileApp,
   contents,
+  drive,
 } as const;
