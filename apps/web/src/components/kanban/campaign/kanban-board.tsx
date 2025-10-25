@@ -29,6 +29,7 @@ interface CampaignContent {
   userId: string;
   projectId: Id<"projects">;
   title: string;
+  slug?: string;
   sow?: string;
   platform: Platform;
   type: ContentCampaignType;
@@ -244,6 +245,7 @@ export function KanbanCampaignBoard({
             <KanbanCard
               id={activeContent._id}
               title={activeContent.title}
+              slug={activeContent.slug || activeContent._id}
               platform={activeContent.platform}
               status={activeContent.status}
               type={activeContent.type}

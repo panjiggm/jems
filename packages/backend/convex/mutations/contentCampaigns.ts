@@ -46,7 +46,9 @@ export const create = mutation({
       .query("contentCampaigns")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
-    const existingSlugs = existingCampaigns.map((c) => c.slug);
+    const existingSlugs = existingCampaigns
+      .map((c) => c.slug)
+      .filter((slug): slug is string => slug !== undefined);
     const slug = generateUniqueSlug(baseSlug, existingSlugs);
 
     const contentId = await ctx.db.insert("contentCampaigns", {
@@ -139,7 +141,9 @@ export const update = mutation({
         .withIndex("by_user", (q) => q.eq("userId", userId))
         .filter((q) => q.neq(q.field("_id"), id))
         .collect();
-      const existingSlugs = existingCampaigns.map((c) => c.slug);
+      const existingSlugs = existingCampaigns
+        .map((c) => c.slug)
+        .filter((slug): slug is string => slug !== undefined);
       updateData.slug = generateUniqueSlug(baseSlug, existingSlugs);
     }
 

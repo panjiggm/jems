@@ -5,6 +5,7 @@ import { useConvex, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import { format } from "date-fns";
+import Image from "next/image";
 import {
   MoreVertical,
   Eye,
@@ -160,10 +161,12 @@ export function MediaCard({ media }: MediaCardProps) {
           {thumbnailUrl && (isImage || isVideo) ? (
             <>
               {isImage ? (
-                <img
+                <Image
                   src={thumbnailUrl}
                   alt={media.filename}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               ) : (
                 <video

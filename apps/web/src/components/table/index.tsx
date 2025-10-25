@@ -1,6 +1,5 @@
 export { EditableCampaignTable } from "./campaign/editable-table";
 export { EditableRoutineTable } from "./routine/editable-table";
-export { EditableStatusCell } from "./editable-status-cell";
 export { EditableDateCell } from "./editable-date-cell";
 export { EditablePlatformCell } from "./editable-platform-cell";
 export { EditableTitleCell } from "./editable-title-cell";

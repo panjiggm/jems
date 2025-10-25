@@ -25,6 +25,7 @@ interface RoutineContent {
   userId: string;
   projectId: Id<"projects">;
   title: string;
+  slug?: string;
   notes?: string;
   platform: Platform;
   status: ContentRoutineStatus;
@@ -237,6 +238,7 @@ export function KanbanRoutineBoard({
             <KanbanCard
               id={activeContent._id}
               title={activeContent.title}
+              slug={activeContent.slug || activeContent._id}
               platform={activeContent.platform}
               status={activeContent.status}
               type={undefined} // Routines don't have type

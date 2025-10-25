@@ -66,6 +66,16 @@ interface RoutineDetailPageProps {
 type ContentDetailPageProps = CampaignDetailPageProps | RoutineDetailPageProps;
 
 export function ContentDetailPage(props: ContentDetailPageProps) {
+  // Split into separate components to avoid conditional hook calls
+  if (props.contentType === "campaign") {
+    return <CampaignDetailPageInner {...props} />;
+  } else {
+    return <RoutineDetailPageInner {...props} />;
+  }
+}
+
+// Campaign Detail Page Inner Component
+function CampaignDetailPageInner(props: CampaignDetailPageProps) {
   const { contentType, preloadedData } = props;
   const router = useRouter();
   const params = useParams();
@@ -73,49 +83,21 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
   const [activeTab, setActiveTab] = useQueryState("tab");
   const locale = (params.locale as string) || "en";
 
-  // Use preloaded query based on content type
-  const campaignData =
-    contentType === "campaign"
-      ? usePreloadedQuery(
-          preloadedData as Preloaded<
-            typeof api.queries.contentCampaigns.getBySlug
-          >,
-        )
-      : null;
-
-  const routineData =
-    contentType === "routine"
-      ? usePreloadedQuery(
-          preloadedData as Preloaded<
-            typeof api.queries.contentRoutines.getBySlug
-          >,
-        )
-      : null;
-
-  const data = (campaignData || routineData) as
-    | CampaignData
-    | RoutineData
-    | null;
+  const data = usePreloadedQuery(preloadedData) as CampaignData;
 
   // Mutations
   const deleteCampaign = useMutation(api.mutations.contentCampaigns.remove);
-  const deleteRoutine = useMutation(api.mutations.contentRoutines.remove);
 
   const handleDeleteContent = async () => {
     if (!content) return;
 
     try {
-      if (contentType === "campaign") {
-        await deleteCampaign({ id: content._id as Id<"contentCampaigns"> });
-        toast.success("Campaign deleted successfully");
-      } else {
-        await deleteRoutine({ id: content._id as Id<"contentRoutines"> });
-        toast.success("Routine deleted successfully");
-      }
+      await deleteCampaign({ id: content._id as Id<"contentCampaigns"> });
+      toast.success("Campaign deleted successfully");
       setDeleteDialogOpen(false);
       router.push("/en/projects");
     } catch (error) {
-      toast.error(`Failed to delete ${contentType}`);
+      toast.error("Failed to delete campaign");
       console.error(error);
     }
   };
@@ -130,9 +112,7 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
       <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-xs text-muted-foreground">
-            Loading {contentType}...
-          </p>
+          <p className="text-xs text-muted-foreground">Loading campaign...</p>
         </div>
       </div>
     );
@@ -143,11 +123,9 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">
-            {contentType === "campaign" ? "Campaign" : "Routine"} Not Found
-          </h1>
+          <h1 className="text-2xl font-bold mb-2">Campaign Not Found</h1>
           <p className="text-muted-foreground mb-4">
-            The {contentType} you&apos;re looking for doesn&apos;t exist or you
+            The campaign you&apos;re looking for doesn&apos;t exist or you
             don&apos;t have access to it.
           </p>
           <Button onClick={() => router.back()}>
@@ -159,30 +137,18 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
     );
   }
 
-  // Extract content and project based on type with proper type narrowing
-  let content: Doc<"contentCampaigns"> | Doc<"contentRoutines"> | null;
-  let project: Doc<"projects"> | null;
-
-  if (contentType === "campaign") {
-    const campaignResult = data as CampaignData;
-    content = campaignResult?.campaign ?? null;
-    project = campaignResult?.project ?? null;
-  } else {
-    const routineResult = data as RoutineData;
-    content = routineResult?.routine ?? null;
-    project = routineResult?.project ?? null;
-  }
+  // Extract content and project
+  const content = data?.campaign ?? null;
+  const project = data?.project ?? null;
 
   // Not found state
   if (!content) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">
-            {contentType === "campaign" ? "Campaign" : "Routine"} Not Found
-          </h1>
+          <h1 className="text-2xl font-bold mb-2">Campaign Not Found</h1>
           <p className="text-muted-foreground mb-4">
-            The {contentType} you&apos;re looking for doesn&apos;t exist or you
+            The campaign you&apos;re looking for doesn&apos;t exist or you
             don&apos;t have access to it.
           </p>
           <Button onClick={handleBack}>
@@ -194,9 +160,8 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
     );
   }
 
-  const isCampaign = contentType === "campaign";
-  const contentTypeName = isCampaign ? "Campaign" : "Routine";
-  const maxWidth = isCampaign ? "max-w-4xl" : "max-w-5xl";
+  const contentTypeName = "Campaign";
+  const maxWidth = "max-w-4xl";
 
   const currentTab = activeTab || "detail";
 
@@ -257,7 +222,7 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
                   </div>
                 )}
                 {/* Campaign-specific SOW field */}
-                {isCampaign && "sow" in content && content.sow && (
+                {content.sow && (
                   <div className="mt-3">
                     <Label className="text-xs text-muted-foreground">
                       Statement of Work
@@ -324,36 +289,21 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
                       value={content.platform}
                       contentId={content._id as any}
                     />
-                    {isCampaign && "type" in content ? (
-                      <>
-                        <EditableCampaignTypeBadge
-                          value={content.type}
-                          campaignId={content._id as Id<"contentCampaigns">}
-                        />
-                        <EditableCampaignStatusBadge
-                          value={
-                            content.status as
-                              | "product_obtained"
-                              | "production"
-                              | "published"
-                              | "payment"
-                              | "done"
-                          }
-                          campaignId={content._id as Id<"contentCampaigns">}
-                        />
-                      </>
-                    ) : (
-                      <EditableRoutineStatusBadge
-                        value={
-                          content.status as
-                            | "plan"
-                            | "in_progress"
-                            | "scheduled"
-                            | "published"
-                        }
-                        routineId={content._id as Id<"contentRoutines">}
-                      />
-                    )}
+                    <EditableCampaignTypeBadge
+                      value={content.type}
+                      campaignId={content._id as Id<"contentCampaigns">}
+                    />
+                    <EditableCampaignStatusBadge
+                      value={
+                        content.status as
+                          | "product_obtained"
+                          | "production"
+                          | "published"
+                          | "payment"
+                          | "done"
+                      }
+                      campaignId={content._id as Id<"contentCampaigns">}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -390,12 +340,8 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
                     Media
                   </h3>
                   <MediaAttachments
-                    contentType={contentType}
-                    contentId={
-                      contentType === "campaign"
-                        ? (content._id as Id<"contentCampaigns">)
-                        : (content._id as Id<"contentRoutines">)
-                    }
+                    contentType="campaign"
+                    contentId={content._id as Id<"contentCampaigns">}
                     mediaFiles={content.mediaFiles}
                   />
                 </div>
@@ -405,7 +351,7 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
             <TabsContent value="tasks" className="mt-4">
               <TaskSection
                 contentId={content._id}
-                contentType={contentType}
+                contentType="campaign"
                 projectId={content.projectId}
               />
             </TabsContent>
@@ -413,9 +359,7 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
             <TabsContent value="activity" className="mt-4">
               <ContentActivity
                 contentId={content._id}
-                contentType={
-                  isCampaign ? "content_campaign" : "content_routine"
-                }
+                contentType="content_campaign"
                 statusHistory={content.statusHistory}
               />
             </TabsContent>
@@ -431,7 +375,313 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
             <DialogDescription>
               Are you sure you want to delete &ldquo;{content.title}&rdquo;?
               This action cannot be undone. All associated tasks will remain but
-              will no longer be linked to this {contentType}.
+              will no longer be linked to this campaign.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteContent}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+// Routine Detail Page Inner Component
+function RoutineDetailPageInner(props: RoutineDetailPageProps) {
+  const { contentType, preloadedData } = props;
+  const router = useRouter();
+  const params = useParams();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useQueryState("tab");
+  const locale = (params.locale as string) || "en";
+
+  const data = usePreloadedQuery(preloadedData) as RoutineData;
+
+  // Mutations
+  const deleteRoutine = useMutation(api.mutations.contentRoutines.remove);
+
+  const handleDeleteContent = async () => {
+    if (!content) return;
+
+    try {
+      await deleteRoutine({ id: content._id as Id<"contentRoutines"> });
+      toast.success("Routine deleted successfully");
+      setDeleteDialogOpen(false);
+      router.push("/en/projects");
+    } catch (error) {
+      toast.error("Failed to delete routine");
+      console.error(error);
+    }
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  // Loading state
+  if (data === undefined) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-xs text-muted-foreground">Loading routine...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle null data
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Routine Not Found</h1>
+          <p className="text-muted-foreground mb-4">
+            The routine you&apos;re looking for doesn&apos;t exist or you
+            don&apos;t have access to it.
+          </p>
+          <Button onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Extract content and project
+  const content = data?.routine ?? null;
+  const project = data?.project ?? null;
+
+  // Not found state
+  if (!content) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Routine Not Found</h1>
+          <p className="text-muted-foreground mb-4">
+            The routine you&apos;re looking for doesn&apos;t exist or you
+            don&apos;t have access to it.
+          </p>
+          <Button onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const contentTypeName = "Routine";
+  const maxWidth = "max-w-5xl";
+
+  const currentTab = activeTab || "detail";
+
+  return (
+    <>
+      <Tabs
+        value={currentTab}
+        onValueChange={(value) => setActiveTab(value)}
+        className="flex flex-col h-[calc(100vh-3.5rem)]"
+      >
+        {/* Header + Tabs Navigation - Sticky */}
+        <div className="bg-background sticky top-14 z-10">
+          {/* Header */}
+          <div className={`container ${maxWidth} mx-auto px-4 sm:px-6 py-4`}>
+            <div className="flex items-center justify-between mb-4">
+              <Button variant="ghost" size="xs" onClick={handleBack}>
+                <ArrowLeft className="h-3 w-3 mr-1" />
+                Back
+              </Button>
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Delete
+              </Button>
+            </div>
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex-1 min-w-0">
+                {/* Parent Project Badge */}
+                {project && (
+                  <div className="mb-2">
+                    <Badge variant="outline" size="xs" asChild>
+                      <Link
+                        href={`/${locale}/projects/${project._id}`}
+                        className="hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        {project.title}
+                      </Link>
+                    </Badge>
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                  <h1 className="text-xl sm:text-2xl font-bold break-words">
+                    {content.title}
+                  </h1>
+                  <Badge variant="outline" className="text-xs w-fit">
+                    {contentTypeName}
+                  </Badge>
+                </div>
+                {content.notes && (
+                  <div className="mt-2 flex items-start gap-2">
+                    <FileText className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+                      {content.notes}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs Navigation */}
+          <div className="border-b">
+            <div className={`container ${maxWidth} mx-auto px-4 sm:px-6`}>
+              <TabsList className="h-auto p-0 bg-transparent justify-start border-0 flex-nowrap overflow-x-auto gap-1">
+                <TabsTrigger
+                  value="detail"
+                  className="px-0 text-xs font-normal border-b-2 border-transparent border-t-0 border-l-0 border-r-0 shadow-none data-[state=active]:border-b-[#f7a641] data-[state=active]:text-[#4a2e1a] data-[state=active]:border-t-0 data-[state=active]:border-l-0 data-[state=active]:border-r-0 data-[state=active]:shadow-none text-muted-foreground hover:text-foreground rounded-none transition-colors whitespace-nowrap"
+                >
+                  <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
+                    <FileText className="h-3 w-3" />
+                    <span className="text-xs">Detail</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="tasks"
+                  className="px-0 text-xs font-normal border-b-2 border-transparent border-t-0 border-l-0 border-r-0 shadow-none data-[state=active]:border-b-[#f7a641] data-[state=active]:text-[#4a2e1a] data-[state=active]:border-t-0 data-[state=active]:border-l-0 data-[state=active]:border-r-0 data-[state=active]:shadow-none text-muted-foreground hover:text-foreground rounded-none transition-colors whitespace-nowrap"
+                >
+                  <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
+                    <CheckSquare className="h-3 w-3" />
+                    <span className="text-xs">Tasks</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="activity"
+                  className="px-0 text-xs font-normal border-b-2 border-transparent border-t-0 border-l-0 border-r-0 shadow-none data-[state=active]:border-b-[#f7a641] data-[state=active]:text-[#4a2e1a] data-[state=active]:border-t-0 data-[state=active]:border-l-0 data-[state=active]:border-r-0 data-[state=active]:shadow-none text-muted-foreground hover:text-foreground rounded-none transition-colors whitespace-nowrap"
+                >
+                  <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
+                    <FileText className="h-3 w-3" />
+                    <span className="text-xs">Activity</span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
+        </div>
+
+        {/* Scrollable Tabs Content */}
+        <ScrollArea className="flex-1">
+          <div className={`container ${maxWidth} mx-auto px-4 sm:px-6`}>
+            <TabsContent value="detail" className="mt-4">
+              <div className="space-y-6">
+                {/* Details Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Details
+                  </h3>
+
+                  {/* Editable Badges */}
+                  <div className="flex flex-wrap gap-2">
+                    <EditablePlatformBadge
+                      value={content.platform}
+                      contentId={content._id as any}
+                    />
+                    <EditableRoutineStatusBadge
+                      value={
+                        content.status as
+                          | "plan"
+                          | "in_progress"
+                          | "scheduled"
+                          | "published"
+                      }
+                      routineId={content._id as Id<"contentRoutines">}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">
+                        Created
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>
+                          {new Date(content.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">
+                        Updated
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>
+                          {new Date(content.updatedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Media Attachments */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Media
+                  </h3>
+                  <MediaAttachments
+                    contentType="routine"
+                    contentId={content._id as Id<"contentRoutines">}
+                    mediaFiles={content.mediaFiles}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="tasks" className="mt-4">
+              <TaskSection
+                contentId={content._id}
+                contentType="routine"
+                projectId={content.projectId}
+              />
+            </TabsContent>
+
+            <TabsContent value="activity" className="mt-4">
+              <ContentActivity
+                contentId={content._id}
+                contentType="content_routine"
+                statusHistory={content.statusHistory}
+              />
+            </TabsContent>
+          </div>
+        </ScrollArea>
+      </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {contentTypeName}</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &ldquo;{content.title}&rdquo;?
+              This action cannot be undone. All associated tasks will remain but
+              will no longer be linked to this routine.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

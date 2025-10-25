@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 interface EditableDateCellProps {
   value?: string;
-  contentId: Id<"contents">;
+  contentId: Id<"contentCampaigns"> | Id<"contentRoutines">;
   onUpdate: (newDate?: string) => void;
 }
 

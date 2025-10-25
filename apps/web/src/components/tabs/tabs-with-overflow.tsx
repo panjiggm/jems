@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter, usePathname } from "next/navigation";
 import { useQueryState } from "nuqs";
@@ -50,7 +50,7 @@ const TabsWithOverflow = ({
   const [screenSize, setScreenSize] = useState<"xs" | "sm" | "md+">("md+");
 
   // Get current active tab based on URL
-  const getCurrentTab = () => {
+  const getCurrentTab = useCallback(() => {
     if (!useUrlNavigation) return defaultValue;
 
     // Check contentType query param first
@@ -77,7 +77,7 @@ const TabsWithOverflow = ({
     });
 
     return currentTab?.id || defaultValue;
-  };
+  }, [useUrlNavigation, defaultValue, contentTypeParam, tabs, pathname]);
 
   const handleTabChange = (value: string) => {
     if (useUrlNavigation) {
@@ -174,7 +174,14 @@ const TabsWithOverflow = ({
       setVisibleTabs(reorderedTabs.slice(0, maxVisibleTabs));
       setOverflowTabs(reorderedTabs.slice(maxVisibleTabs));
     }
-  }, [screenSize, tabs, contentTypeParam, useUrlNavigation, defaultValue]);
+  }, [
+    screenSize,
+    tabs,
+    contentTypeParam,
+    useUrlNavigation,
+    defaultValue,
+    getCurrentTab,
+  ]);
 
   const getTabsTriggerClass = (isActive: boolean) => {
     switch (variant) {

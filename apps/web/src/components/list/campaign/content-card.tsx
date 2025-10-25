@@ -13,7 +13,7 @@ interface CampaignContent {
   userId: string;
   projectId: Id<"projects">;
   title: string;
-  slug: string;
+  slug?: string;
   sow?: string;
   platform: Platform;
   type: "barter" | "paid";
@@ -45,7 +45,9 @@ export function CampaignContentCard({
   const locale = params.locale as string;
 
   const handleNavigate = () => {
-    router.push(`/${locale}/campaigns/${content.slug}`);
+    // If no slug, fallback to using ID
+    const identifier = content.slug || content._id;
+    router.push(`/${locale}/campaigns/${identifier}`);
   };
 
   const formatDate = (timestamp: number) => {

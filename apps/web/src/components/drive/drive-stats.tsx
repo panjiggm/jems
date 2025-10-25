@@ -8,7 +8,7 @@ import {
   Files,
   HardDrive,
   Video,
-  Image,
+  FileImage,
   Clock,
   Megaphone,
   Repeat,
@@ -143,7 +143,7 @@ export function DriveStats() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs">
-                <Image className="h-3.5 w-3.5" />
+                <FileImage className="h-3.5 w-3.5" />
                 <span>Images</span>
               </div>
               <div className="flex items-center gap-2">

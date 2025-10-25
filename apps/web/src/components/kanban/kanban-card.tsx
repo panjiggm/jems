@@ -10,7 +10,7 @@ import { useRouter, useParams } from "next/navigation";
 interface KanbanCardProps {
   id: string;
   title: string;
-  slug: string;
+  slug?: string;
   platform:
     | "tiktok"
     | "instagram"
@@ -71,7 +71,10 @@ export function KanbanCard({
   const handleNavigate = () => {
     // Determine content type: campaigns have type field, routines don't
     const contentType = type !== undefined ? "campaign" : "routine";
-    router.push(`/${locale}/${contentType}s/${slug}`);
+
+    // If no slug, fallback to using ID
+    const identifier = slug || id;
+    router.push(`/${locale}/${contentType}s/${identifier}`);
   };
 
   const style = {

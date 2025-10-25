@@ -13,7 +13,7 @@ interface RoutineContent {
   userId: string;
   projectId: Id<"projects">;
   title: string;
-  slug: string;
+  slug?: string;
   notes?: string;
   platform: Platform;
   status: ContentRoutineStatus;
@@ -44,7 +44,9 @@ export function RoutineContentCard({
   const locale = params.locale as string;
 
   const handleNavigate = () => {
-    router.push(`/${locale}/routines/${content.slug}`);
+    // If no slug, fallback to using ID
+    const identifier = content.slug || content._id;
+    router.push(`/${locale}/routines/${identifier}`);
   };
 
   const formatDate = (timestamp: number) => {

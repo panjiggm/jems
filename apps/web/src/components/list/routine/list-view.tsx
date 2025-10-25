@@ -15,6 +15,7 @@ interface RoutineContent {
   userId: string;
   projectId: Id<"projects">;
   title: string;
+  slug?: string;
   notes?: string;
   platform: Platform;
   status: ContentRoutineStatus;

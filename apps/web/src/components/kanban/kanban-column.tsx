@@ -8,11 +8,11 @@ import {
 import { Plus, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { KanbanCard } from "./kanban-card";
-import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 interface Content {
-  _id: Id<"contents">;
+  _id: string;
   title: string;
+  slug?: string;
   platform:
     | "tiktok"
     | "instagram"
@@ -21,31 +21,9 @@ interface Content {
     | "facebook"
     | "threads"
     | "other";
-  type: "campaign" | "series" | "routine";
-  status:
-    | "confirmed"
-    | "shipped"
-    | "received"
-    | "shooting"
-    | "drafting"
-    | "editing"
-    | "done"
-    | "pending_payment"
-    | "paid"
-    | "canceled"
-    | "ideation"
-    | "scripting"
-    | "scheduled"
-    | "published"
-    | "archived"
-    | "planned"
-    | "skipped";
-  phase: "plan" | "production" | "review" | "published" | "done";
-  dueDate?: string;
-  scheduledAt?: string;
-  publishedAt?: string;
+  status: string;
+  type?: "barter" | "paid"; // Campaign only
   notes?: string;
-  assetIds?: string[];
   createdAt: number;
   updatedAt: number;
 }
@@ -115,15 +93,11 @@ export function KanbanColumn({
                   key={content._id}
                   id={content._id}
                   title={content.title}
+                  slug={content.slug}
                   platform={content.platform}
-                  type={content.type}
                   status={content.status}
-                  phase={content.phase}
-                  dueDate={content.dueDate}
-                  scheduledAt={content.scheduledAt}
-                  publishedAt={content.publishedAt}
+                  type={content.type}
                   notes={content.notes}
-                  assetIds={content.assetIds}
                   createdAt={content.createdAt}
                   updatedAt={content.updatedAt}
                 />
