@@ -2,7 +2,7 @@
 
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { ContentRoutineStatus } from "@/types/status";
-import { EditableRoutineStatusBadge } from "../contents/editable-routine-status-badge";
+import { EditableRoutineStatusBadge } from "../contents/editable-badges/editable-routine-status-badge";
 
 interface EditableRoutineStatusCellProps {
   value: ContentRoutineStatus;

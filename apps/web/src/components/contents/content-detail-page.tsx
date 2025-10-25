@@ -20,7 +20,7 @@ import {
   CheckSquare,
 } from "lucide-react";
 import { TaskSection } from "@/components/tasks";
-import { EditablePlatformBadge } from "@/components/contents/editable-platform-badge";
+import { EditablePlatformBadge } from "@/components/contents/editable-badges/editable-platform-badge";
 import {
   EditableCampaignTypeBadge,
   EditableCampaignStatusBadge,
@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useTranslations } from "@/hooks/use-translations";
 
 type ContentType = "campaign" | "routine";
 
@@ -77,6 +78,7 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
 // Campaign Detail Page Inner Component
 function CampaignDetailPageInner(props: CampaignDetailPageProps) {
   const { contentType, preloadedData } = props;
+  const { t } = useTranslations();
   const router = useRouter();
   const params = useParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -93,11 +95,15 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
 
     try {
       await deleteCampaign({ id: content._id as Id<"contentCampaigns"> });
-      toast.success("Campaign deleted successfully");
+      toast.success(
+        t("contents.detail.deleteSuccess") || "Campaign deleted successfully",
+      );
       setDeleteDialogOpen(false);
       router.push("/en/projects");
     } catch (error) {
-      toast.error("Failed to delete campaign");
+      toast.error(
+        t("contents.detail.deleteError") || "Failed to delete campaign",
+      );
       console.error(error);
     }
   };
@@ -112,7 +118,9 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
       <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-xs text-muted-foreground">Loading campaign...</p>
+          <p className="text-xs text-muted-foreground">
+            {t("common.loading")}...
+          </p>
         </div>
       </div>
     );
@@ -179,7 +187,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
             <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" size="xs" onClick={handleBack}>
                 <ArrowLeft className="h-3 w-3 mr-1" />
-                Back
+                {t("contents.detail.back")}
               </Button>
               <Button
                 variant="outline"
@@ -187,7 +195,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                 onClick={() => setDeleteDialogOpen(true)}
               >
                 <Trash2 className="h-3 w-3 mr-1" />
-                Delete
+                {t("contents.detail.delete")}
               </Button>
             </div>
             <div className="flex items-start justify-between gap-4 mb-4">
@@ -225,7 +233,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                 {content.sow && (
                   <div className="mt-3">
                     <Label className="text-xs text-muted-foreground">
-                      Statement of Work
+                      {t("contents.detail.statementOfWork")}
                     </Label>
                     <p className="text-sm mt-1 whitespace-pre-wrap">
                       {content.sow}
@@ -246,7 +254,9 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                 >
                   <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
                     <FileText className="h-3 w-3" />
-                    <span className="text-xs">Detail</span>
+                    <span className="text-xs">
+                      {t("contents.detail.details")}
+                    </span>
                   </div>
                 </TabsTrigger>
                 <TabsTrigger
@@ -255,7 +265,9 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                 >
                   <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
                     <CheckSquare className="h-3 w-3" />
-                    <span className="text-xs">Tasks</span>
+                    <span className="text-xs">
+                      {t("contents.detail.tasks")}
+                    </span>
                   </div>
                 </TabsTrigger>
                 <TabsTrigger
@@ -264,7 +276,9 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                 >
                   <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
                     <FileText className="h-3 w-3" />
-                    <span className="text-xs">Activity</span>
+                    <span className="text-xs">
+                      {t("contents.detail.activity")}
+                    </span>
                   </div>
                 </TabsTrigger>
               </TabsList>
@@ -280,7 +294,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                 {/* Details Section */}
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-foreground">
-                    Details
+                    {t("contents.detail.details")}
                   </h3>
 
                   {/* Editable Badges */}
@@ -309,7 +323,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">
-                        Created
+                        {t("contents.detail.created")}
                       </Label>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
@@ -320,7 +334,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">
-                        Updated
+                        {t("contents.detail.updated")}
                       </Label>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
@@ -337,7 +351,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                 {/* Media Attachments */}
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-foreground">
-                    Media
+                    {t("contents.detail.media")}
                   </h3>
                   <MediaAttachments
                     contentType="campaign"
@@ -371,11 +385,13 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete {contentTypeName}</DialogTitle>
+            <DialogTitle>
+              {t("contents.detail.deleteTitle")} {contentTypeName}
+            </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &ldquo;{content.title}&rdquo;?
-              This action cannot be undone. All associated tasks will remain but
-              will no longer be linked to this campaign.
+              {t("contents.detail.deleteDescription")} &ldquo;{content.title}
+              &rdquo;?
+              {t("contents.detail.deleteWarning")} campaign.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -383,11 +399,11 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              {t("contents.detail.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDeleteContent}>
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              {t("contents.detail.confirmDelete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -399,6 +415,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
 // Routine Detail Page Inner Component
 function RoutineDetailPageInner(props: RoutineDetailPageProps) {
   const { contentType, preloadedData } = props;
+  const { t } = useTranslations();
   const router = useRouter();
   const params = useParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -415,11 +432,15 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
 
     try {
       await deleteRoutine({ id: content._id as Id<"contentRoutines"> });
-      toast.success("Routine deleted successfully");
+      toast.success(
+        t("contents.detail.deleteSuccess") || "Routine deleted successfully",
+      );
       setDeleteDialogOpen(false);
       router.push("/en/projects");
     } catch (error) {
-      toast.error("Failed to delete routine");
+      toast.error(
+        t("contents.detail.deleteError") || "Failed to delete routine",
+      );
       console.error(error);
     }
   };
@@ -434,7 +455,9 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
       <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-xs text-muted-foreground">Loading routine...</p>
+          <p className="text-xs text-muted-foreground">
+            {t("common.loading")}...
+          </p>
         </div>
       </div>
     );
@@ -501,7 +524,7 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
             <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" size="xs" onClick={handleBack}>
                 <ArrowLeft className="h-3 w-3 mr-1" />
-                Back
+                {t("contents.detail.back")}
               </Button>
               <Button
                 variant="outline"
@@ -509,7 +532,7 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
                 onClick={() => setDeleteDialogOpen(true)}
               >
                 <Trash2 className="h-3 w-3 mr-1" />
-                Delete
+                {t("contents.detail.delete")}
               </Button>
             </div>
             <div className="flex items-start justify-between gap-4 mb-4">
@@ -557,7 +580,9 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
                 >
                   <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
                     <FileText className="h-3 w-3" />
-                    <span className="text-xs">Detail</span>
+                    <span className="text-xs">
+                      {t("contents.detail.details")}
+                    </span>
                   </div>
                 </TabsTrigger>
                 <TabsTrigger
@@ -566,7 +591,9 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
                 >
                   <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
                     <CheckSquare className="h-3 w-3" />
-                    <span className="text-xs">Tasks</span>
+                    <span className="text-xs">
+                      {t("contents.detail.tasks")}
+                    </span>
                   </div>
                 </TabsTrigger>
                 <TabsTrigger
@@ -575,7 +602,9 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
                 >
                   <div className="flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-1.5">
                     <FileText className="h-3 w-3" />
-                    <span className="text-xs">Activity</span>
+                    <span className="text-xs">
+                      {t("contents.detail.activity")}
+                    </span>
                   </div>
                 </TabsTrigger>
               </TabsList>
@@ -591,7 +620,7 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
                 {/* Details Section */}
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-foreground">
-                    Details
+                    {t("contents.detail.details")}
                   </h3>
 
                   {/* Editable Badges */}
@@ -615,7 +644,7 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">
-                        Created
+                        {t("contents.detail.created")}
                       </Label>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
@@ -626,7 +655,7 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">
-                        Updated
+                        {t("contents.detail.updated")}
                       </Label>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
@@ -643,7 +672,7 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
                 {/* Media Attachments */}
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-foreground">
-                    Media
+                    {t("contents.detail.media")}
                   </h3>
                   <MediaAttachments
                     contentType="routine"
@@ -677,11 +706,13 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete {contentTypeName}</DialogTitle>
+            <DialogTitle>
+              {t("contents.detail.deleteTitle")} {contentTypeName}
+            </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &ldquo;{content.title}&rdquo;?
-              This action cannot be undone. All associated tasks will remain but
-              will no longer be linked to this routine.
+              {t("contents.detail.deleteDescription")} &ldquo;{content.title}
+              &rdquo;?
+              {t("contents.detail.deleteWarning")} routine.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -689,11 +720,11 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              {t("contents.detail.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDeleteContent}>
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              {t("contents.detail.confirmDelete")}
             </Button>
           </DialogFooter>
         </DialogContent>

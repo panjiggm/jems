@@ -18,6 +18,7 @@ import {
 import { Upload, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { MediaCard } from "@/components/contents/media-card";
+import { useTranslations } from "@/hooks/use-translations";
 
 type MediaItem = {
   storageId: Id<"_storage">;
@@ -78,6 +79,7 @@ export function MediaAttachments({
   contentId,
   mediaFiles,
 }: MediaAttachmentsProps) {
+  const { t } = useTranslations();
   const convex = useConvex();
   const generateUploadUrl = useAction(api.actions.storage.generateUploadUrl);
   const attachCampaignMedia = useMutation(
@@ -352,10 +354,12 @@ export function MediaAttachments({
           />
           <Upload className="mb-3 h-4 w-4 text-muted-foreground" />
           <p className="mb-0.5 text-xs font-medium">
-            {isUploading ? "Uploading..." : "Click to upload or drag and drop"}
+            {isUploading
+              ? t("contents.media.upload.uploading")
+              : t("contents.media.upload.clickToUpload")}
           </p>
           <p className="text-[11px] text-muted-foreground">
-            Images and videos supported
+            {t("contents.media.upload.supportedFormats")}
           </p>
         </div>
       )}
@@ -384,7 +388,9 @@ export function MediaAttachments({
       {/* Media Grid */}
       {(!mediaFiles || mediaFiles.length === 0) && (
         <div className="flex items-center justify-center rounded-lg border border-dashed py-12">
-          <p className="text-sm text-muted-foreground">No media attached yet</p>
+          <p className="text-sm text-muted-foreground">
+            {t("contents.detail.noMedia")}
+          </p>
         </div>
       )}
 
@@ -409,14 +415,16 @@ export function MediaAttachments({
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
-              <DialogTitle>Delete Media File</DialogTitle>
+              <DialogTitle>
+                {t("contents.media.deleteDialog.title")}
+              </DialogTitle>
             </div>
             <DialogDescription className="pt-3">
-              Are you sure you want to delete{" "}
+              {t("contents.media.deleteDialog.description")}{" "}
               <span className="font-semibold text-foreground">
                 {mediaToDelete?.filename}
               </span>
-              ? This action cannot be undone.
+              ? {t("contents.media.deleteDialog.warning")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -424,10 +432,10 @@ export function MediaAttachments({
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              {t("contents.media.deleteDialog.cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
-              Delete
+              {t("contents.media.deleteDialog.confirmDelete")}
             </Button>
           </DialogFooter>
         </DialogContent>

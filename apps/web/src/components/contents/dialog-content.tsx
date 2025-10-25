@@ -91,23 +91,23 @@ export function ContentDialog() {
     let hasErrors = false;
 
     if (!formData.title.trim()) {
-      setError("title", "Title is required");
+      setError("title", t("contents.dialog.form.titleRequired"));
       hasErrors = true;
     }
 
     if (!formData.platform) {
-      setError("platform", "Platform is required");
+      setError("platform", t("contents.dialog.form.platformRequired"));
       hasErrors = true;
     }
 
     if (!projectId) {
-      setError("projectId", "Project is required");
+      setError("projectId", t("contents.dialog.form.projectRequired"));
       hasErrors = true;
     }
 
     // Campaign-specific validation
     if ((contentType || "campaign") === "campaign" && !formData.campaignType) {
-      setError("campaignType", "Campaign type is required");
+      setError("campaignType", t("contents.dialog.form.campaignTypeRequired"));
       hasErrors = true;
     }
 
@@ -165,16 +165,16 @@ export function ContentDialog() {
         });
       }
 
-      toast.success("Content created successfully!", {
-        description: `"${formData.title}" has been created`,
+      toast.success(t("contents.dialog.messages.success"), {
+        description: `"${formData.title}" ${t("contents.dialog.messages.successDescription")}`,
       });
 
       resetForm();
       closeDialog();
     } catch (error) {
       console.error("Failed to create content:", error);
-      toast.error("Failed to create content", {
-        description: "Please try again",
+      toast.error(t("contents.dialog.messages.error"), {
+        description: t("contents.dialog.messages.errorDescription"),
       });
     } finally {
       setLoading(false);
@@ -378,7 +378,7 @@ export function ContentDialog() {
                 id="title"
                 value={formData.title}
                 onChange={(e) => updateFormData({ title: e.target.value })}
-                placeholder="Content title"
+                placeholder={t("contents.dialog.form.titlePlaceholder")}
                 disabled={isLoading}
                 className={`border-none shadow-none focus-visible:ring-0 focus:ring-0 focus:outline-none px-0 transition-all duration-200 text-lg focus:text-2xl font-semibold`}
               />
@@ -394,7 +394,7 @@ export function ContentDialog() {
                   id="sow"
                   value={formData.sow || ""}
                   onChange={(e) => updateFormData({ sow: e.target.value })}
-                  placeholder="Add statement of work (SOW)..."
+                  placeholder={t("contents.dialog.form.sowPlaceholder")}
                   disabled={isLoading}
                   rows={4}
                   className="text-xs text-muted-foreground resize-none border-none outline-none focus:ring-0 focus:border-none bg-transparent w-full"
@@ -406,7 +406,7 @@ export function ContentDialog() {
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => updateFormData({ notes: e.target.value })}
-                  placeholder="Add description..."
+                  placeholder={t("contents.dialog.form.notesPlaceholder")}
                   disabled={isLoading}
                   rows={5}
                   className="text-xs text-muted-foreground resize-none border-none outline-none focus:ring-0 focus:border-none bg-transparent w-full"
@@ -496,7 +496,9 @@ export function ContentDialog() {
                         errors.campaignType ? "border-red-500" : ""
                       }`}
                     >
-                      <SelectValue placeholder="Type" />
+                      <SelectValue
+                        placeholder={t("contents.dialog.form.type")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {campaignTypeOptions.map((option) => (
@@ -525,7 +527,9 @@ export function ContentDialog() {
                       errors.platform ? "border-red-500" : ""
                     }`}
                   >
-                    <SelectValue placeholder="Platform">
+                    <SelectValue
+                      placeholder={t("contents.dialog.form.platform")}
+                    >
                       {formData.platform
                         ? (() => {
                             const config = getPlatformConfig(formData.platform);
@@ -576,7 +580,9 @@ export function ContentDialog() {
                         errors.projectId ? "border-red-500" : ""
                       }`}
                     >
-                      <SelectValue placeholder="Project" />
+                      <SelectValue
+                        placeholder={t("contents.dialog.form.project")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {projects?.map((project) => (

@@ -2,7 +2,7 @@
 
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { ContentCampaignStatus } from "@/types/status";
-import { EditableCampaignStatusBadge } from "../contents/editable-campaign-status-badge";
+import { EditableCampaignStatusBadge } from "../contents/editable-badges/editable-campaign-status-badge";
 
 interface EditableCampaignStatusCellProps {
   value: ContentCampaignStatus;

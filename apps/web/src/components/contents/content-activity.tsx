@@ -17,6 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface ContentActivityProps {
   contentId: Id<"contentCampaigns"> | Id<"contentRoutines">;
@@ -65,6 +66,8 @@ export function ContentActivity({
   contentType,
   statusHistory = [],
 }: ContentActivityProps) {
+  const { t } = useTranslations();
+
   // Fetch activities for this content
   const activities = useQuery(
     api.queries.projectActivities.getEntityActivities,
@@ -85,19 +88,19 @@ export function ContentActivity({
 
     // If less than 1 minute ago
     if (diffInMinutes < 1) {
-      return "Just now";
+      return t("contents.activity.timeAgo.justNow");
     }
     // If less than 1 hour ago
     if (diffInMinutes < 60) {
-      return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
+      return `${diffInMinutes} ${diffInMinutes === 1 ? t("contents.activity.timeAgo.minuteAgo") : t("contents.activity.timeAgo.minutesAgo")}`;
     }
     // If less than 24 hours ago
     if (diffInHours < 24) {
-      return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
+      return `${diffInHours} ${diffInHours === 1 ? t("contents.activity.timeAgo.hourAgo") : t("contents.activity.timeAgo.hoursAgo")}`;
     }
     // If less than 7 days ago
     if (diffInDays < 7) {
-      return `${diffInDays} ${diffInDays === 1 ? "day" : "days"} ago`;
+      return `${diffInDays} ${diffInDays === 1 ? t("contents.activity.timeAgo.dayAgo") : t("contents.activity.timeAgo.daysAgo")}`;
     }
 
     // Otherwise show full date
@@ -140,11 +143,10 @@ export function ContentActivity({
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <FileText className="h-12 w-12 text-muted-foreground/50 mb-3" />
         <h3 className="text-sm font-medium text-foreground mb-1">
-          No Activity Yet
+          {t("contents.activity.noActivity")}
         </h3>
         <p className="text-xs text-muted-foreground max-w-sm">
-          Activities such as updates, status changes, and other actions will
-          appear here.
+          {t("contents.activity.noActivityDescription")}
         </p>
       </div>
     );
@@ -156,7 +158,7 @@ export function ContentActivity({
       {hasStatusHistory && (
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-foreground">
-            Status History
+            {t("contents.activity.statusHistory")}
           </h3>
           <div className="space-y-2">
             {statusHistory.map((history, index) => (
@@ -188,7 +190,8 @@ export function ContentActivity({
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                       <Calendar className="h-3 w-3" />
                       <span>
-                        Scheduled: {formatFullTimestamp(history.scheduledAt)}
+                        {t("contents.activity.actions.scheduled")}:{" "}
+                        {formatFullTimestamp(history.scheduledAt)}
                       </span>
                     </div>
                   )}
@@ -203,7 +206,7 @@ export function ContentActivity({
       {hasActivities && (
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-foreground">
-            Project Activities
+            {t("contents.activity.projectActivities")}
           </h3>
           <div className="space-y-3">
             {activities.map((activity) => {

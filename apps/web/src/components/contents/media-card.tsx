@@ -13,6 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
+import { useTranslations } from "@/hooks/use-translations";
 
 type MediaItem = {
   storageId: Id<"_storage">;
@@ -79,6 +80,7 @@ function formatFileSize(bytes: number): string {
 }
 
 export function MediaCard({ media, onView, onDelete }: MediaCardProps) {
+  const { t } = useTranslations();
   const iconColor = getFileTypeColor(media.contentType);
 
   return (
@@ -152,7 +154,7 @@ export function MediaCard({ media, onView, onDelete }: MediaCardProps) {
           onClick={() => onView(media.storageId)}
         >
           <Download className="mr-1.5 h-3 w-3" />
-          View
+          {t("contents.media.card.view")}
         </Button>
         <Button
           variant="ghost"

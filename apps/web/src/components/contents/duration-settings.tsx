@@ -6,6 +6,7 @@ import { DurationInput } from "@/components/ui/duration-input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/hooks/use-translations";
 
 export type ContentType = "campaign" | "routine";
 
@@ -32,44 +33,58 @@ export interface DurationSettingsProps {
   className?: string;
 }
 
-const campaignTransitions = [
+const getCampaignTransitions = (t: (key: string) => string) => [
   {
     key: "product_obtained_to_production" as const,
-    label: "Product Obtained → Production",
-    description: "Time to start production after receiving product",
+    label: t(
+      "contents.duration.transitions.campaign.productObtainedToProduction",
+    ),
+    description: t(
+      "contents.duration.transitions.campaign.productObtainedToProductionDesc",
+    ),
   },
   {
     key: "production_to_published" as const,
-    label: "Production → Published",
-    description: "Time to publish after production complete",
+    label: t("contents.duration.transitions.campaign.productionToPublished"),
+    description: t(
+      "contents.duration.transitions.campaign.productionToPublishedDesc",
+    ),
   },
   {
     key: "published_to_payment" as const,
-    label: "Published → Payment",
-    description: "Time to receive payment after publishing",
+    label: t("contents.duration.transitions.campaign.publishedToPayment"),
+    description: t(
+      "contents.duration.transitions.campaign.publishedToPaymentDesc",
+    ),
   },
   {
     key: "payment_to_done" as const,
-    label: "Payment → Done",
-    description: "Time to complete after payment received",
+    label: t("contents.duration.transitions.campaign.paymentToDone"),
+    description: t("contents.duration.transitions.campaign.paymentToDoneDesc"),
   },
 ];
 
-const routineTransitions = [
+const getRoutineTransitions = (t: (key: string) => string) => [
   {
     key: "plan_to_in_progress" as const,
-    label: "Plan → In Progress",
-    description: "Time to start working after planning",
+    label: t("contents.duration.transitions.routine.planToInProgress"),
+    description: t(
+      "contents.duration.transitions.routine.planToInProgressDesc",
+    ),
   },
   {
     key: "in_progress_to_scheduled" as const,
-    label: "In Progress → Scheduled",
-    description: "Time to schedule after starting work",
+    label: t("contents.duration.transitions.routine.inProgressToScheduled"),
+    description: t(
+      "contents.duration.transitions.routine.inProgressToScheduledDesc",
+    ),
   },
   {
     key: "scheduled_to_published" as const,
-    label: "Scheduled → Published",
-    description: "Time between scheduling and publishing",
+    label: t("contents.duration.transitions.routine.scheduledToPublished"),
+    description: t(
+      "contents.duration.transitions.routine.scheduledToPublishedDesc",
+    ),
   },
 ];
 
@@ -80,10 +95,13 @@ export function DurationSettings({
   disabled = false,
   className,
 }: DurationSettingsProps) {
+  const { t } = useTranslations();
   const [isExpanded, setIsExpanded] = React.useState(false);
 
   const transitions =
-    contentType === "campaign" ? campaignTransitions : routineTransitions;
+    contentType === "campaign"
+      ? getCampaignTransitions(t)
+      : getRoutineTransitions(t);
 
   const handleDurationChange = (key: string, value: string) => {
     const newDurations = {
@@ -119,9 +137,13 @@ export function DurationSettings({
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           )}
           <Clock className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Duration Settings</span>
+          <span className="text-sm font-medium">
+            {t("contents.duration.title")}
+          </span>
           {hasAnyDuration && !isExpanded && (
-            <span className="text-xs text-muted-foreground">(configured)</span>
+            <span className="text-xs text-muted-foreground">
+              {t("contents.duration.configured")}
+            </span>
           )}
         </div>
       </Button>
@@ -129,7 +151,7 @@ export function DurationSettings({
       {isExpanded && (
         <div className="space-y-3 pl-6 border-l-2 border-muted">
           <p className="text-xs text-muted-foreground">
-            Set target duration for each status transition. This is optional.
+            {t("contents.duration.description")}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
