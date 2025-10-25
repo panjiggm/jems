@@ -7,6 +7,8 @@ import { api } from "@packages/backend/convex/_generated/api";
 import { DriveHeader } from "./drive-header";
 import { ContentCard } from "./content-card";
 import { MediaListTable } from "./media-list-grouped";
+import { MediaCardGrid } from "./media-card-grid";
+import { ViewToggle } from "./view-toggle";
 import { UploadDialog } from "./upload-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -20,6 +22,7 @@ export function DriveClient({
   preloadedMediaGrouped,
 }: DriveClientProps) {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
+  const [view, setView] = useQueryState("view", { defaultValue: "table" });
   const [uploadDialogOpen, setUploadDialogOpen] = React.useState(false);
 
   // Use preloaded queries
@@ -71,10 +74,20 @@ export function DriveClient({
           </div>
         )}
 
-        {/* All Media Files Table */}
+        {/* All Media Files - Table or Grid View */}
         <div>
-          <h2 className="text-sm font-semibold mb-3">All Files</h2>
-          <MediaListTable contents={mediaGrouped} />
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold">All Files</h2>
+            <ViewToggle
+              view={view as "table" | "grid"}
+              onViewChange={(newView) => setView(newView)}
+            />
+          </div>
+          {view === "grid" ? (
+            <MediaCardGrid contents={mediaGrouped} />
+          ) : (
+            <MediaListTable contents={mediaGrouped} />
+          )}
         </div>
       </div>
 
