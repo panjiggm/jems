@@ -17,21 +17,21 @@ export async function generateMetadata({
   const dict = await getDictionary(locale);
 
   return {
-    title: dict.terms?.title || "Terms of Service | Hidden Jems",
+    title: dict.terms?.title || "Terms of Service | Holobiont",
     description:
-      "Read our Terms of Service to understand the rules and regulations governing the use of Hidden Jems content management platform.",
+      "Read our Terms of Service to understand the rules and regulations governing the use of Holobiont content management platform.",
     openGraph: {
-      title: dict.terms?.title || "Terms of Service | Hidden Jems",
+      title: dict.terms?.title || "Terms of Service | Holobiont",
       description:
-        "Read our Terms of Service to understand the rules and regulations governing the use of Hidden Jems content management platform.",
+        "Read our Terms of Service to understand the rules and regulations governing the use of Holobiont content management platform.",
       type: "website",
       locale: locale,
     },
     twitter: {
       card: "summary_large_image",
-      title: dict.terms?.title || "Terms of Service | Hidden Jems",
+      title: dict.terms?.title || "Terms of Service | Holobiont",
       description:
-        "Read our Terms of Service to understand the rules and regulations governing the use of Hidden Jems content management platform.",
+        "Read our Terms of Service to understand the rules and regulations governing the use of Holobiont content management platform.",
     },
   };
 }

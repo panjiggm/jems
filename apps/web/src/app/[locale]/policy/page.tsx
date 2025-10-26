@@ -17,21 +17,21 @@ export async function generateMetadata({
   const dict = await getDictionary(locale);
 
   return {
-    title: dict.policy?.title || "Privacy Policy | Hidden Jems",
+    title: dict.policy?.title || "Privacy Policy | Holobiont",
     description:
-      "Learn how Hidden Jems collects, uses, and protects your personal information. Read our comprehensive Privacy Policy for details.",
+      "Learn how Holobiont collects, uses, and protects your personal information. Read our comprehensive Privacy Policy for details.",
     openGraph: {
-      title: dict.policy?.title || "Privacy Policy | Hidden Jems",
+      title: dict.policy?.title || "Privacy Policy | Holobiont",
       description:
-        "Learn how Hidden Jems collects, uses, and protects your personal information. Read our comprehensive Privacy Policy for details.",
+        "Learn how Holobiont collects, uses, and protects your personal information. Read our comprehensive Privacy Policy for details.",
       type: "website",
       locale: locale,
     },
     twitter: {
       card: "summary_large_image",
-      title: dict.policy?.title || "Privacy Policy | Hidden Jems",
+      title: dict.policy?.title || "Privacy Policy | Holobiont",
       description:
-        "Learn how Hidden Jems collects, uses, and protects your personal information. Read our comprehensive Privacy Policy for details.",
+        "Learn how Holobiont collects, uses, and protects your personal information. Read our comprehensive Privacy Policy for details.",
     },
   };
 }
