@@ -10,18 +10,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-
-const viewOptions = [
-  { value: "table", label: "Table", icon: Table },
-  { value: "kanban", label: "Kanban", icon: Kanban },
-  { value: "list", label: "List", icon: List },
-  { value: "calendar", label: "Calendar", icon: Calendar },
-];
+import { useTranslations } from "@/hooks/use-translations";
 
 export function ViewDisplayDropdown() {
   const [currentView, setCurrentView] = useQueryState("view", {
     defaultValue: "table",
   });
+  const { t } = useTranslations();
+
+  const viewOptions = [
+    { value: "table", label: t("project.views.table"), icon: Table },
+    { value: "kanban", label: t("project.views.kanban"), icon: Kanban },
+    { value: "list", label: t("project.views.list"), icon: List },
+    { value: "calendar", label: t("project.views.calendar"), icon: Calendar },
+  ];
 
   const currentViewOption = viewOptions.find(
     (opt) => opt.value === currentView,
@@ -33,7 +35,7 @@ export function ViewDisplayDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="xs" className="gap-2 text-xs">
           <CurrentIcon className="h-3 w-3" />
-          <span className="hidden sm:inline">Display</span>
+          <span className="hidden sm:inline">{t("project.views.display")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">

@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";

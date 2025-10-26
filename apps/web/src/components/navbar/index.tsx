@@ -33,7 +33,7 @@ const Navbar = () => {
                 {t("nav.title")}
               </h2>
               <Badge className="bg-gradient-to-r from-[#f7a641] to-[#4a2e1a] text-white border-0 font-bold text-[10px] px-2 py-0.5 animate-pulse hover:animate-none hidden sm:inline-flex">
-                ✨ ALPHA
+                ✨ {t("nav.alpha")}
               </Badge>
             </div>
           </Link>

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 type Platform =
   | "tiktok"
@@ -22,7 +23,7 @@ type Platform =
 
 interface EditablePlatformCellProps {
   value: Platform;
-  contentId: string;
+  contentId: Id<"contentRoutines"> | Id<"contentCampaigns">;
   onUpdate: (newPlatform: Platform) => void;
 }
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "../ui/button";
+import { useTranslations } from "@/hooks/use-translations";
 
 type Props = {
   className?: string;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function ThemeToggle({ className, labels }: Props) {
+  const { t } = useTranslations();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -23,8 +25,8 @@ export function ThemeToggle({ className, labels }: Props) {
   return (
     <Button
       type="button"
-      aria-label="Toggle theme"
-      title="Toggle theme"
+      aria-label={t("nav.toggleTheme")}
+      title={t("nav.toggleTheme")}
       size="xs"
       variant="outline"
       className={className}
@@ -33,8 +35,8 @@ export function ThemeToggle({ className, labels }: Props) {
       {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
       <span className="sr-only">
         {isDark
-          ? (labels?.light ?? "Switch to light")
-          : (labels?.dark ?? "Switch to dark")}
+          ? (labels?.light ?? t("nav.switchToLight"))
+          : (labels?.dark ?? t("nav.switchToDark"))}
       </span>
     </Button>
   );

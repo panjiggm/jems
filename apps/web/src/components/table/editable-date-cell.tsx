@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { format, parseISO, isValid } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -16,15 +15,10 @@ import { cn } from "@/lib/utils";
 
 interface EditableDateCellProps {
   value?: string;
-  contentId: Id<"contentCampaigns"> | Id<"contentRoutines">;
   onUpdate: (newDate?: string) => void;
 }
 
-export function EditableDateCell({
-  value,
-  contentId,
-  onUpdate,
-}: EditableDateCellProps) {
+export function EditableDateCell({ value, onUpdate }: EditableDateCellProps) {
   const [open, setOpen] = useState(false);
 
   const handleSelect = (date: Date | undefined) => {

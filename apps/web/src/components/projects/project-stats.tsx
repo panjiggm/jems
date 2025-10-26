@@ -12,24 +12,20 @@ import {
   AlertTriangle,
   Rocket,
   BarChart3,
-  CheckCircle2,
   User,
 } from "lucide-react";
-import { format } from "date-fns";
 import { Badge } from "../ui/badge";
 import { useTranslations } from "@/hooks/use-translations";
 
 interface ProjectStatsProps {
   projectId?: string;
   contentId?: string;
-  taskId?: string;
   year?: string;
 }
 
 const ProjectStats: React.FC<ProjectStatsProps> = ({
   projectId: propProjectId,
   contentId: propContentId,
-  taskId: propTaskId,
   year: propYear,
 }) => {
   const { t } = useTranslations();
@@ -39,7 +35,6 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
   // Extract IDs from URL params if not provided as props
   const projectId = propProjectId || (params.projectId as string);
   const contentId = propContentId || (params.contentId as string);
-  const taskId = propTaskId || (params.taskId as string);
   const year = propYear || (params.year as string);
 
   // Fetch user profile
@@ -78,22 +73,6 @@ const ProjectStats: React.FC<ProjectStatsProps> = ({
         }
       : "skip",
   );
-
-  // Fetch individual stats for specific entities
-  // const individualProjectStats = useQuery(
-  //   api.queries.projects.getStats,
-  //   isProjectDetail && projectId ? {} : "skip",
-  // );
-
-  // const individualContentStats = useQuery(
-  //   api.queries.contents.getStats,
-  //   isContentDetail && projectId ? { projectId: projectId as any } : "skip",
-  // );
-
-  // const individualTaskStats = useQuery(
-  //   api.queries.tasks.getStats,
-  //   isContentDetail && projectId ? { projectId: projectId as any } : "skip",
-  // );
 
   // Loading state
   if (

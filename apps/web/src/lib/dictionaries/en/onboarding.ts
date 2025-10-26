@@ -69,4 +69,5 @@ export const onboarding = {
     title: "Failed to complete setup",
     description: "Please try again or contact support if the problem persists.",
   },
+  logout: "Log out",
 } as const;

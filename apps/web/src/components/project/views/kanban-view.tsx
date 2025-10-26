@@ -2,6 +2,7 @@ import { KanbanCampaignBoard } from "@/components/kanban/campaign/kanban-board";
 import { KanbanRoutineBoard } from "@/components/kanban/routine/kanban-board";
 import { FilterState } from "../search-filter-content";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface KanbanViewProps {
   projectId?: Id<"projects">;
@@ -16,6 +17,7 @@ export default function KanbanView({
   filters,
   contentType,
 }: KanbanViewProps) {
+  const { t } = useTranslations();
   if (projectId && userId) {
     return (
       <>
@@ -38,10 +40,11 @@ export default function KanbanView({
 
   return (
     <div className="">
-      <h3 className="text-lg font-semibold mb-2">Kanban View</h3>
+      <h3 className="text-lg font-semibold mb-2">
+        {t("project.viewMessages.kanban.title")}
+      </h3>
       <p className="text-muted-foreground">
-        Drag and drop your content across different columns to manage your
-        workflow.
+        {t("project.viewMessages.kanban.description")}
       </p>
     </div>
   );

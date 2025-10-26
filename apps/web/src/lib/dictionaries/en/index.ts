@@ -4,9 +4,14 @@ import { home } from "./home";
 import { auth } from "./auth";
 import { onboarding } from "./onboarding";
 import { projects } from "./projects";
+import { project } from "./project";
 import { mobileApp } from "./mobile";
 import { contents } from "./contents";
 import { drive } from "./drive";
+import { kanban } from "./kanban";
+import { list } from "./list";
+import { profile } from "./profile";
+import { table } from "./table";
 
 export const dictionary = {
   nav,
@@ -15,7 +20,12 @@ export const dictionary = {
   auth,
   onboarding,
   projects,
+  project,
   mobileApp,
   contents,
   drive,
+  kanban,
+  list,
+  profile,
+  table,
 } as const;

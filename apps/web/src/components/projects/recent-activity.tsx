@@ -6,7 +6,6 @@ import { api } from "@packages/backend/convex/_generated/api";
 import { Badge } from "../ui/badge";
 import {
   CheckCircle2,
-  ArrowRight,
   Clock,
   Sparkles,
   Edit3,

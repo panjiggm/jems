@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 interface EditableTitleCellProps {
   value: string;
-  contentId: string;
+  contentId: Id<"contentRoutines"> | Id<"contentCampaigns">;
   onUpdate: (newTitle: string) => void;
 }
 

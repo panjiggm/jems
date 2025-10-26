@@ -22,6 +22,7 @@ import {
   ContentCampaignType,
   Platform,
 } from "@/types/status";
+import { useTranslations } from "@/hooks/use-translations";
 
 // Campaign content type
 interface CampaignContent {
@@ -51,24 +52,41 @@ interface KanbanCampaignBoardProps {
   filters: FilterState;
 }
 
-// Campaign status columns
-const campaignColumns = [
-  { id: "product_obtained", title: "Product Obtained", color: "bg-blue-200" },
-  { id: "production", title: "Production", color: "bg-orange-200" },
-  { id: "published", title: "Published", color: "bg-green-200" },
-  { id: "payment", title: "Payment", color: "bg-yellow-200" },
-  { id: "done", title: "Done", color: "bg-gray-200" },
-];
-
 export function KanbanCampaignBoard({
   projectId,
   userId,
   filters,
 }: KanbanCampaignBoardProps) {
+  const { t } = useTranslations();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<CampaignContent[]>([]);
   const [activeContentOriginalStatus, setActiveContentOriginalStatus] =
     useState<string | null>(null);
+
+  // Campaign status columns
+  const campaignColumns = [
+    {
+      id: "product_obtained",
+      title: t("kanban.status.productObtained"),
+      color: "bg-blue-200",
+    },
+    {
+      id: "production",
+      title: t("kanban.status.production"),
+      color: "bg-orange-200",
+    },
+    {
+      id: "published",
+      title: t("kanban.status.published"),
+      color: "bg-green-200",
+    },
+    {
+      id: "payment",
+      title: t("kanban.status.payment"),
+      color: "bg-yellow-200",
+    },
+    { id: "done", title: t("kanban.status.done"), color: "bg-gray-200" },
+  ];
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -218,7 +236,7 @@ export function KanbanCampaignBoard({
   if (fetchedCampaigns === undefined) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">{t("kanban.loading")}</div>
       </div>
     );
   }

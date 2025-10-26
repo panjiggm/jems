@@ -17,6 +17,7 @@ import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import { ButtonPrimary } from "../ui/button-primary";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface UpdateNicheDialogProps {
   open: boolean;
@@ -37,6 +38,7 @@ export function UpdateNicheDialog({
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const hasInitializedCategories = useRef(false);
+  const { t } = useTranslations();
 
   const maxCategories = 2;
   const maxNiches = 4;
@@ -142,9 +144,9 @@ export function UpdateNicheDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Update Niches</DialogTitle>
+          <DialogTitle>{t("profile.updateNicheDialog.title")}</DialogTitle>
           <DialogDescription>
-            Choose your niche categories and specific niches
+            {t("profile.updateNicheDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -152,9 +154,12 @@ export function UpdateNicheDialog({
           {/* Category Selection */}
           <div className="space-y-3">
             <div>
-              <Label>Categories</Label>
+              <Label>{t("profile.updateNicheDialog.categories")}</Label>
               <p className="text-xs text-muted-foreground mt-1">
-                Select up to {maxCategories} categories
+                {t("profile.updateNicheDialog.categoriesDescription").replace(
+                  "{maxCategories}",
+                  maxCategories.toString(),
+                )}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -197,9 +202,12 @@ export function UpdateNicheDialog({
           {selectedCategories.length > 0 && (
             <div className="space-y-3">
               <div>
-                <Label>Niches</Label>
+                <Label>{t("profile.updateNicheDialog.niches")}</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Select up to {maxNiches} niches from your chosen categories
+                  {t("profile.updateNicheDialog.nichesDescription").replace(
+                    "{maxNiches}",
+                    maxNiches.toString(),
+                  )}
                 </p>
               </div>
 
@@ -282,7 +290,9 @@ export function UpdateNicheDialog({
               {selectedNicheIds.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs font-medium">
-                    Selected ({selectedNicheIds.length}/{maxNiches}):
+                    {t("profile.updateNicheDialog.selected")
+                      .replace("{count}", selectedNicheIds.length.toString())
+                      .replace("{max}", maxNiches.toString())}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {selectedNiches.map((niche) => (
@@ -307,13 +317,15 @@ export function UpdateNicheDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Cancel
+            {t("profile.updateNicheDialog.cancel")}
           </ButtonPrimary>
           <ButtonPrimary
             onClick={handleSave}
             disabled={isLoading || selectedNicheIds.length === 0}
           >
-            {isLoading ? "Saving..." : "Save Changes"}
+            {isLoading
+              ? t("profile.updateNicheDialog.saving")
+              : t("profile.updateNicheDialog.saveChanges")}
           </ButtonPrimary>
         </DialogFooter>
       </DialogContent>

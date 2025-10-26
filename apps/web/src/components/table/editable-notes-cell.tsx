@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 interface EditableNotesCellProps {
   value: string;
-  contentId: string;
+  contentId: Id<"contentRoutines"> | Id<"contentCampaigns">;
   onUpdate: (newNotes: string) => void;
 }
 

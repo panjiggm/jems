@@ -18,6 +18,7 @@ import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { FilterState } from "../../project/search-filter-content";
 import { ContentRoutineStatus, Platform } from "@/types/status";
+import { useTranslations } from "@/hooks/use-translations";
 
 // Routine content type
 interface RoutineContent {
@@ -46,23 +47,36 @@ interface KanbanRoutineBoardProps {
   filters: FilterState;
 }
 
-// Routine status columns
-const routineColumns = [
-  { id: "plan", title: "Plan", color: "bg-blue-200" },
-  { id: "in_progress", title: "In Progress", color: "bg-yellow-200" },
-  { id: "scheduled", title: "Scheduled", color: "bg-purple-200" },
-  { id: "published", title: "Published", color: "bg-green-200" },
-];
-
 export function KanbanRoutineBoard({
   projectId,
   userId,
   filters,
 }: KanbanRoutineBoardProps) {
+  const { t } = useTranslations();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [routines, setRoutines] = useState<RoutineContent[]>([]);
   const [activeContentOriginalStatus, setActiveContentOriginalStatus] =
     useState<string | null>(null);
+
+  // Routine status columns
+  const routineColumns = [
+    { id: "plan", title: t("kanban.status.plan"), color: "bg-blue-200" },
+    {
+      id: "in_progress",
+      title: t("kanban.status.inProgress"),
+      color: "bg-yellow-200",
+    },
+    {
+      id: "scheduled",
+      title: t("kanban.status.scheduled"),
+      color: "bg-purple-200",
+    },
+    {
+      id: "published",
+      title: t("kanban.status.published"),
+      color: "bg-green-200",
+    },
+  ];
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -211,7 +225,7 @@ export function KanbanRoutineBoard({
   if (fetchedRoutines === undefined) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">{t("kanban.loading")}</div>
       </div>
     );
   }

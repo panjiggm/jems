@@ -43,6 +43,7 @@ import { EditableCampaignTypeCell } from "../editable-campaign-type-cell";
 
 import { Eye } from "lucide-react";
 import { MediaItem } from "@packages/backend/convex/schema";
+import { useTranslations } from "@/hooks/use-translations";
 
 // Campaign content type
 type CampaignContent = {
@@ -90,6 +91,7 @@ export function EditableCampaignTable({
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const { t } = useTranslations();
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -125,14 +127,14 @@ export function EditableCampaignTable({
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
+          aria-label={t("table.aria.selectAll")}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={t("table.aria.selectRow")}
         />
       ),
       enableSorting: false,
@@ -141,7 +143,7 @@ export function EditableCampaignTable({
 
     // Title column
     campaignColumnHelper.accessor("title", {
-      header: "Name",
+      header: t("table.columns.name"),
       cell: ({ row, getValue }) => (
         <EditableTitleCell
           value={getValue()}
@@ -155,7 +157,7 @@ export function EditableCampaignTable({
 
     // Platform column
     campaignColumnHelper.accessor("platform", {
-      header: "Platform",
+      header: t("table.columns.platform"),
       cell: ({ row, getValue }) => (
         <EditablePlatformCell
           value={getValue()}
@@ -172,7 +174,7 @@ export function EditableCampaignTable({
 
     // Campaign Type column (barter/paid)
     campaignColumnHelper.accessor("type", {
-      header: "Type",
+      header: t("table.columns.type"),
       cell: ({ row, getValue }) => (
         <EditableCampaignTypeCell
           value={getValue()}
@@ -183,7 +185,7 @@ export function EditableCampaignTable({
 
     // Status column
     campaignColumnHelper.accessor("status", {
-      header: "Status",
+      header: t("table.columns.status"),
       cell: ({ row, getValue }) => (
         <EditableCampaignStatusCell
           value={getValue()}
@@ -194,7 +196,7 @@ export function EditableCampaignTable({
 
     // Notes column
     campaignColumnHelper.accessor("notes", {
-      header: "Notes",
+      header: t("table.columns.notes"),
       cell: ({ row, getValue }) => (
         <EditableNotesCell
           value={getValue() || ""}
@@ -209,7 +211,7 @@ export function EditableCampaignTable({
     // Actions column
     campaignColumnHelper.display({
       id: "actions",
-      header: "Actions",
+      header: t("table.columns.actions"),
       cell: ({ row }) => (
         <Button
           variant="ghost"
@@ -252,7 +254,9 @@ export function EditableCampaignTable({
   if (!campaigns) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="text-xs text-muted-foreground">Loading...</div>
+        <div className="text-xs text-muted-foreground">
+          {t("table.loading")}
+        </div>
       </div>
     );
   }
@@ -309,8 +313,7 @@ export function EditableCampaignTable({
                     colSpan={campaignColumns.length}
                     className="h-16 text-xs text-center text-muted-foreground"
                   >
-                    No campaigns found. Create your first campaign to get
-                    started.
+                    {t("table.noData.campaigns")}
                   </TableCell>
                 </TableRow>
               )}
@@ -321,8 +324,9 @@ export function EditableCampaignTable({
         {/* Pagination */}
         <div className="flex items-center justify-between space-x-2 py-4 px-1">
           <div className="flex-1 text-xs text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {table.getFilteredSelectedRowModel().rows.length}{" "}
+            {t("table.pagination.of")} {table.getFilteredRowModel().rows.length}{" "}
+            {t("table.pagination.selected")}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -332,7 +336,7 @@ export function EditableCampaignTable({
               disabled={!table.getCanPreviousPage()}
               className="h-7 text-xs"
             >
-              Previous
+              {t("table.pagination.previous")}
             </Button>
             <Button
               variant="outline"
@@ -341,7 +345,7 @@ export function EditableCampaignTable({
               disabled={!table.getCanNextPage()}
               className="h-7 text-xs"
             >
-              Next
+              {t("table.pagination.next")}
             </Button>
           </div>
         </div>

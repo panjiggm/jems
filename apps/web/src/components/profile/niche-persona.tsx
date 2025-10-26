@@ -12,10 +12,12 @@ import { Loader2 } from "lucide-react";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import { UpdateNicheDialog } from "./update-niche-dialog";
 import { ButtonPrimary } from "../ui/button-primary";
+import { useTranslations } from "@/hooks/use-translations";
 
 export default function NichePersona() {
   const persona = useQuery(api.queries.persona.getPersona);
   const updatePersona = useMutation(api.mutations.profile.updatePersona);
+  const { t } = useTranslations();
 
   const selectedNiches = useQuery(
     api.queries.niches.getNichesByIds,
@@ -43,10 +45,10 @@ export default function NichePersona() {
         locale: navigator.language.split("-")[0] || "en",
       });
 
-      toast.success("Niches updated! AI prompt is being regenerated.");
+      toast.success(t("profile.nichePersona.nichesUpdated"));
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error("Failed to update niches. Please try again.");
+      toast.error(t("profile.nichePersona.nichesUpdateError"));
       console.error("Error updating niches:", error);
     }
   };
@@ -58,12 +60,12 @@ export default function NichePersona() {
       setIsLoading(true);
 
       if (bio === persona.bio) {
-        toast.info("No changes were made");
+        toast.info(t("profile.nichePersona.noChanges"));
         return;
       }
 
       if (!bio.trim()) {
-        toast.error("Bio cannot be empty");
+        toast.error(t("profile.nichePersona.bioEmpty"));
         return;
       }
 
@@ -84,14 +86,14 @@ export default function NichePersona() {
 
       toast.success(
         regeneratePrompt
-          ? "Bio updated! AI prompt is being regenerated."
-          : "Bio has been updated successfully.",
+          ? t("profile.nichePersona.bioUpdated")
+          : t("profile.nichePersona.bioUpdatedSuccess"),
       );
 
       setHasChanges(false);
       setRegeneratePrompt(false);
     } catch (error) {
-      toast.error("Failed to update bio. Please try again.");
+      toast.error(t("profile.nichePersona.bioUpdateError"));
       console.error("Error updating bio:", error);
     } finally {
       setIsLoading(false);
@@ -110,9 +112,11 @@ export default function NichePersona() {
     <>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">Niche & Persona</h1>
+          <h1 className="text-2xl font-bold">
+            {t("profile.nichePersona.title")}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage your niches and persona settings
+            {t("profile.nichePersona.description")}
           </p>
         </div>
 
@@ -121,9 +125,9 @@ export default function NichePersona() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <Label>Selected Niches</Label>
+                <Label>{t("profile.nichePersona.selectedNiches")}</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Your current niche interests
+                  {t("profile.nichePersona.selectedNichesDescription")}
                 </p>
               </div>
               <ButtonPrimary
@@ -131,8 +135,7 @@ export default function NichePersona() {
                 size="sm"
                 onClick={() => setIsDialogOpen(true)}
               >
-                {/* <Pencil className="h-4 w-4 mr-2" /> */}
-                Update
+                {t("profile.nichePersona.update")}
               </ButtonPrimary>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -150,7 +153,7 @@ export default function NichePersona() {
                   ))
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No niches selected yet
+                  {t("profile.nichePersona.noNichesSelected")}
                 </p>
               )}
             </div>
@@ -159,9 +162,9 @@ export default function NichePersona() {
           {/* Bio */}
           <div className="space-y-3">
             <div>
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio">{t("profile.nichePersona.bio")}</Label>
               <p className="text-xs text-muted-foreground mt-1">
-                Describe yourself and your interests
+                {t("profile.nichePersona.bioDescription")}
               </p>
             </div>
             <Textarea
@@ -171,7 +174,7 @@ export default function NichePersona() {
                 setBio(e.target.value);
                 setHasChanges(true);
               }}
-              placeholder="Tell us about yourself..."
+              placeholder={t("profile.nichePersona.bioPlaceholder")}
               rows={4}
               disabled={isLoading}
             />
@@ -192,7 +195,7 @@ export default function NichePersona() {
                 htmlFor="regenerate-persona"
                 className="text-sm font-normal cursor-pointer"
               >
-                Regenerate AI prompt with updated bio
+                {t("profile.nichePersona.regeneratePrompt")}
               </Label>
             </div>
           )}
@@ -204,7 +207,7 @@ export default function NichePersona() {
             onClick={handleCancel}
             disabled={isLoading || !hasChanges}
           >
-            Cancel
+            {t("profile.nichePersona.cancel")}
           </ButtonPrimary>
           <ButtonPrimary
             onClick={handleSaveBio}
@@ -213,10 +216,10 @@ export default function NichePersona() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {t("profile.nichePersona.saving")}
               </>
             ) : (
-              "Save Changes"
+              t("profile.nichePersona.saveChanges")
             )}
           </ButtonPrimary>
         </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface StatusSectionProps<T> {
   title: string;
@@ -26,6 +27,7 @@ export function StatusSection<T>({
   contentType,
   renderContent,
 }: StatusSectionProps<T>) {
+  const { t } = useTranslations();
   const [isExpanded, setIsExpanded] = useState(count > 0);
 
   return (
@@ -59,7 +61,12 @@ export function StatusSection<T>({
         <div className="p-4">
           {contents.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm">No {contentType} content in this status</p>
+              <p className="text-sm">
+                {t("list.noContentInStatus").replace(
+                  "{type}",
+                  t(`list.${contentType}`),
+                )}
+              </p>
             </div>
           ) : (
             <div className="space-y-3">

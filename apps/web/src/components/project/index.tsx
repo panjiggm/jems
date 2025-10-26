@@ -77,9 +77,11 @@ export default function ProjectComponent({
       case "calendar":
         return (
           <div className="p-4">
-            <h3 className="text-lg font-semibold mb-2">Calendar View</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {t("project.viewMessages.calendar.title")}
+            </h3>
             <p className="text-muted-foreground">
-              Calendar view coming soon...
+              {t("project.viewMessages.calendar.description")}
             </p>
           </div>
         );

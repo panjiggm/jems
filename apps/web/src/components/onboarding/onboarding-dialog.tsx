@@ -208,11 +208,11 @@ export function OnboardingDialog({ isOpen, onClose }: OnboardingDialogProps) {
                 onClick={() => signOut()}
               >
                 <LogOut className="h-4 w-4" />
-                <span className="sr-only">Log out</span>
+                <span className="sr-only">{t("onboarding.logout")}</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Log out</p>
+              <p>{t("onboarding.logout")}</p>
             </TooltipContent>
           </Tooltip>
         </DialogHeader>

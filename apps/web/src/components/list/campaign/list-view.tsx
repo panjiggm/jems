@@ -7,6 +7,7 @@ import { FilterState } from "../../project/search-filter-content";
 import { StatusSection } from "../status-section";
 import { CampaignContentCard } from "./content-card";
 import { ContentCampaignStatus, Platform } from "@/types/status";
+import { useTranslations } from "@/hooks/use-translations";
 
 // Campaign content type
 interface CampaignContent {
@@ -42,6 +43,8 @@ export default function CampaignListView({
   userId,
   filters,
 }: CampaignListViewProps) {
+  const { t } = useTranslations();
+
   // Fetch campaigns
   const campaigns = useQuery(
     api.queries.contentCampaigns.getByProject,
@@ -62,9 +65,10 @@ export default function CampaignListView({
   if (!projectId || !userId) {
     return (
       <div className="p-4">
-        <h3 className="text-lg font-semibold mb-2">Campaign List View</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("list.campaignList")}</h3>
         <p className="text-muted-foreground">
-          Please select a project to view campaigns in list format.
+          {t("list.selectProject")} {t("list.campaignPlural")}{" "}
+          {t("list.inFormat")} {t("list.listFormat")}.
         </p>
       </div>
     );
@@ -73,7 +77,7 @@ export default function CampaignListView({
   if (!campaigns) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">{t("list.loading")}</div>
       </div>
     );
   }
@@ -94,31 +98,31 @@ export default function CampaignListView({
   const campaignStatusConfig = [
     {
       key: "product_obtained",
-      title: "Product Obtained",
+      title: t("kanban.status.productObtained"),
       color: "bg-blue-200",
       count: campaignsByStatus.product_obtained?.length || 0,
     },
     {
       key: "production",
-      title: "Production",
+      title: t("kanban.status.production"),
       color: "bg-orange-200",
       count: campaignsByStatus.production?.length || 0,
     },
     {
       key: "published",
-      title: "Published",
+      title: t("kanban.status.published"),
       color: "bg-green-200",
       count: campaignsByStatus.published?.length || 0,
     },
     {
       key: "payment",
-      title: "Payment",
+      title: t("kanban.status.payment"),
       color: "bg-yellow-200",
       count: campaignsByStatus.payment?.length || 0,
     },
     {
       key: "done",
-      title: "Done",
+      title: t("kanban.status.done"),
       color: "bg-gray-200",
       count: campaignsByStatus.done?.length || 0,
     },

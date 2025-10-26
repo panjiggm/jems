@@ -9,10 +9,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ButtonPrimary } from "../ui/button-primary";
+import { useTranslations } from "@/hooks/use-translations";
 
 export default function PersonalInfo() {
   const profile = useQuery(api.queries.profile.getProfile);
   const updateProfile = useMutation(api.mutations.profile.updateProfile);
+  const { t } = useTranslations();
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -72,7 +74,7 @@ export default function PersonalInfo() {
 
       // Only update if there are changes
       if (Object.keys(updates).length === 0) {
-        toast.info("No changes were made to your profile.");
+        toast.info(t("profile.messages.noChanges"));
         return;
       }
 
@@ -80,14 +82,14 @@ export default function PersonalInfo() {
 
       toast.success(
         regeneratePrompt
-          ? "Profile updated! AI prompt is being regenerated."
-          : "Profile has been updated successfully.",
+          ? t("profile.messages.profileUpdated")
+          : t("profile.messages.profileUpdatedSuccess"),
       );
 
       setHasChanges(false);
       setRegeneratePrompt(false);
     } catch (error) {
-      toast.error("Failed to update profile. Please try again.");
+      toast.error(t("profile.messages.profileUpdateError"));
       console.error("Error updating profile:", error);
     } finally {
       setIsLoading(false);
@@ -109,52 +111,58 @@ export default function PersonalInfo() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Personal Info</h1>
+        <h1 className="text-2xl font-bold">
+          {t("profile.personalInfo.title")}
+        </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Update your personal information and contact details
+          {t("profile.personalInfo.description")}
         </p>
       </div>
 
       <div className="space-y-4">
         {/* Full Name */}
         <div className="space-y-2">
-          <Label htmlFor="full_name">Full Name</Label>
+          <Label htmlFor="full_name">
+            {t("profile.personalInfo.fullName")}
+          </Label>
           <Input
             id="full_name"
             type="text"
             value={formData.full_name}
             onChange={(e) => handleInputChange("full_name", e.target.value)}
-            placeholder="Enter your full name"
+            placeholder={t("profile.personalInfo.fullNamePlaceholder")}
             disabled={isLoading}
           />
         </div>
 
         {/* Phone */}
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number</Label>
+          <Label htmlFor="phone">{t("profile.personalInfo.phone")}</Label>
           <Input
             id="phone"
             type="tel"
             value={formData.phone}
             onChange={(e) => handleInputChange("phone", e.target.value)}
-            placeholder="+62 812 3456 7890"
+            placeholder={t("profile.personalInfo.phonePlaceholder")}
             disabled={isLoading}
           />
         </div>
 
         {/* Avatar URL */}
         <div className="space-y-2">
-          <Label htmlFor="avatar_url">Avatar URL</Label>
+          <Label htmlFor="avatar_url">
+            {t("profile.personalInfo.avatarUrl")}
+          </Label>
           <Input
             id="avatar_url"
             type="url"
             value={formData.avatar_url}
             onChange={(e) => handleInputChange("avatar_url", e.target.value)}
-            placeholder="https://example.com/avatar.jpg"
+            placeholder={t("profile.personalInfo.avatarUrlPlaceholder")}
             disabled={isLoading}
           />
           <p className="text-xs text-muted-foreground">
-            Enter a URL for your profile picture
+            {t("profile.personalInfo.avatarUrlHelper")}
           </p>
         </div>
 
@@ -173,7 +181,7 @@ export default function PersonalInfo() {
               htmlFor="regenerate"
               className="text-sm font-normal cursor-pointer"
             >
-              Regenerate AI prompt with new name
+              {t("profile.personalInfo.regeneratePrompt")}
             </Label>
           </div>
         )}
@@ -185,16 +193,16 @@ export default function PersonalInfo() {
           onClick={handleCancel}
           disabled={isLoading || !hasChanges}
         >
-          Cancel
+          {t("profile.personalInfo.cancel")}
         </ButtonPrimary>
         <ButtonPrimary onClick={handleSave} disabled={isLoading || !hasChanges}>
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
+              {t("profile.personalInfo.saving")}
             </>
           ) : (
-            "Save Changes"
+            t("profile.personalInfo.saveChanges")
           )}
         </ButtonPrimary>
       </div>

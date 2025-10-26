@@ -38,6 +38,7 @@ import { EditableRoutineStatusCell } from "../editable-routine-status-cell";
 
 import { Eye } from "lucide-react";
 import { MediaItem } from "@packages/backend/convex/schema";
+import { useTranslations } from "@/hooks/use-translations";
 
 // Routine content type
 type RoutineContent = {
@@ -83,6 +84,7 @@ export function EditableRoutineTable({
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const { t } = useTranslations();
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -114,14 +116,14 @@ export function EditableRoutineTable({
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
+          aria-label={t("table.aria.selectAll")}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={t("table.aria.selectRow")}
         />
       ),
       enableSorting: false,
@@ -130,7 +132,7 @@ export function EditableRoutineTable({
 
     // Title column
     routineColumnHelper.accessor("title", {
-      header: "Name",
+      header: t("table.columns.name"),
       cell: ({ row, getValue }) => (
         <EditableTitleCell
           value={getValue()}
@@ -144,7 +146,7 @@ export function EditableRoutineTable({
 
     // Platform column
     routineColumnHelper.accessor("platform", {
-      header: "Platform",
+      header: t("table.columns.platform"),
       cell: ({ row, getValue }) => (
         <EditablePlatformCell
           value={getValue()}
@@ -161,7 +163,7 @@ export function EditableRoutineTable({
 
     // Status column
     routineColumnHelper.accessor("status", {
-      header: "Status",
+      header: t("table.columns.status"),
       cell: ({ row, getValue }) => (
         <EditableRoutineStatusCell
           value={getValue()}
@@ -172,7 +174,7 @@ export function EditableRoutineTable({
 
     // Notes column
     routineColumnHelper.accessor("notes", {
-      header: "Notes",
+      header: t("table.columns.notes"),
       cell: ({ row, getValue }) => (
         <EditableNotesCell
           value={getValue() || ""}
@@ -187,7 +189,7 @@ export function EditableRoutineTable({
     // Actions column
     routineColumnHelper.display({
       id: "actions",
-      header: "Actions",
+      header: t("table.columns.actions"),
       cell: ({ row }) => (
         <Button
           variant="ghost"
@@ -230,7 +232,9 @@ export function EditableRoutineTable({
   if (!routines) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="text-xs text-muted-foreground">Loading...</div>
+        <div className="text-xs text-muted-foreground">
+          {t("table.loading")}
+        </div>
       </div>
     );
   }
@@ -287,7 +291,7 @@ export function EditableRoutineTable({
                     colSpan={routineColumns.length}
                     className="h-16 text-xs text-center text-muted-foreground"
                   >
-                    No routines found. Create your first routine to get started.
+                    {t("table.noData.routines")}
                   </TableCell>
                 </TableRow>
               )}
@@ -298,8 +302,9 @@ export function EditableRoutineTable({
         {/* Pagination */}
         <div className="flex items-center justify-between space-x-2 py-4 px-1">
           <div className="flex-1 text-xs text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {table.getFilteredSelectedRowModel().rows.length}{" "}
+            {t("table.pagination.of")} {table.getFilteredRowModel().rows.length}{" "}
+            {t("table.pagination.selected")}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -309,7 +314,7 @@ export function EditableRoutineTable({
               disabled={!table.getCanPreviousPage()}
               className="h-7 text-xs"
             >
-              Previous
+              {t("table.pagination.previous")}
             </Button>
             <Button
               variant="outline"
@@ -318,7 +323,7 @@ export function EditableRoutineTable({
               disabled={!table.getCanNextPage()}
               className="h-7 text-xs"
             >
-              Next
+              {t("table.pagination.next")}
             </Button>
           </div>
         </div>

@@ -8,6 +8,7 @@ import {
 import { Plus, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { KanbanCard } from "./kanban-card";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Content {
   _id: string;
@@ -41,6 +42,7 @@ export function KanbanColumn({
   color,
   contents,
 }: KanbanColumnProps) {
+  const { t } = useTranslations();
   const { isOver, setNodeRef } = useDroppable({
     id,
   });
@@ -85,7 +87,7 @@ export function KanbanColumn({
             {contents.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
                 <Circle className="h-8 w-8 mb-2" />
-                <p className="text-sm">No content</p>
+                <p className="text-sm">{t("kanban.noContent")}</p>
               </div>
             ) : (
               contents.map((content) => (

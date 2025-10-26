@@ -69,4 +69,5 @@ export const onboarding = {
     description:
       "Silakan coba lagi atau hubungi dukungan jika masalah berlanjut.",
   },
+  logout: "Keluar",
 } as const;

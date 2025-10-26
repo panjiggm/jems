@@ -7,6 +7,7 @@ import { FilterState } from "../../project/search-filter-content";
 import { StatusSection } from "../status-section";
 import { RoutineContentCard } from "./content-card";
 import { ContentRoutineStatus, Platform } from "@/types/status";
+import { useTranslations } from "@/hooks/use-translations";
 
 // Routine content type
 interface RoutineContent {
@@ -41,6 +42,8 @@ export default function RoutineListView({
   userId,
   filters,
 }: RoutineListViewProps) {
+  const { t } = useTranslations();
+
   // Fetch routines
   const routines = useQuery(
     api.queries.contentRoutines.getByProject,
@@ -57,9 +60,10 @@ export default function RoutineListView({
   if (!projectId || !userId) {
     return (
       <div className="p-4">
-        <h3 className="text-lg font-semibold mb-2">Routine List View</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("list.routineList")}</h3>
         <p className="text-muted-foreground">
-          Please select a project to view routines in list format.
+          {t("list.selectProject")} {t("list.routinePlural")}{" "}
+          {t("list.inFormat")} {t("list.listFormat")}.
         </p>
       </div>
     );
@@ -68,7 +72,7 @@ export default function RoutineListView({
   if (!routines) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">{t("list.loading")}</div>
       </div>
     );
   }
@@ -89,25 +93,25 @@ export default function RoutineListView({
   const routineStatusConfig = [
     {
       key: "plan",
-      title: "Plan",
+      title: t("kanban.status.plan"),
       color: "bg-blue-200",
       count: routinesByStatus.plan?.length || 0,
     },
     {
       key: "in_progress",
-      title: "In Progress",
+      title: t("kanban.status.inProgress"),
       color: "bg-yellow-200",
       count: routinesByStatus.in_progress?.length || 0,
     },
     {
       key: "scheduled",
-      title: "Scheduled",
+      title: t("kanban.status.scheduled"),
       color: "bg-purple-200",
       count: routinesByStatus.scheduled?.length || 0,
     },
     {
       key: "published",
-      title: "Published",
+      title: t("kanban.status.published"),
       color: "bg-green-200",
       count: routinesByStatus.published?.length || 0,
     },

@@ -15,4 +15,8 @@ export const nav = {
   blog: "Blog",
   about: "Tentang",
   contactUs: "Hubungi Kami",
+  toggleTheme: "Ubah tema",
+  switchToLight: "Ubah ke mode terang",
+  switchToDark: "Ubah ke mode gelap",
+  alpha: "ALPHA",
 } as const;

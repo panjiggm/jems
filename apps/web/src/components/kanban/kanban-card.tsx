@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface KanbanCardProps {
   id: string;
@@ -55,6 +56,7 @@ export function KanbanCard({
   type,
   notes,
 }: KanbanCardProps) {
+  const { t } = useTranslations();
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
@@ -109,10 +111,23 @@ export function KanbanCard({
   };
 
   const getStatusLabel = (status: string) => {
-    return status
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+    const statusMap: Record<string, string> = {
+      product_obtained: t("kanban.status.productObtained"),
+      production: t("kanban.status.production"),
+      published: t("kanban.status.published"),
+      payment: t("kanban.status.payment"),
+      done: t("kanban.status.done"),
+      plan: t("kanban.status.plan"),
+      in_progress: t("kanban.status.inProgress"),
+      scheduled: t("kanban.status.scheduled"),
+    };
+    return (
+      statusMap[status] ||
+      status
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+    );
   };
 
   return (
@@ -166,7 +181,7 @@ export function KanbanCard({
           </Badge>
           {type && (
             <Badge className="text-xs bg-purple-100 text-purple-800">
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {t(`kanban.type.${type}`)}
             </Badge>
           )}
         </div>
@@ -174,7 +189,7 @@ export function KanbanCard({
         {/* Content type badge */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <Badge variant="outline" className="text-xs">
-            {type !== undefined ? "Campaign" : "Routine"}
+            {type !== undefined ? t("kanban.campaign") : t("kanban.routine")}
           </Badge>
         </div>
       </div>

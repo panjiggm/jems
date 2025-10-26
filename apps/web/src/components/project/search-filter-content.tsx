@@ -38,6 +38,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { STATUS_LABELS } from "@/types/status";
+import { useTranslations } from "@/hooks/use-translations";
 
 // Campaign statuses (from schema)
 export type CampaignStatus =
@@ -81,122 +82,11 @@ interface SearchFilterContentProps {
   onFiltersChange: (filters: FilterState) => void;
 }
 
-const platformConfig: Record<
-  Platform,
-  { label: string; className: string; icon: string | null }
-> = {
-  tiktok: {
-    label: "TikTok",
-    className: "bg-pink-100 text-pink-800 border-pink-200",
-    icon: "/icons/tiktok.svg",
-  },
-  instagram: {
-    label: "Instagram",
-    className:
-      "bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-200",
-    icon: "/icons/instagram.svg",
-  },
-  youtube: {
-    label: "YouTube",
-    className: "bg-red-100 text-red-800 border-red-200",
-    icon: "/icons/youtube.svg",
-  },
-  x: {
-    label: "X (Twitter)",
-    className: "bg-gray-100 text-gray-800 border-gray-200",
-    icon: "/icons/x.svg",
-  },
-  facebook: {
-    label: "Facebook",
-    className: "bg-blue-100 text-blue-800 border-blue-200",
-    icon: "/icons/facebook.svg",
-  },
-  threads: {
-    label: "Threads",
-    className: "bg-gray-100 text-gray-800 border-gray-200",
-    icon: "/icons/thread.svg",
-  },
-  other: {
-    label: "Other",
-    className: "bg-gray-100 text-gray-800 border-gray-200",
-    icon: null,
-  },
-};
+// Platform config will be created dynamically with translations
 
-// Campaign type config (barter vs paid - only for campaigns)
-const campaignTypeConfig: Record<
-  CampaignType,
-  { label: string; className: string; icon: LucideIcon }
-> = {
-  barter: {
-    label: "Barter",
-    className: "bg-emerald-100 text-emerald-800 border-emerald-200",
-    icon: Package,
-  },
-  paid: {
-    label: "Paid",
-    className: "bg-amber-100 text-amber-800 border-amber-200",
-    icon: DollarSign,
-  },
-};
+// Campaign type config will be created dynamically with translations
 
-// Status config with proper typing per content type
-const campaignStatusConfig: Record<
-  CampaignStatus,
-  { label: string; className: string; icon: LucideIcon }
-> = {
-  product_obtained: {
-    label: STATUS_LABELS.product_obtained || "Product Obtained",
-    className: "bg-blue-100 text-blue-800 border-blue-200",
-    icon: Package,
-  },
-  production: {
-    label: STATUS_LABELS.production || "Production",
-    className: "bg-orange-100 text-orange-800 border-orange-200",
-    icon: Wrench,
-  },
-  published: {
-    label: STATUS_LABELS.published || "Published",
-    className: "bg-green-100 text-green-800 border-green-200",
-    icon: Send,
-  },
-  payment: {
-    label: STATUS_LABELS.payment || "Payment",
-    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    icon: DollarSign,
-  },
-  done: {
-    label: STATUS_LABELS.done || "Done",
-    className: "bg-gray-100 text-gray-800 border-gray-200",
-    icon: CheckCircle,
-  },
-};
-
-const routineStatusConfig: Record<
-  RoutineStatus,
-  { label: string; className: string; icon: LucideIcon }
-> = {
-  plan: {
-    label: STATUS_LABELS.plan || "Plan",
-    className: "bg-blue-100 text-blue-800 border-blue-200",
-    icon: Target,
-  },
-  in_progress: {
-    label: STATUS_LABELS.in_progress || "In Progress",
-    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    icon: Play,
-  },
-  scheduled: {
-    label: STATUS_LABELS.scheduled || "Scheduled",
-    className: "bg-purple-100 text-purple-800 border-purple-200",
-    icon: Calendar,
-  },
-  published: {
-    label: STATUS_LABELS.published || "Published",
-    className: "bg-green-100 text-green-800 border-green-200",
-    icon: Send,
-  },
-};
+// Status config will be created dynamically with translations
 
 // Status order per content type
 const campaignStatusOrder: CampaignStatus[] = [
@@ -226,6 +116,111 @@ const platformOrder: Platform[] = [
 
 const campaignTypeOrder: CampaignType[] = ["barter", "paid"];
 
+// Dynamic configuration functions with translations
+const getPlatformConfig = (t: (key: string) => string) => ({
+  tiktok: {
+    label: t("project.platforms.tiktok"),
+    className: "bg-pink-100 text-pink-800 border-pink-200",
+    icon: "/icons/tiktok.svg",
+  },
+  instagram: {
+    label: t("project.platforms.instagram"),
+    className:
+      "bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-200",
+    icon: "/icons/instagram.svg",
+  },
+  youtube: {
+    label: t("project.platforms.youtube"),
+    className: "bg-red-100 text-red-800 border-red-200",
+    icon: "/icons/youtube.svg",
+  },
+  x: {
+    label: t("project.platforms.x"),
+    className: "bg-gray-100 text-gray-800 border-gray-200",
+    icon: "/icons/x.svg",
+  },
+  facebook: {
+    label: t("project.platforms.facebook"),
+    className: "bg-blue-100 text-blue-800 border-blue-200",
+    icon: "/icons/facebook.svg",
+  },
+  threads: {
+    label: t("project.platforms.threads"),
+    className: "bg-gray-100 text-gray-800 border-gray-200",
+    icon: "/icons/thread.svg",
+  },
+  other: {
+    label: t("project.platforms.other"),
+    className: "bg-gray-100 text-gray-800 border-gray-200",
+    icon: null,
+  },
+});
+
+const getCampaignTypeConfig = (t: (key: string) => string) => ({
+  barter: {
+    label: t("project.campaignTypes.barter"),
+    className: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    icon: Package,
+  },
+  paid: {
+    label: t("project.campaignTypes.paid"),
+    className: "bg-amber-100 text-amber-800 border-amber-200",
+    icon: DollarSign,
+  },
+});
+
+const getCampaignStatusConfig = (t: (key: string) => string) => ({
+  product_obtained: {
+    label:
+      STATUS_LABELS.product_obtained || t("project.status.productObtained"),
+    className: "bg-blue-100 text-blue-800 border-blue-200",
+    icon: Package,
+  },
+  production: {
+    label: STATUS_LABELS.production || t("project.status.production"),
+    className: "bg-orange-100 text-orange-800 border-orange-200",
+    icon: Wrench,
+  },
+  published: {
+    label: STATUS_LABELS.published || t("project.status.published"),
+    className: "bg-green-100 text-green-800 border-green-200",
+    icon: Send,
+  },
+  payment: {
+    label: STATUS_LABELS.payment || t("project.status.payment"),
+    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    icon: DollarSign,
+  },
+  done: {
+    label: STATUS_LABELS.done || t("project.status.done"),
+    className: "bg-gray-100 text-gray-800 border-gray-200",
+    icon: CheckCircle,
+  },
+});
+
+const getRoutineStatusConfig = (t: (key: string) => string) => ({
+  plan: {
+    label: STATUS_LABELS.plan || t("project.status.plan"),
+    className: "bg-blue-100 text-blue-800 border-blue-200",
+    icon: Target,
+  },
+  in_progress: {
+    label: STATUS_LABELS.in_progress || t("project.status.inProgress"),
+    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    icon: Play,
+  },
+  scheduled: {
+    label: STATUS_LABELS.scheduled || t("project.status.scheduled"),
+    className: "bg-purple-100 text-purple-800 border-purple-200",
+    icon: Calendar,
+  },
+  published: {
+    label: STATUS_LABELS.published || t("project.status.published"),
+    className: "bg-green-100 text-green-800 border-green-200",
+    icon: Send,
+  },
+});
+
 export default function SearchFilterContent({
   filters,
   onFiltersChange,
@@ -234,6 +229,7 @@ export default function SearchFilterContent({
   const [contentType] = useQueryState("contentType", {
     defaultValue: "campaign",
   });
+  const { t } = useTranslations();
 
   const updateFilter = <K extends keyof FilterState>(
     key: K,
@@ -278,9 +274,11 @@ export default function SearchFilterContent({
 
   // Get current status config and order based on contentType
   const isCampaign = contentType === "campaign";
+  const platformConfig = getPlatformConfig(t);
+  const campaignTypeConfig = getCampaignTypeConfig(t);
   const currentStatusConfig = isCampaign
-    ? campaignStatusConfig
-    : routineStatusConfig;
+    ? getCampaignStatusConfig(t)
+    : getRoutineStatusConfig(t);
   const currentStatusOrder = isCampaign
     ? campaignStatusOrder
     : routineStatusOrder;
@@ -298,7 +296,7 @@ export default function SearchFilterContent({
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 transform text-muted-foreground" />
           <Input
-            placeholder="Search contents..."
+            placeholder={t("project.search.placeholder")}
             value={filters.search}
             onChange={(event) => handleSearchChange(event.target.value)}
             className="pl-6 h-7 text-xs py-0.5 placeholder:text-xs"
@@ -309,7 +307,7 @@ export default function SearchFilterContent({
           <SheetTrigger asChild>
             <Button variant="outline" size="xs" className="px-3 shrink-0">
               <Filter className="h-3 w-3 mr-1" />
-              Filters
+              {t("project.search.filters")}
               {activeFiltersCount > 0 && (
                 <Badge
                   variant="secondary"
@@ -322,15 +320,17 @@ export default function SearchFilterContent({
           </SheetTrigger>
           <SheetContent side="bottom" className="h-[40vh] overflow-y-auto">
             <SheetHeader>
-              <SheetTitle>Filters</SheetTitle>
+              <SheetTitle>{t("project.search.filters")}</SheetTitle>
             </SheetHeader>
             <div className="space-y-4 p-4">
               {/* Grid 2x2 for filters */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Platform</label>
+                  <label className="text-sm font-medium">
+                    {t("project.search.platform")}
+                  </label>
                   <FilterSelect
-                    label="Platform"
+                    label={t("project.search.platform")}
                     icon={MonitorSmartphone}
                     selectedValues={filters.platform}
                     options={platformOrder.map((platform) => {
@@ -359,9 +359,11 @@ export default function SearchFilterContent({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
+                  <label className="text-sm font-medium">
+                    {t("project.search.status")}
+                  </label>
                   <FilterSelect
-                    label="Status"
+                    label={t("project.search.status")}
                     icon={BadgeCheck}
                     selectedValues={filters.status}
                     options={currentStatusOrder.map((status) => {
@@ -394,9 +396,11 @@ export default function SearchFilterContent({
                 {/* Campaign Type Filter - Only show for campaigns */}
                 {isCampaign && (
                   <div className="space-y-2 col-span-2">
-                    <label className="text-sm font-medium">Campaign Type</label>
+                    <label className="text-sm font-medium">
+                      {t("project.search.campaignType")}
+                    </label>
                     <FilterSelect
-                      label="Type"
+                      label={t("project.search.type")}
                       icon={Tag}
                       selectedValues={filters.campaignTypes}
                       options={campaignTypeOrder.map((type) => {
@@ -432,7 +436,7 @@ export default function SearchFilterContent({
                 onClick={clearAllFilters}
                 disabled={activeFiltersCount === 0}
               >
-                Clear all filters
+                {t("project.search.clearAll")}
               </Button>
             </div>
           </SheetContent>
@@ -444,7 +448,7 @@ export default function SearchFilterContent({
         <div className="relative flex-1 min-w-[180px] max-w-xs">
           <Search className="absolute left-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 transform text-muted-foreground" />
           <Input
-            placeholder="Search contents..."
+            placeholder={t("project.search.placeholder")}
             value={filters.search}
             onChange={(event) => handleSearchChange(event.target.value)}
             className="pl-6 h-7 text-xs py-0.5 placeholder:text-xs"
@@ -453,7 +457,7 @@ export default function SearchFilterContent({
 
         <div className="flex flex-wrap items-center gap-2">
           <FilterSelect
-            label="Platform"
+            label={t("project.search.platform")}
             icon={MonitorSmartphone}
             selectedValues={filters.platform}
             options={platformOrder.map((platform) => {
@@ -481,7 +485,7 @@ export default function SearchFilterContent({
           />
 
           <FilterSelect
-            label="Status"
+            label={t("project.search.status")}
             icon={BadgeCheck}
             selectedValues={filters.status}
             options={currentStatusOrder.map((status) => {
@@ -511,7 +515,7 @@ export default function SearchFilterContent({
           {/* Campaign Type Filter - Only show for campaigns */}
           {isCampaign && (
             <FilterSelect
-              label="Type"
+              label={t("project.search.type")}
               icon={Tag}
               selectedValues={filters.campaignTypes}
               options={campaignTypeOrder.map((type) => {
@@ -545,7 +549,7 @@ export default function SearchFilterContent({
             onClick={clearAllFilters}
             disabled={activeFiltersCount === 0}
           >
-            Clear all
+            {t("project.search.clearAll")}
           </Button>
         </div>
       </div>
@@ -587,8 +591,8 @@ export default function SearchFilterContent({
 
           {(filters.status || []).map((status) => {
             const config = isCampaign
-              ? campaignStatusConfig[status as CampaignStatus]
-              : routineStatusConfig[status as RoutineStatus];
+              ? getCampaignStatusConfig(t)[status as CampaignStatus]
+              : getRoutineStatusConfig(t)[status as RoutineStatus];
             if (!config) return null;
             const Icon = config.icon;
             return (
@@ -616,7 +620,7 @@ export default function SearchFilterContent({
 
           {isCampaign &&
             (filters.campaignTypes || []).map((type) => {
-              const config = campaignTypeConfig[type];
+              const config = getCampaignTypeConfig(t)[type];
               const Icon = config.icon;
               return (
                 <Badge
