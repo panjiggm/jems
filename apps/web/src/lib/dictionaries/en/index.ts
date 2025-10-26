@@ -12,6 +12,8 @@ import { kanban } from "./kanban";
 import { list } from "./list";
 import { profile } from "./profile";
 import { table } from "./table";
+import { terms } from "./terms";
+import { policy } from "./policy";
 
 export const dictionary = {
   nav,
@@ -28,4 +30,6 @@ export const dictionary = {
   list,
   profile,
   table,
+  terms,
+  policy,
 } as const;
