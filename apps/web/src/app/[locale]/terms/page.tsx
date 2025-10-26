@@ -5,15 +5,16 @@ import FooterSimple from "@/components/common/footer-simple";
 import { Metadata } from "next";
 
 interface TermsPageProps {
-  params: {
+  params: Promise<{
     locale: Locale;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: TermsPageProps): Promise<Metadata> {
-  const dict = await getDictionary(params.locale);
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
 
   return {
     title: dict.terms?.title || "Terms of Service | Hidden Jems",
@@ -24,7 +25,7 @@ export async function generateMetadata({
       description:
         "Read our Terms of Service to understand the rules and regulations governing the use of Hidden Jems content management platform.",
       type: "website",
-      locale: params.locale,
+      locale: locale,
     },
     twitter: {
       card: "summary_large_image",
@@ -36,7 +37,8 @@ export async function generateMetadata({
 }
 
 export default async function TermsPage({ params }: TermsPageProps) {
-  const dict = await getDictionary(params.locale);
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
   const { terms } = dict;
 
   return (

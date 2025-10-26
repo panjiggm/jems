@@ -5,15 +5,16 @@ import FooterSimple from "@/components/common/footer-simple";
 import { Metadata } from "next";
 
 interface PolicyPageProps {
-  params: {
+  params: Promise<{
     locale: Locale;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: PolicyPageProps): Promise<Metadata> {
-  const dict = await getDictionary(params.locale);
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
 
   return {
     title: dict.policy?.title || "Privacy Policy | Hidden Jems",
@@ -24,7 +25,7 @@ export async function generateMetadata({
       description:
         "Learn how Hidden Jems collects, uses, and protects your personal information. Read our comprehensive Privacy Policy for details.",
       type: "website",
-      locale: params.locale,
+      locale: locale,
     },
     twitter: {
       card: "summary_large_image",
@@ -36,7 +37,8 @@ export async function generateMetadata({
 }
 
 export default async function PolicyPage({ params }: PolicyPageProps) {
-  const dict = await getDictionary(params.locale);
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
   const { policy } = dict;
 
   return (
