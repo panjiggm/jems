@@ -70,7 +70,6 @@ export const drive = {
       "Unggahan sedang berlangsung. Menutup akan membatalkan unggahan. Apakah Kamu yakin?",
     cancel: "Batal",
     upload: "Unggah",
-    uploading: "Mengunggah...",
     existingFiles: "file yang ada",
   },
   viewToggle: {

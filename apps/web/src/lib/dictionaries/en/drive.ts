@@ -70,7 +70,6 @@ export const drive = {
       "Upload is in progress. Closing will cancel the upload. Are you sure?",
     cancel: "Cancel",
     upload: "Upload",
-    uploading: "Uploading...",
     existingFiles: "existing files",
   },
   viewToggle: {
