@@ -14,14 +14,14 @@ import { useTranslations } from "@/hooks/use-translations";
 
 export function ViewDisplayDropdown() {
   const [currentView, setCurrentView] = useQueryState("view", {
-    defaultValue: "table",
+    defaultValue: "list",
   });
   const { t } = useTranslations();
 
   const viewOptions = [
-    { value: "table", label: t("project.views.table"), icon: Table },
-    { value: "kanban", label: t("project.views.kanban"), icon: Kanban },
     { value: "list", label: t("project.views.list"), icon: List },
+    { value: "kanban", label: t("project.views.kanban"), icon: Kanban },
+    { value: "table", label: t("project.views.table"), icon: Table },
     { value: "calendar", label: t("project.views.calendar"), icon: Calendar },
   ];
 

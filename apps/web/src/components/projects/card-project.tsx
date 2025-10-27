@@ -75,7 +75,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const handleViewDetails = () => {
     const year = getYearFromContext();
     router.push(
-      `/${locale}/projects/${year}/${_id}?contentType=campaign&view=table`,
+      `/${locale}/projects/${year}/${_id}?contentType=campaign&view=list`,
     );
   };
 

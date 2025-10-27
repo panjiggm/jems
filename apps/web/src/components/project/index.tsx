@@ -21,7 +21,7 @@ export default function ProjectComponent({
   projectId,
   userId,
 }: ProjectComponentProps) {
-  const [currentView] = useQueryState("view", { defaultValue: "table" });
+  const [currentView] = useQueryState("view", { defaultValue: "list" });
   const [contentType] = useQueryState("contentType", {
     defaultValue: "campaign",
   });
@@ -47,9 +47,9 @@ export default function ProjectComponent({
   // Render the appropriate view based on current view
   const renderView = () => {
     switch (currentView) {
-      case "table":
+      case "list":
         return (
-          <TableView
+          <ListView
             projectId={projectId}
             userId={userId}
             filters={filters}
@@ -65,9 +65,9 @@ export default function ProjectComponent({
             contentType={contentType as "campaign" | "routine"}
           />
         );
-      case "list":
+      case "table":
         return (
-          <ListView
+          <TableView
             projectId={projectId}
             userId={userId}
             filters={filters}
@@ -87,7 +87,7 @@ export default function ProjectComponent({
         );
       default:
         return (
-          <TableView
+          <ListView
             projectId={projectId}
             userId={userId}
             filters={filters}

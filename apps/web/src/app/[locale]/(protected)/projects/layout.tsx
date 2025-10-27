@@ -126,9 +126,9 @@ export default function ProjectsLayout({
   ];
 
   const viewTabs = [
-    { id: "table", label: "Table", icon: Table },
     { id: "list", label: "List", icon: List },
     { id: "kanban", label: "Kanban", icon: Kanban },
+    { id: "table", label: "Table", icon: Table },
     { id: "calendar", label: "Calendar", icon: Calendar },
   ];
 
@@ -281,7 +281,7 @@ export default function ProjectsLayout({
                 <div className="h-6 w-px bg-border" />
                 <TabsWithOverflow
                   tabs={viewTabs}
-                  defaultValue="table"
+                  defaultValue="list"
                   useUrlNavigation={false}
                   queryParamName="view"
                   autoAssignIcons={false}
