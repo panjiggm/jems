@@ -97,6 +97,16 @@ export default defineSchema({
     // Multiple media files attached to the campaign (videos/images/documents)
     mediaFiles: v.optional(v.array(mediaItem)),
     notes: v.optional(v.string()),
+    // Social media publish info
+    publishInfo: v.optional(
+      v.object({
+        isPublished: v.boolean(),
+        scheduledPublishId: v.optional(v.id("scheduledPublishes")),
+        publishedAt: v.optional(v.string()),
+        platformPostId: v.optional(v.string()),
+        platformPostUrl: v.optional(v.string()),
+      }),
+    ),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -145,6 +155,16 @@ export default defineSchema({
     ),
     // Multiple media files attached to the routine (videos/images/documents)
     mediaFiles: v.optional(v.array(mediaItem)),
+    // Social media publish info
+    publishInfo: v.optional(
+      v.object({
+        isPublished: v.boolean(),
+        scheduledPublishId: v.optional(v.id("scheduledPublishes")),
+        publishedAt: v.optional(v.string()),
+        platformPostId: v.optional(v.string()),
+        platformPostUrl: v.optional(v.string()),
+      }),
+    ),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -209,4 +229,109 @@ export default defineSchema({
     .index("by_action", ["action"])
     .index("by_user_entity", ["userId", "entityType"])
     .index("by_project_timestamp", ["projectId", "timestamp"]),
+
+  // Feature #2 - Social Media Integration
+  socialMediaAccounts: defineTable({
+    userId: v.string(),
+    platform: v.union(
+      v.literal("tiktok"),
+      v.literal("instagram"),
+      v.literal("youtube"),
+      v.literal("x"),
+      v.literal("facebook"),
+      v.literal("threads"),
+    ),
+    // Account info from platform
+    platformAccountId: v.string(), // e.g. @username or numeric ID from platform
+    displayName: v.string(),
+    profileImageUrl: v.optional(v.string()),
+    // OAuth credentials (should be encrypted in production)
+    accessToken: v.string(),
+    refreshToken: v.optional(v.string()),
+    tokenExpiresAt: v.optional(v.number()),
+    // Connection status
+    isConnected: v.boolean(),
+    lastSyncedAt: v.optional(v.number()),
+    lastError: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_platform", ["userId", "platform"])
+    .index("by_platform", ["platform"]),
+
+  socialMediaStats: defineTable({
+    userId: v.string(),
+    accountId: v.id("socialMediaAccounts"),
+    platform: v.union(
+      v.literal("tiktok"),
+      v.literal("instagram"),
+      v.literal("youtube"),
+      v.literal("x"),
+      v.literal("facebook"),
+      v.literal("threads"),
+    ),
+    // Common metrics
+    followersCount: v.optional(v.number()),
+    followingCount: v.optional(v.number()),
+    // Platform-specific metrics stored flexibly
+    platformMetrics: v.optional(
+      v.object({
+        totalLikes: v.optional(v.number()), // TikTok, Instagram
+        totalViews: v.optional(v.number()), // TikTok, YouTube, Instagram
+        totalVideos: v.optional(v.number()), // TikTok, YouTube
+        totalPosts: v.optional(v.number()), // Instagram, X, Facebook
+        subscribersCount: v.optional(v.number()), // YouTube
+        totalTweets: v.optional(v.number()), // X (Twitter)
+        totalRetweets: v.optional(v.number()), // X
+        engagementRate: v.optional(v.number()), // All platforms
+      }),
+    ),
+    syncedAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_account", ["accountId"])
+    .index("by_user_platform", ["userId", "platform"])
+    .index("by_synced", ["syncedAt"]),
+
+  scheduledPublishes: defineTable({
+    userId: v.string(),
+    // Polymorphic reference to content
+    contentType: v.union(v.literal("campaign"), v.literal("routine")),
+    contentId: v.union(v.id("contentCampaigns"), v.id("contentRoutines")), // Will also accept contentRoutines ID
+    // Publishing target
+    platform: v.union(
+      v.literal("tiktok"),
+      v.literal("instagram"),
+      v.literal("youtube"),
+      v.literal("x"),
+      v.literal("facebook"),
+      v.literal("threads"),
+    ),
+    accountId: v.id("socialMediaAccounts"),
+    // Schedule & status
+    scheduledAt: v.string(), // ISO datetime
+    status: v.union(
+      v.literal("pending"), // Waiting for scheduled time
+      v.literal("processing"), // Currently publishing
+      v.literal("published"), // Successfully published
+      v.literal("failed"), // Failed to publish
+      v.literal("cancelled"), // User cancelled
+    ),
+    // Publishing results
+    publishedAt: v.optional(v.number()),
+    platformPostId: v.optional(v.string()), // ID of post on platform
+    platformPostUrl: v.optional(v.string()), // URL to post
+    errorMessage: v.optional(v.string()),
+    retryCount: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_content", ["contentType", "contentId"])
+    .index("by_account", ["accountId"])
+    .index("by_status", ["status"])
+    .index("by_scheduled", ["scheduledAt"])
+    .index("by_user_status", ["userId", "status"]),
 });
