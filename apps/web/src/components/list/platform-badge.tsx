@@ -72,7 +72,10 @@ export function PlatformBadge({ platform }: PlatformBadgeProps) {
           className="w-3 h-3"
         />
       )}
-      {config.label}
+      {/* Show label on desktop, or always show if no icon */}
+      <span className={cn(config.icon ? "hidden md:inline" : "")}>
+        {config.label}
+      </span>
     </Badge>
   );
 }

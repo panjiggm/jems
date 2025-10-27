@@ -4,10 +4,10 @@ import { useQuery } from "convex-helpers/react/cache";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { FilterState } from "../../project/search-filter-content";
-import { StatusSection } from "../status-section";
 import { RoutineContentCard } from "./content-card";
 import { ContentRoutineStatus, Platform } from "@/types/status";
 import { useTranslations } from "@/hooks/use-translations";
+import { Target, PlayCircle, Calendar, Send } from "lucide-react";
 
 // Routine content type
 interface RoutineContent {
@@ -77,6 +77,19 @@ export default function RoutineListView({
     );
   }
 
+  if (routines.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-muted-foreground text-sm">
+          {t("list.noContentInStatus").replace(
+            "{type}",
+            t("list.routinePlural"),
+          )}
+        </p>
+      </div>
+    );
+  }
+
   // Group routines by status
   const routinesByStatus = routines.reduce(
     (acc, routine) => {
@@ -89,58 +102,73 @@ export default function RoutineListView({
     {} as Record<string, RoutineContent[]>,
   );
 
-  // Routine status config
-  const routineStatusConfig = [
-    {
-      key: "plan",
-      title: t("kanban.status.plan"),
-      color: "bg-blue-200",
-      count: routinesByStatus.plan?.length || 0,
-    },
-    {
-      key: "in_progress",
-      title: t("kanban.status.inProgress"),
-      color: "bg-yellow-200",
-      count: routinesByStatus.in_progress?.length || 0,
-    },
-    {
-      key: "scheduled",
-      title: t("kanban.status.scheduled"),
-      color: "bg-purple-200",
-      count: routinesByStatus.scheduled?.length || 0,
-    },
-    {
-      key: "published",
-      title: t("kanban.status.published"),
-      color: "bg-green-200",
-      count: routinesByStatus.published?.length || 0,
-    },
+  // Define status order and config
+  const statusOrder: ContentRoutineStatus[] = [
+    "plan",
+    "in_progress",
+    "scheduled",
+    "published",
   ];
 
+  const statusLabels: Record<ContentRoutineStatus, string> = {
+    plan: "Plan",
+    in_progress: "In Progress",
+    scheduled: "Scheduled",
+    published: "Published",
+  };
+
+  const statusIcons: Record<ContentRoutineStatus, any> = {
+    plan: Target,
+    in_progress: PlayCircle,
+    scheduled: Calendar,
+    published: Send,
+  };
+
+  const statusColors: Record<ContentRoutineStatus, string> = {
+    plan: "text-blue-800",
+    in_progress: "text-yellow-800",
+    scheduled: "text-purple-800",
+    published: "text-green-800",
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        {routineStatusConfig.map((status) => (
-          <StatusSection
-            key={status.key}
-            title={status.title}
-            color={status.color}
-            count={status.count}
-            contents={routinesByStatus[status.key] || []}
-            projectId={projectId}
-            userId={userId}
-            contentType="routine"
-            renderContent={(content) => (
-              <RoutineContentCard
-                key={content._id}
-                content={content}
-                projectId={projectId}
-                userId={userId}
-              />
-            )}
-          />
-        ))}
-      </div>
+    <div className="w-full space-y-6">
+      {statusOrder.map((status) => {
+        const items = routinesByStatus[status] || [];
+        if (items.length === 0) return null;
+
+        const StatusIcon = statusIcons[status];
+        const statusColor = statusColors[status];
+
+        return (
+          <div key={status} className="space-y-2">
+            {/* Status Header */}
+            <div className="flex items-center gap-2 px-2">
+              <StatusIcon className={`h-3 w-3 ${statusColor}`} />
+              <h3
+                className={`text-xs font-medium tracking-wide ${statusColor}`}
+              >
+                {statusLabels[status]}
+              </h3>
+              <span className="text-xs text-muted-foreground">
+                {items.length}
+              </span>
+            </div>
+
+            {/* Items List */}
+            <div className="border border-border rounded-lg overflow-hidden bg-card">
+              {items.map((routine, index) => (
+                <div key={routine._id}>
+                  <RoutineContentCard content={routine} />
+                  {index < items.length - 1 && (
+                    <div className="border-b border-border" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

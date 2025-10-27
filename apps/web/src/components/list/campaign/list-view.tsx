@@ -4,10 +4,10 @@ import { useQuery } from "convex-helpers/react/cache";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { FilterState } from "../../project/search-filter-content";
-import { StatusSection } from "../status-section";
 import { CampaignContentCard } from "./content-card";
 import { ContentCampaignStatus, Platform } from "@/types/status";
 import { useTranslations } from "@/hooks/use-translations";
+import { Package, Wrench, Send, DollarSign, CheckCircle } from "lucide-react";
 
 // Campaign content type
 interface CampaignContent {
@@ -82,6 +82,19 @@ export default function CampaignListView({
     );
   }
 
+  if (campaigns.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-muted-foreground text-sm">
+          {t("list.noContentInStatus").replace(
+            "{type}",
+            t("list.campaignPlural"),
+          )}
+        </p>
+      </div>
+    );
+  }
+
   // Group campaigns by status
   const campaignsByStatus = campaigns.reduce(
     (acc, campaign) => {
@@ -94,64 +107,77 @@ export default function CampaignListView({
     {} as Record<string, CampaignContent[]>,
   );
 
-  // Campaign status config
-  const campaignStatusConfig = [
-    {
-      key: "product_obtained",
-      title: t("kanban.status.productObtained"),
-      color: "bg-blue-200",
-      count: campaignsByStatus.product_obtained?.length || 0,
-    },
-    {
-      key: "production",
-      title: t("kanban.status.production"),
-      color: "bg-orange-200",
-      count: campaignsByStatus.production?.length || 0,
-    },
-    {
-      key: "published",
-      title: t("kanban.status.published"),
-      color: "bg-green-200",
-      count: campaignsByStatus.published?.length || 0,
-    },
-    {
-      key: "payment",
-      title: t("kanban.status.payment"),
-      color: "bg-yellow-200",
-      count: campaignsByStatus.payment?.length || 0,
-    },
-    {
-      key: "done",
-      title: t("kanban.status.done"),
-      color: "bg-gray-200",
-      count: campaignsByStatus.done?.length || 0,
-    },
+  // Define status order and config
+  const statusOrder: ContentCampaignStatus[] = [
+    "product_obtained",
+    "production",
+    "published",
+    "payment",
+    "done",
   ];
 
+  const statusLabels: Record<ContentCampaignStatus, string> = {
+    product_obtained: "Product Obtained",
+    production: "Production",
+    published: "Published",
+    payment: "Payment",
+    done: "Done",
+  };
+
+  const statusIcons: Record<ContentCampaignStatus, any> = {
+    product_obtained: Package,
+    production: Wrench,
+    published: Send,
+    payment: DollarSign,
+    done: CheckCircle,
+  };
+
+  const statusColors: Record<ContentCampaignStatus, string> = {
+    product_obtained: "text-blue-800",
+    production: "text-orange-800",
+    published: "text-green-800",
+    payment: "text-yellow-800",
+    done: "text-gray-800",
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        {campaignStatusConfig.map((status) => (
-          <StatusSection
-            key={status.key}
-            title={status.title}
-            color={status.color}
-            count={status.count}
-            contents={campaignsByStatus[status.key] || []}
-            projectId={projectId}
-            userId={userId}
-            contentType="campaign"
-            renderContent={(content) => (
-              <CampaignContentCard
-                key={content._id}
-                content={content}
-                projectId={projectId}
-                userId={userId}
-              />
-            )}
-          />
-        ))}
-      </div>
+    <div className="w-full space-y-6">
+      {statusOrder.map((status) => {
+        const items = campaignsByStatus[status] || [];
+        if (items.length === 0) return null;
+
+        const StatusIcon = statusIcons[status];
+        const statusColor = statusColors[status];
+
+        return (
+          <div key={status} className="space-y-2">
+            {/* Status Header */}
+            <div className="flex items-center gap-2 px-2">
+              <StatusIcon className={`h-3 w-3 ${statusColor}`} />
+              <h3
+                className={`text-xs font-medium tracking-wide ${statusColor}`}
+              >
+                {statusLabels[status]}
+              </h3>
+              <span className="text-xs text-muted-foreground">
+                {items.length}
+              </span>
+            </div>
+
+            {/* Items List */}
+            <div className="border border-border rounded-lg overflow-hidden bg-card">
+              {items.map((campaign, index) => (
+                <div key={campaign._id}>
+                  <CampaignContentCard content={campaign} />
+                  {index < items.length - 1 && (
+                    <div className="border-b border-border" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
