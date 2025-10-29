@@ -40,6 +40,8 @@
     "clsx": "^2.1.1",
     "convex": "^1.25.0",
     "date-fns": "^4.1.0",
+    "embla-carousel-react": "^8.6.0",
+    "embla-carousel-wheel-gestures": "^8.1.0",
     "framer-motion": "^12.23.12",
     "harden-react-markdown": "^1.1.2",
     "katex": "^0.16.22",

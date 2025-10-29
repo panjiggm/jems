@@ -33,6 +33,7 @@ export const drive = {
     download: "Unduh",
     delete: "Hapus",
     moreOptions: "Opsi lainnya",
+    previewNotAvailable: "Pratinjau tidak tersedia untuk jenis file ini",
     deleteDialog: {
       title: "Hapus File Media",
       description: "Apakah Kamu yakin ingin menghapus",

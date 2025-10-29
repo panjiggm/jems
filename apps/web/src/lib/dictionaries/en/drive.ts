@@ -33,6 +33,7 @@ export const drive = {
     download: "Download",
     delete: "Delete",
     moreOptions: "More options",
+    previewNotAvailable: "Preview not available for this file type",
     deleteDialog: {
       title: "Delete Media File",
       description: "Are you sure you want to delete",

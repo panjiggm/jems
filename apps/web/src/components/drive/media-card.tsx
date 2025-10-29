@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { MediaViewer } from "@/components/ui/media-viewer";
 import { useTranslations } from "@/hooks/use-translations";
 
 type MediaItem = {
@@ -50,9 +51,10 @@ type MediaItem = {
 
 interface MediaCardProps {
   media: MediaItem;
+  allMedia?: MediaItem[]; // Optional: all media items for slideshow
 }
 
-export function MediaCard({ media }: MediaCardProps) {
+export function MediaCard({ media, allMedia }: MediaCardProps) {
   const { t } = useTranslations();
   const convex = useConvex();
   const removeCampaignMedia = useMutation(
@@ -64,6 +66,13 @@ export function MediaCard({ media }: MediaCardProps) {
 
   const [thumbnailUrl, setThumbnailUrl] = React.useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [viewerOpen, setViewerOpen] = React.useState(false);
+
+  // If allMedia is provided, find the index of current media for slideshow
+  const mediaList = allMedia || [media];
+  const initialIndex = allMedia
+    ? allMedia.findIndex((m) => m.storageId === media.storageId)
+    : 0;
 
   // Load thumbnail
   React.useEffect(() => {
@@ -82,24 +91,8 @@ export function MediaCard({ media }: MediaCardProps) {
     loadThumbnail();
   }, [convex, media.storageId]);
 
-  const handleView = async () => {
-    try {
-      const result = await convex.query(api.queries.media.getFileUrl, {
-        storageId: media.storageId,
-      });
-      if (!result || !result.url) {
-        toast.error(
-          result
-            ? t("drive.errors.fileNotFound")
-            : t("drive.errors.notAuthenticated"),
-        );
-        return;
-      }
-      window.open(result.url, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      console.error(err);
-      toast.error(t("drive.errors.failedToOpenFile"));
-    }
+  const handleView = () => {
+    setViewerOpen(true);
   };
 
   const handleDownload = async () => {
@@ -276,6 +269,25 @@ export function MediaCard({ media }: MediaCardProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Media Viewer */}
+      <MediaViewer
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+        media={mediaList.map((item) => ({
+          storageId: item.storageId,
+          filename: item.filename,
+          size: item.size,
+          contentType: item.contentType,
+          extension: item.extension,
+          durationMs: item.durationMs,
+          width: item.width,
+          height: item.height,
+          uploadedAt: item.uploadedAt,
+        }))}
+        initialIndex={initialIndex}
+        showNavigation={mediaList.length > 1}
+      />
     </>
   );
 }

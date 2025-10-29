@@ -126,4 +126,10 @@ export const contents = {
       },
     },
   },
+  notFound: {
+    title: "Konten Tidak Ditemukan",
+    description:
+      "Konten yang Kamu cari tidak ada atau Kamu tidak memiliki akses ke konten tersebut.",
+    goBack: "Kembali",
+  },
 };

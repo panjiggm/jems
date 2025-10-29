@@ -78,7 +78,11 @@ export function MediaCardGrid({ contents }: MediaCardGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {flattenedData.map((media) => (
-        <MediaCard key={media.storageId} media={media} />
+        <MediaCard
+          key={media.storageId}
+          media={media}
+          allMedia={flattenedData}
+        />
       ))}
     </div>
   );

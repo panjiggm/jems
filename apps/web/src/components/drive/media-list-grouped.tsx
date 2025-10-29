@@ -35,6 +35,7 @@ import {
 import { Eye, Trash2, Download, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { MediaViewer } from "@/components/ui/media-viewer";
 import { useTranslations } from "@/hooks/use-translations";
 
 type MediaItem = {
@@ -68,7 +69,7 @@ interface MediaListGroupedProps {
 // Flattened media item with content context
 type FlatMediaItem = MediaItem & {
   contentId: string;
-  contentType: "campaign" | "routine";
+  contentTypeEnum: "campaign" | "routine";
   contentTitle: string;
   projectTitle: string;
 };
@@ -94,10 +95,12 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [mediaToDelete, setMediaToDelete] = React.useState<{
     contentId: string;
-    contentType: "campaign" | "routine";
+    contentTypeEnum: "campaign" | "routine";
     storageId: Id<"_storage">;
     filename: string;
   } | null>(null);
+  const [viewerOpen, setViewerOpen] = React.useState(false);
+  const [viewerInitialIndex, setViewerInitialIndex] = React.useState(0);
 
   // Flatten the data structure
   const flattenedData = React.useMemo(() => {
@@ -107,7 +110,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
         flattened.push({
           ...media,
           contentId: content.contentId,
-          contentType: content.contentType,
+          contentTypeEnum: content.contentType,
           contentTitle: content.title,
           projectTitle: content.projectTitle,
         });
@@ -116,23 +119,13 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
     return flattened;
   }, [contents]);
 
-  const handleView = async (storageId: Id<"_storage">) => {
-    try {
-      const result = await convex.query(api.queries.media.getFileUrl, {
-        storageId,
-      });
-      if (!result || !result.url) {
-        toast.error(
-          result
-            ? t("drive.errors.fileNotFound")
-            : t("drive.errors.notAuthenticated"),
-        );
-        return;
-      }
-      window.open(result.url, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      console.error(err);
-      toast.error(t("drive.errors.failedToOpenFile"));
+  const handleView = (storageId: Id<"_storage">) => {
+    const index = flattenedData.findIndex(
+      (item) => item.storageId === storageId,
+    );
+    if (index !== -1) {
+      setViewerInitialIndex(index);
+      setViewerOpen(true);
     }
   };
 
@@ -167,11 +160,11 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
 
   const openDeleteDialog = (
     contentId: string,
-    contentType: "campaign" | "routine",
+    contentTypeEnum: "campaign" | "routine",
     storageId: Id<"_storage">,
     filename: string,
   ) => {
-    setMediaToDelete({ contentId, contentType, storageId, filename });
+    setMediaToDelete({ contentId, contentTypeEnum, storageId, filename });
     setDeleteDialogOpen(true);
   };
 
@@ -179,7 +172,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
     if (!mediaToDelete) return;
 
     try {
-      if (mediaToDelete.contentType === "campaign") {
+      if (mediaToDelete.contentTypeEnum === "campaign") {
         await removeCampaignMedia({
           campaignId: mediaToDelete.contentId as Id<"contentCampaigns">,
           storageId: mediaToDelete.storageId,
@@ -309,7 +302,7 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
             onClick={() =>
               openDeleteDialog(
                 row.original.contentId,
-                row.original.contentType,
+                row.original.contentTypeEnum,
                 row.original.storageId,
                 row.original.filename,
               )
@@ -483,6 +476,25 @@ export function MediaListTable({ contents }: MediaListGroupedProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Media Viewer */}
+      <MediaViewer
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+        media={flattenedData.map((item) => ({
+          storageId: item.storageId,
+          filename: item.filename,
+          size: item.size,
+          contentType: item.contentType,
+          extension: item.extension,
+          durationMs: item.durationMs,
+          width: item.width,
+          height: item.height,
+          uploadedAt: item.uploadedAt,
+        }))}
+        initialIndex={viewerInitialIndex}
+        showNavigation={true}
+      />
     </>
   );
 }

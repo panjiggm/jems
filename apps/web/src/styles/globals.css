@@ -121,3 +121,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Embla Carousel Styles */
+.embla {
+  overflow: hidden;
+}
+
+.embla__container {
+  display: flex;
+}
+
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+/* Mobile touch improvements */
+@media (max-width: 640px) {
+  .embla__slide {
+    touch-action: pan-x pan-y;
+  }
+  
+  /* Prevent text selection on mobile */
+  .embla__slide * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+}

@@ -276,22 +276,6 @@ export function MediaAttachments({
     fileInputRef.current?.click();
   };
 
-  const handleView = async (storageId: Id<"_storage">) => {
-    try {
-      const result = await convex.query(api.queries.media.getFileUrl, {
-        storageId,
-      });
-      if (!result || !result.url) {
-        toast.error(result ? "File not found" : "Not authenticated");
-        return;
-      }
-      window.open(result.url, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to open file");
-    }
-  };
-
   const openDeleteDialog = (storageId: Id<"_storage">, filename: string) => {
     setMediaToDelete({ storageId, filename });
     setDeleteDialogOpen(true);
@@ -322,7 +306,7 @@ export function MediaAttachments({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pb-4">
       {/* Drag & Drop Upload Box */}
       {!uploadProgress && (
         <div
@@ -400,7 +384,7 @@ export function MediaAttachments({
             <MediaCard
               key={media.storageId as unknown as string}
               media={media}
-              onView={handleView}
+              allMedia={mediaFiles}
               onDelete={() => openDeleteDialog(media.storageId, media.filename)}
             />
           ))}

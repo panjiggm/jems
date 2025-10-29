@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, Preloaded, usePreloadedQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
-import { Id, Doc } from "@packages/backend/convex/_generated/dataModel";
+import { Id } from "@packages/backend/convex/_generated/dataModel";
 import { FunctionReturnType } from "convex/server";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -52,8 +52,6 @@ import Link from "next/link";
 import { useTranslations } from "@/hooks/use-translations";
 import { ButtonPrimary } from "../ui/button-primary";
 
-type ContentType = "campaign" | "routine";
-
 // Infer types from Convex queries
 type CampaignData = FunctionReturnType<
   typeof api.queries.contentCampaigns.getBySlug
@@ -86,7 +84,7 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
 
 // Campaign Detail Page Inner Component
 function CampaignDetailPageInner(props: CampaignDetailPageProps) {
-  const { contentType, preloadedData } = props;
+  const { preloadedData } = props;
   const { t } = useTranslations();
   const router = useRouter();
   const params = useParams();
@@ -160,6 +158,22 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
   const content = data?.campaign ?? null;
   const project = data?.project ?? null;
 
+  // Helper function to get year from project
+  const getYearFromProject = (): string => {
+    if (params?.year) {
+      return params.year as string;
+    }
+
+    if (project?.startDate) {
+      return new Date(project.startDate).getFullYear().toString();
+    }
+    if (project?.endDate) {
+      return new Date(project.endDate).getFullYear().toString();
+    }
+
+    return new Date().getFullYear().toString();
+  };
+
   // Not found state
   if (!content) {
     return (
@@ -218,7 +232,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                   <div className="mb-2">
                     <Badge variant="outline" size="xs" asChild>
                       <Link
-                        href={`/${locale}/projects/${project._id}`}
+                        href={`/${locale}/projects/${getYearFromProject()}/${project._id}`}
                         className="hover:bg-accent hover:text-accent-foreground transition-colors"
                       >
                         {project.title}
@@ -246,7 +260,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
                 {content.sow && (
                   <div className="mt-3">
                     <Label className="text-xs text-muted-foreground">
-                      {t("contents.detail.statementOfWork")}
+                      Statement of Work (SOW)
                     </Label>
                     <p className="text-sm mt-1 whitespace-pre-wrap">
                       {content.sow}
@@ -427,7 +441,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
 
 // Routine Detail Page Inner Component
 function RoutineDetailPageInner(props: RoutineDetailPageProps) {
-  const { contentType, preloadedData } = props;
+  const { preloadedData } = props;
   const { t } = useTranslations();
   const router = useRouter();
   const params = useParams();
@@ -499,6 +513,22 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
   const content = data?.routine ?? null;
   const project = data?.project ?? null;
 
+  // Helper function to get year from project
+  const getYearFromProject = (): string => {
+    if (params?.year) {
+      return params.year as string;
+    }
+
+    if (project?.startDate) {
+      return new Date(project.startDate).getFullYear().toString();
+    }
+    if (project?.endDate) {
+      return new Date(project.endDate).getFullYear().toString();
+    }
+
+    return new Date().getFullYear().toString();
+  };
+
   // Not found state
   if (!content) {
     return (
@@ -555,7 +585,7 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
                   <div className="mb-2">
                     <Badge variant="outline" size="xs" asChild>
                       <Link
-                        href={`/${locale}/projects/${project._id}`}
+                        href={`/${locale}/projects/${getYearFromProject()}/${project._id}`}
                         className="hover:bg-accent hover:text-accent-foreground transition-colors"
                       >
                         {project.title}

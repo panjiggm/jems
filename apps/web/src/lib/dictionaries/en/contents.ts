@@ -122,4 +122,10 @@ export const contents = {
       },
     },
   },
+  notFound: {
+    title: "Content Not Found",
+    description:
+      "The content you're looking for doesn't exist or you don't have access to it.",
+    goBack: "Go Back",
+  },
 };
