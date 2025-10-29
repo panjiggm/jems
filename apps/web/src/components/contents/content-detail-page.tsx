@@ -12,12 +12,20 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from "@/components/ui/empty";
+import {
   Clock,
   Trash2,
   FileText,
   ArrowLeft,
   Loader2,
   CheckSquare,
+  FileQuestion,
 } from "lucide-react";
 import { TaskSection } from "@/components/tasks";
 import { EditablePlatformBadge } from "@/components/contents/editable-badges/editable-platform-badge";
@@ -42,6 +50,7 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { useTranslations } from "@/hooks/use-translations";
+import { ButtonPrimary } from "../ui/button-primary";
 
 type ContentType = "campaign" | "routine";
 
@@ -129,19 +138,21 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
   // Handle null data
   if (!data) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Campaign Not Found</h1>
-          <p className="text-muted-foreground mb-4">
-            The campaign you&apos;re looking for doesn&apos;t exist or you
-            don&apos;t have access to it.
-          </p>
-          <Button onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Go Back
-          </Button>
-        </div>
-      </div>
+      <Empty className="min-h-[calc(100vh-3.5rem)]">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <FileQuestion className="size-5" />
+          </EmptyMedia>
+          <EmptyTitle>{t("contents.notFound.title")}</EmptyTitle>
+          <EmptyDescription>
+            {t("contents.notFound.description")}
+          </EmptyDescription>
+        </EmptyHeader>
+        <ButtonPrimary onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t("contents.notFound.goBack")}
+        </ButtonPrimary>
+      </Empty>
     );
   }
 
@@ -152,19 +163,21 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
   // Not found state
   if (!content) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Campaign Not Found</h1>
-          <p className="text-muted-foreground mb-4">
-            The campaign you&apos;re looking for doesn&apos;t exist or you
-            don&apos;t have access to it.
-          </p>
-          <Button onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Go Back
-          </Button>
-        </div>
-      </div>
+      <Empty className="min-h-[calc(100vh-3.5rem)]">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <FileQuestion className="size-5" />
+          </EmptyMedia>
+          <EmptyTitle>{t("contents.notFound.title")}</EmptyTitle>
+          <EmptyDescription>
+            {t("contents.notFound.description")}
+          </EmptyDescription>
+        </EmptyHeader>
+        <ButtonPrimary onClick={handleBack}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t("contents.notFound.goBack")}
+        </ButtonPrimary>
+      </Empty>
     );
   }
 
