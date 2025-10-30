@@ -11,6 +11,7 @@
   "dependencies": {
     "@ai-sdk/provider-utils": "^3.0.9",
     "@convex-dev/agent": "^0.2.7",
+    "@convex-dev/crons": "^0.1.9",
     "ai": "^5.0.44",
     "convex": "^1.25.0",
     "convex-helpers": "^0.1.104",

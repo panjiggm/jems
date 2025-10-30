@@ -334,4 +334,77 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_scheduled", ["scheduledAt"])
     .index("by_user_status", ["userId", "status"]),
+
+  // Feature #3 - AI Assistant
+  aiAssistantThreads: defineTable({
+    userId: v.string(),
+    title: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    metadata: v.optional(v.any()), // Additional context data
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_updatedAt", ["userId", "updatedAt"]),
+
+  aiAssistantMessages: defineTable({
+    threadId: v.id("aiAssistantThreads"),
+    role: v.union(v.literal("user"), v.literal("assistant")),
+    content: v.string(),
+    createdAt: v.number(),
+    metadata: v.optional(v.any()), // Tool calls, context references, etc.
+  })
+    .index("by_thread", ["threadId"])
+    .index("by_thread_createdAt", ["threadId", "createdAt"]),
+
+  contentIdeas: defineTable({
+    userId: v.string(),
+    title: v.string(),
+    description: v.string(),
+    source: v.union(
+      v.literal("ai_suggestion"),
+      v.literal("manual"),
+      v.literal("chat_generated"),
+    ),
+    suggestedDate: v.optional(v.string()), // ISO date for daily suggestions
+    status: v.union(
+      v.literal("suggestion"),
+      v.literal("converted_to_campaign"),
+      v.literal("converted_to_routine"),
+      v.literal("dismissed"),
+    ),
+    convertedToType: v.optional(
+      v.union(v.literal("campaign"), v.literal("routine")),
+    ),
+    convertedToId: v.optional(
+      v.union(v.id("contentCampaigns"), v.id("contentRoutines")),
+    ),
+    platform: v.optional(
+      v.union(
+        v.literal("tiktok"),
+        v.literal("instagram"),
+        v.literal("youtube"),
+        v.literal("x"),
+        v.literal("facebook"),
+        v.literal("threads"),
+        v.literal("other"),
+      ),
+    ),
+    metadata: v.optional(v.any()), // AI context, suggestions details, etc.
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_status", ["userId", "status"])
+    .index("by_user_suggestedDate", ["userId", "suggestedDate"])
+    .index("by_user_source", ["userId", "source"]),
+
+  dailyContentSuggestions: defineTable({
+    userId: v.string(),
+    suggestionDate: v.string(), // ISO date
+    ideaIds: v.array(v.id("contentIdeas")),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_date", ["userId", "suggestionDate"])
+    .index("by_date", ["suggestionDate"]),
 });

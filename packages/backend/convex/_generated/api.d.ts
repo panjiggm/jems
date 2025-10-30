@@ -10,13 +10,19 @@
 
 import type * as actions_addSlugs from "../actions/addSlugs.js";
 import type * as actions_ai from "../actions/ai.js";
+import type * as actions_aiAssistant from "../actions/aiAssistant.js";
+import type * as actions_contentSuggestions from "../actions/contentSuggestions.js";
 import type * as actions_onboarding from "../actions/onboarding.js";
 import type * as actions_seed from "../actions/seed.js";
 import type * as actions_socialMedia from "../actions/socialMedia.js";
 import type * as actions_storage from "../actions/storage.js";
 import type * as auth from "../auth.js";
+import type * as crons_dailySuggestions from "../crons/dailySuggestions.js";
+import type * as crons from "../crons.js";
 import type * as models from "../models.js";
+import type * as mutations_aiAssistant from "../mutations/aiAssistant.js";
 import type * as mutations_contentCampaigns from "../mutations/contentCampaigns.js";
+import type * as mutations_contentIdeas from "../mutations/contentIdeas.js";
 import type * as mutations_contentRoutines from "../mutations/contentRoutines.js";
 import type * as mutations_media from "../mutations/media.js";
 import type * as mutations_onboarding from "../mutations/onboarding.js";
@@ -29,7 +35,9 @@ import type * as mutations_socialMediaAccounts from "../mutations/socialMediaAcc
 import type * as mutations_tasks from "../mutations/tasks.js";
 import type * as mutations_templates from "../mutations/templates.js";
 import type * as openai from "../openai.js";
+import type * as queries_aiAssistant from "../queries/aiAssistant.js";
 import type * as queries_contentCampaigns from "../queries/contentCampaigns.js";
+import type * as queries_contentIdeas from "../queries/contentIdeas.js";
 import type * as queries_contentRoutines from "../queries/contentRoutines.js";
 import type * as queries_media from "../queries/media.js";
 import type * as queries_niches from "../queries/niches.js";
@@ -43,6 +51,7 @@ import type * as queries_socialMediaStats from "../queries/socialMediaStats.js";
 import type * as queries_stats from "../queries/stats.js";
 import type * as queries_tasks from "../queries/tasks.js";
 import type * as utils_duration from "../utils/duration.js";
+import type * as utils_ragContext from "../utils/ragContext.js";
 import type * as utils_slug from "../utils/slug.js";
 import type * as utils_tiktok from "../utils/tiktok.js";
 import type * as utils_validators from "../utils/validators.js";
@@ -65,13 +74,19 @@ import type {
 declare const fullApi: ApiFromModules<{
   "actions/addSlugs": typeof actions_addSlugs;
   "actions/ai": typeof actions_ai;
+  "actions/aiAssistant": typeof actions_aiAssistant;
+  "actions/contentSuggestions": typeof actions_contentSuggestions;
   "actions/onboarding": typeof actions_onboarding;
   "actions/seed": typeof actions_seed;
   "actions/socialMedia": typeof actions_socialMedia;
   "actions/storage": typeof actions_storage;
   auth: typeof auth;
+  "crons/dailySuggestions": typeof crons_dailySuggestions;
+  crons: typeof crons;
   models: typeof models;
+  "mutations/aiAssistant": typeof mutations_aiAssistant;
   "mutations/contentCampaigns": typeof mutations_contentCampaigns;
+  "mutations/contentIdeas": typeof mutations_contentIdeas;
   "mutations/contentRoutines": typeof mutations_contentRoutines;
   "mutations/media": typeof mutations_media;
   "mutations/onboarding": typeof mutations_onboarding;
@@ -84,7 +99,9 @@ declare const fullApi: ApiFromModules<{
   "mutations/tasks": typeof mutations_tasks;
   "mutations/templates": typeof mutations_templates;
   openai: typeof openai;
+  "queries/aiAssistant": typeof queries_aiAssistant;
   "queries/contentCampaigns": typeof queries_contentCampaigns;
+  "queries/contentIdeas": typeof queries_contentIdeas;
   "queries/contentRoutines": typeof queries_contentRoutines;
   "queries/media": typeof queries_media;
   "queries/niches": typeof queries_niches;
@@ -98,6 +115,7 @@ declare const fullApi: ApiFromModules<{
   "queries/stats": typeof queries_stats;
   "queries/tasks": typeof queries_tasks;
   "utils/duration": typeof utils_duration;
+  "utils/ragContext": typeof utils_ragContext;
   "utils/slug": typeof utils_slug;
   "utils/tiktok": typeof utils_tiktok;
   "utils/validators": typeof utils_validators;
@@ -2945,6 +2963,57 @@ export declare const components: {
           null
         >;
       };
+    };
+  };
+  crons: {
+    public: {
+      del: FunctionReference<
+        "mutation",
+        "internal",
+        { identifier: { id: string } | { name: string } },
+        null
+      >;
+      get: FunctionReference<
+        "query",
+        "internal",
+        { identifier: { id: string } | { name: string } },
+        {
+          args: Record<string, any>;
+          functionHandle: string;
+          id: string;
+          name?: string;
+          schedule:
+            | { kind: "interval"; ms: number }
+            | { cronspec: string; kind: "cron"; tz?: string };
+        } | null
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        {},
+        Array<{
+          args: Record<string, any>;
+          functionHandle: string;
+          id: string;
+          name?: string;
+          schedule:
+            | { kind: "interval"; ms: number }
+            | { cronspec: string; kind: "cron"; tz?: string };
+        }>
+      >;
+      register: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          args: Record<string, any>;
+          functionHandle: string;
+          name?: string;
+          schedule:
+            | { kind: "interval"; ms: number }
+            | { cronspec: string; kind: "cron"; tz?: string };
+        },
+        string
+      >;
     };
   };
 };

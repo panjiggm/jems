@@ -32,3 +32,12 @@ export const getInternalPersona = internalQuery({
     return persona;
   },
 });
+
+// Get all personas (for cron jobs)
+export const getAllPersonas = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const personas = await ctx.db.query("persona").collect();
+    return personas;
+  },
+});
