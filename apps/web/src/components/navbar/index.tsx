@@ -46,6 +46,16 @@ const Navbar = () => {
           <LanguageSwitcher />
           {isSignedIn ? (
             <>
+              <div className="hidden sm:inline-flex">
+                <UserButton
+                  afterSwitchSessionUrl={`/${locale}`}
+                  appearance={{
+                    elements: {
+                      avatarBox: "h-8 w-8",
+                    },
+                  }}
+                />
+              </div>
               <ButtonPrimary
                 asChild
                 size={"xs"}
@@ -53,14 +63,9 @@ const Navbar = () => {
               >
                 <Link href={`/${locale}/dashboard`}>{t("nav.dashboard")}</Link>
               </ButtonPrimary>
-              <UserButton
-                afterSwitchSessionUrl={`/${locale}`}
-                appearance={{
-                  elements: {
-                    avatarBox: "h-8 w-8",
-                  },
-                }}
-              />
+              <ButtonPrimary asChild size={"xs"} className="sm:hidden">
+                <Link href={`/${locale}/dashboard`}>{t("nav.dashboard")}</Link>
+              </ButtonPrimary>
             </>
           ) : isSignIn ? (
             <ButtonPrimary
