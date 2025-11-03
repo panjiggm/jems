@@ -1,6 +1,6 @@
 import { mutation, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
-import { getUserId } from "../schema";
+import { currentUserId } from "../auth";
 import { internal } from "../_generated/api";
 
 /**
@@ -19,8 +19,7 @@ export const generateDailySuggestions = mutation({
     scheduled?: boolean;
     scheduledId?: any;
   }> => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const suggestionDate = args.date || new Date().toISOString().split("T")[0];
 
@@ -67,8 +66,7 @@ export const dismissIdea = mutation({
     ideaId: v.id("contentIdeas"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const idea = await ctx.db.get(args.ideaId);
     if (!idea || idea.userId !== userId) {
@@ -105,8 +103,7 @@ export const convertIdeaToCampaign = mutation({
     type: v.optional(v.union(v.literal("barter"), v.literal("paid"))),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const idea = await ctx.db.get(args.ideaId);
     if (!idea || idea.userId !== userId) {
@@ -172,8 +169,7 @@ export const convertIdeaToRoutine = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const idea = await ctx.db.get(args.ideaId);
     if (!idea || idea.userId !== userId) {
@@ -315,8 +311,7 @@ export const createContentIdea = mutation({
     metadata: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const now = Date.now();
 
@@ -358,8 +353,7 @@ export const updateContentIdea = mutation({
     metadata: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const idea = await ctx.db.get(args.ideaId);
     if (!idea || idea.userId !== userId) {
@@ -394,8 +388,7 @@ export const deleteContentIdea = mutation({
     ideaId: v.id("contentIdeas"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const idea = await ctx.db.get(args.ideaId);
     if (!idea || idea.userId !== userId) {

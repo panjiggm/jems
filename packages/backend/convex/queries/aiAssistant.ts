@@ -1,6 +1,6 @@
 import { query, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
-import { getUserId } from "../schema";
+import { currentUserId } from "../auth";
 
 /**
  * List all threads for the current user
@@ -10,7 +10,7 @@ export const listThreads = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return [];
 
     const limit = Math.min(args.limit ?? 50, 100);
@@ -33,7 +33,7 @@ export const getThread = query({
     threadId: v.id("aiAssistantThreads"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return null;
 
     const thread = await ctx.db.get(args.threadId);
@@ -64,7 +64,7 @@ export const getMessages = query({
     cursor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return { items: [], isDone: true, cursor: undefined };
 
     const thread = await ctx.db.get(args.threadId);

@@ -1,8 +1,6 @@
 import { mutation, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
-import { getUserId } from "../schema";
-import { internal } from "../_generated/api";
-
+import { currentUserId } from "../auth";
 /**
  * Create a new AI Assistant thread
  */
@@ -12,8 +10,7 @@ export const createThread = mutation({
     metadata: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const now = Date.now();
     const title = args.title || "New Chat";
@@ -38,8 +35,7 @@ export const deleteThread = mutation({
     threadId: v.id("aiAssistantThreads"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const thread = await ctx.db.get(args.threadId);
     if (!thread || thread.userId !== userId) {
@@ -72,8 +68,7 @@ export const updateThreadTitle = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const thread = await ctx.db.get(args.threadId);
     if (!thread || thread.userId !== userId) {
@@ -99,8 +94,7 @@ export const sendMessage = mutation({
     metadata: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await currentUserId(ctx);
 
     const thread = await ctx.db.get(args.threadId);
     if (!thread || thread.userId !== userId) {
@@ -172,4 +166,3 @@ export const updateThreadTimestamp = internalMutation({
     });
   },
 });
-

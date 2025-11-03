@@ -1,6 +1,6 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { getUserId } from "../schema";
+import { currentUserId } from "../auth";
 
 export const list = query({
   args: {
@@ -13,7 +13,7 @@ export const list = query({
     pageSize: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     const pageSize = Math.min(args.pageSize ?? 20, 100);
 
     // Start with base query - use appropriate index based on filters
@@ -91,7 +91,7 @@ export const getStats = query({
     projectId: v.optional(v.id("projects")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return null;
 
     let campaigns = await ctx.db
@@ -156,7 +156,7 @@ export const getById = query({
     campaignId: v.id("contentCampaigns"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return null;
 
     const campaign = await ctx.db.get(args.campaignId);
@@ -212,7 +212,7 @@ export const getBySlug = query({
     slug: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return null;
 
     const campaign = await ctx.db
@@ -284,7 +284,7 @@ export const getByProject = query({
     platform: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return [];
 
     let campaigns = await ctx.db
@@ -323,7 +323,7 @@ export const getByProjectWithStats = query({
     projectId: v.id("projects"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return null;
 
     const campaigns = await ctx.db

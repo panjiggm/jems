@@ -1,6 +1,6 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { getUserId } from "../schema";
+import { currentUserId } from "../auth";
 
 /**
  * Get daily suggestions for a specific date
@@ -10,7 +10,7 @@ export const getDailySuggestions = query({
     date: v.optional(v.string()), // ISO date string, defaults to today
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return null;
 
     const suggestionDate = args.date || new Date().toISOString().split("T")[0];
@@ -45,14 +45,16 @@ export const getActiveSuggestions = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return [];
 
     const limit = Math.min(args.limit ?? 50, 100);
 
     const ideas = await ctx.db
       .query("contentIdeas")
-      .withIndex("by_user_status", (q) => q.eq("userId", userId).eq("status", "suggestion"))
+      .withIndex("by_user_status", (q) =>
+        q.eq("userId", userId).eq("status", "suggestion"),
+      )
       .order("desc")
       .take(limit);
 
@@ -74,13 +76,17 @@ export const listContentIdeas = query({
       ),
     ),
     source: v.optional(
-      v.union(v.literal("ai_suggestion"), v.literal("manual"), v.literal("chat_generated")),
+      v.union(
+        v.literal("ai_suggestion"),
+        v.literal("manual"),
+        v.literal("chat_generated"),
+      ),
     ),
     limit: v.optional(v.number()),
     cursor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return { items: [], isDone: true, cursor: undefined };
 
     const limit = Math.min(args.limit ?? 20, 100);
@@ -90,30 +96,51 @@ export const listContentIdeas = query({
       .withIndex("by_user", (q) => q.eq("userId", userId));
 
     if (args.status) {
+      const status = args.status;
       query = ctx.db
         .query("contentIdeas")
-        .withIndex("by_user_status", (q) => q.eq("userId", userId).eq("status", args.status));
+        .withIndex("by_user_status", (q) =>
+          q.eq("userId", userId).eq("status", status),
+        );
     } else if (args.source) {
+      const source = args.source;
       query = ctx.db
         .query("contentIdeas")
-        .withIndex("by_user_source", (q) => q.eq("userId", userId).eq("source", args.source));
+        .withIndex("by_user_source", (q) =>
+          q.eq("userId", userId).eq("source", source),
+        );
     }
 
-    const result = await (args.cursor
-      ? query.order("desc").paginate({
-          cursor: args.cursor,
-          numItems: limit,
-        })
-      : query.order("desc").take(limit).then((items) => ({
-          page: items,
-          isDone: items.length < limit,
-          continueCursor: items.length > 0 ? items[items.length - 1]._id : undefined,
-        })));
+    let result: {
+      page: any[];
+      isDone: boolean;
+      continueCursor: string | undefined;
+    };
+
+    if (args.cursor) {
+      const paginatedResult = await query.order("desc").paginate({
+        cursor: args.cursor,
+        numItems: limit,
+      });
+      result = {
+        page: paginatedResult.page,
+        isDone: paginatedResult.isDone,
+        continueCursor: paginatedResult.continueCursor,
+      };
+    } else {
+      const items = await query.order("desc").take(limit);
+      result = {
+        page: items,
+        isDone: items.length < limit,
+        continueCursor:
+          items.length > 0 ? items[items.length - 1]._id : undefined,
+      };
+    }
 
     return {
-      items: "page" in result ? result.page : result,
-      isDone: "isDone" in result ? result.isDone : result.length < limit,
-      cursor: "continueCursor" in result ? result.continueCursor : undefined,
+      items: result.page,
+      isDone: result.isDone,
+      cursor: result.continueCursor,
     };
   },
 });
@@ -126,7 +153,7 @@ export const getContentIdea = query({
     ideaId: v.id("contentIdeas"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await currentUserId(ctx);
     if (!userId) return null;
 
     const idea = await ctx.db.get(args.ideaId);
@@ -137,4 +164,3 @@ export const getContentIdea = query({
     return idea;
   },
 });
-
