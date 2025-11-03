@@ -18,6 +18,7 @@ import {
   Calendar,
   MoreVertical,
 } from "lucide-react";
+import { DailySuggestions } from "@/components/dashboard/daily-suggestions";
 
 // Dummy data
 const dummyProjects = [
@@ -136,6 +137,9 @@ export default function DashboardPage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 right-20 w-48 h-48 bg-[#f8e9b0]/20 rounded-full"></div>
         </div>
+
+        {/* Daily Content Suggestions */}
+        <DailySuggestions />
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -11,6 +11,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { ProtectedLayoutProvider } from "@/components/providers/protected-layout-provider";
+import { GlobalContentIdeaInput } from "@/components/content-idea/global-input";
 
 export default async function DashboardLayout({
   children,
@@ -55,6 +56,7 @@ export default async function DashboardLayout({
             </div>
           </header>
           <div>{children}</div>
+          <GlobalContentIdeaInput />
         </SidebarInset>
       </SidebarProvider>
     </ProtectedLayoutProvider>
