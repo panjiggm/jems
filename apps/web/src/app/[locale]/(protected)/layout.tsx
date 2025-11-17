@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ProtectedLayoutProvider } from "@/components/providers/protected-layout-provider";
 import { GlobalContentIdeaInput } from "@/components/content-idea/global-input";
+import { SidebarRight } from "@/components/sidebar-right";
 
 export default async function DashboardLayout({
   children,
@@ -58,6 +59,7 @@ export default async function DashboardLayout({
           <div>{children}</div>
           <GlobalContentIdeaInput />
         </SidebarInset>
+        {/* <SidebarRight currentThreadId={currentThreadId} /> */}
       </SidebarProvider>
     </ProtectedLayoutProvider>
   );
