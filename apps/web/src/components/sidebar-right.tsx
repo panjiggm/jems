@@ -31,15 +31,10 @@ import {
   PlusIcon,
   Trash2Icon,
   MoreHorizontal,
-  LightbulbIcon,
-  Loader2,
   PanelRightIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -151,20 +146,6 @@ export function SidebarRight() {
   const createThread = useMutation(api.mutations.aiAssistant.createThread);
   const deleteThread = useMutation(api.mutations.aiAssistant.deleteThread);
 
-  const contentIdeas = useQuery(
-    api.queries.contentIdeas.getActiveSuggestions,
-    isChatPage
-      ? {
-          limit: 5,
-        }
-      : "skip",
-  );
-  const createIdea = useMutation(api.mutations.contentIdeas.createContentIdea);
-
-  const [ideaTitle, setIdeaTitle] = React.useState("");
-  const [ideaDescription, setIdeaDescription] = React.useState("");
-  const [isSubmittingIdea, setIsSubmittingIdea] = React.useState(false);
-
   if (!isChatPage) {
     return null;
   }
@@ -207,33 +188,9 @@ export function SidebarRight() {
     router.push(`?threadId=${threadId}`);
   };
 
-  const handleSubmitIdea = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ideaTitle.trim() || !ideaDescription.trim() || isSubmittingIdea) {
-      return;
-    }
-
-    setIsSubmittingIdea(true);
-    try {
-      await createIdea({
-        title: ideaTitle.trim(),
-        description: ideaDescription.trim(),
-        platform: undefined,
-      });
-      toast.success("Content idea created");
-      setIdeaTitle("");
-      setIdeaDescription("");
-    } catch (error) {
-      console.error("Error creating content idea:", error);
-      toast.error("Failed to create content idea");
-    } finally {
-      setIsSubmittingIdea(false);
-    }
-  };
-
   const sidebarContent = (
-    <div className="flex h-full flex-col w-full">
-      <SidebarHeader className="px-4 py-4 border-b">
+    <div className="flex h-full flex-col w-full overflow-hidden">
+      <SidebarHeader className="px-4 py-4 border-b shrink-0">
         <ButtonPrimary
           onClick={handleCreateThread}
           className="w-full"
@@ -244,7 +201,7 @@ export function SidebarRight() {
         </ButtonPrimary>
       </SidebarHeader>
 
-      <SidebarContent className="w-full">
+      <SidebarContent className="w-full flex-1 min-h-0 overflow-y-auto">
         {threads === undefined ? (
           <div className="px-4 py-4 text-center text-sm text-muted-foreground">
             Loading chats...
@@ -314,7 +271,7 @@ export function SidebarRight() {
   return (
     <>
       <aside
-        className="hidden lg:flex shrink-0 border-l bg-card w-full"
+        className="hidden lg:flex shrink-0 border-l bg-card w-full fixed right-0 top-14 bottom-0 z-10 border-t"
         style={{ width: "var(--sidebar-width)" }}
       >
         {sidebarContent}
