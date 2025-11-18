@@ -24,23 +24,12 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuAction,
+  Sidebar,
 } from "@/components/ui/sidebar";
 import { ButtonPrimary } from "./ui/button-primary";
-import { Button } from "@/components/ui/button";
-import {
-  PlusIcon,
-  Trash2Icon,
-  MoreHorizontal,
-  PanelRightIcon,
-} from "lucide-react";
+import { PlusIcon, Trash2Icon, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 
 type SidebarRightContextValue = {
   isOpen: boolean;
@@ -76,50 +65,19 @@ export function SidebarRightProvider({
   );
 }
 
-function useSidebarRightState() {
-  const context = React.useContext(SidebarRightContext);
-  if (!context) {
-    throw new Error(
-      "useSidebarRightState must be used within a SidebarRightProvider",
-    );
-  }
-  return context;
-}
-
 const isChatsRoute = (pathname?: string | null) => {
   if (!pathname) return false;
   const segments = pathname.split("/").filter(Boolean);
   return segments.includes("chats");
 };
 
-export function SidebarRightTrigger({ className }: { className?: string }) {
-  const pathname = usePathname();
-  const { open } = useSidebarRightState();
-  const showTrigger = isChatsRoute(pathname);
-
-  if (!showTrigger) {
-    return null;
-  }
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className={cn("lg:hidden", className)}
-      onClick={open}
-    >
-      <PanelRightIcon className="h-4 w-4" />
-      <span className="sr-only">Toggle chat sidebar</span>
-    </Button>
-  );
-}
-
-export function SidebarRight() {
+export function SidebarRight({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { isOpen, setIsOpen, close } = useSidebarRightState();
 
   const isChatPage = isChatsRoute(pathname);
   const threadIdParam = searchParams?.get("threadId");
@@ -128,12 +86,6 @@ export function SidebarRight() {
     : null;
   const locale = (params?.locale as string) || "";
   const chatsBasePath = locale ? `/${locale}/chats` : "/chats";
-
-  React.useEffect(() => {
-    if (!isChatPage && isOpen) {
-      close();
-    }
-  }, [isChatPage, isOpen, close]);
 
   const threads = useQuery(
     api.queries.aiAssistant.listThreads,
@@ -188,8 +140,12 @@ export function SidebarRight() {
     router.push(`?threadId=${threadId}`);
   };
 
-  const sidebarContent = (
-    <div className="flex h-full flex-col w-full overflow-hidden">
+  return (
+    <Sidebar
+      collapsible="none"
+      className="sticky top-0 hidden h-svh border-l lg:flex"
+      {...props}
+    >
       <SidebarHeader className="px-4 py-4 border-b shrink-0">
         <ButtonPrimary
           onClick={handleCreateThread}
@@ -265,27 +221,6 @@ export function SidebarRight() {
           </SidebarMenu>
         )}
       </SidebarContent>
-    </div>
-  );
-
-  return (
-    <>
-      <aside
-        className="hidden lg:flex shrink-0 border-l bg-card w-full fixed right-0 top-14 bottom-0 z-10 border-t"
-        style={{ width: "var(--sidebar-width)" }}
-      >
-        {sidebarContent}
-      </aside>
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent side="right" className="w-full max-w-md p-0 sm:max-w-sm">
-          <SheetHeader className="border-b px-4 pt-4 pb-2">
-            <SheetTitle>Chats & content ideas</SheetTitle>
-          </SheetHeader>
-          <div className="h-[calc(100vh-4.5rem)] overflow-y-auto">
-            {sidebarContent}
-          </div>
-        </SheetContent>
-      </Sheet>
-    </>
+    </Sidebar>
   );
 }
