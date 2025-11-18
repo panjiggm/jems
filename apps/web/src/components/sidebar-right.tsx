@@ -1,11 +1,15 @@
 "use client";
 
+import * as React from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
-import { ButtonPrimary } from "./ui/button-primary";
-import { PlusIcon, Trash2Icon, MoreHorizontal } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -14,7 +18,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarMenu,
@@ -22,20 +25,149 @@ import {
   SidebarMenuButton,
   SidebarMenuAction,
 } from "@/components/ui/sidebar";
+import { ButtonPrimary } from "./ui/button-primary";
+import { Button } from "@/components/ui/button";
+import {
+  PlusIcon,
+  Trash2Icon,
+  MoreHorizontal,
+  LightbulbIcon,
+  Loader2,
+  PanelRightIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
-interface SidebarRightProps {
-  currentThreadId: Id<"aiAssistantThreads"> | null;
+type SidebarRightContextValue = {
+  isOpen: boolean;
+  open: () => void;
+  close: () => void;
+  setIsOpen: (open: boolean) => void;
+};
+
+const SidebarRightContext =
+  React.createContext<SidebarRightContextValue | null>(null);
+
+export function SidebarRightProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const value = React.useMemo(
+    () => ({
+      isOpen,
+      setIsOpen,
+      open: () => setIsOpen(true),
+      close: () => setIsOpen(false),
+    }),
+    [isOpen],
+  );
+
+  return (
+    <SidebarRightContext.Provider value={value}>
+      {children}
+    </SidebarRightContext.Provider>
+  );
 }
 
-export function SidebarRight({ currentThreadId }: SidebarRightProps) {
+function useSidebarRightState() {
+  const context = React.useContext(SidebarRightContext);
+  if (!context) {
+    throw new Error(
+      "useSidebarRightState must be used within a SidebarRightProvider",
+    );
+  }
+  return context;
+}
+
+const isChatsRoute = (pathname?: string | null) => {
+  if (!pathname) return false;
+  const segments = pathname.split("/").filter(Boolean);
+  return segments.includes("chats");
+};
+
+export function SidebarRightTrigger({ className }: { className?: string }) {
+  const pathname = usePathname();
+  const { open } = useSidebarRightState();
+  const showTrigger = isChatsRoute(pathname);
+
+  if (!showTrigger) {
+    return null;
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className={cn("lg:hidden", className)}
+      onClick={open}
+    >
+      <PanelRightIcon className="h-4 w-4" />
+      <span className="sr-only">Toggle chat sidebar</span>
+    </Button>
+  );
+}
+
+export function SidebarRight() {
   const router = useRouter();
-  const threads = useQuery(api.queries.aiAssistant.listThreads, {
-    limit: 50,
-  });
+  const params = useParams();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { isOpen, setIsOpen, close } = useSidebarRightState();
+
+  const isChatPage = isChatsRoute(pathname);
+  const threadIdParam = searchParams?.get("threadId");
+  const currentThreadId = threadIdParam
+    ? (threadIdParam as Id<"aiAssistantThreads">)
+    : null;
+  const locale = (params?.locale as string) || "";
+  const chatsBasePath = locale ? `/${locale}/chats` : "/chats";
+
+  React.useEffect(() => {
+    if (!isChatPage && isOpen) {
+      close();
+    }
+  }, [isChatPage, isOpen, close]);
+
+  const threads = useQuery(
+    api.queries.aiAssistant.listThreads,
+    isChatPage
+      ? {
+          limit: 50,
+        }
+      : "skip",
+  );
   const createThread = useMutation(api.mutations.aiAssistant.createThread);
   const deleteThread = useMutation(api.mutations.aiAssistant.deleteThread);
+
+  const contentIdeas = useQuery(
+    api.queries.contentIdeas.getActiveSuggestions,
+    isChatPage
+      ? {
+          limit: 5,
+        }
+      : "skip",
+  );
+  const createIdea = useMutation(api.mutations.contentIdeas.createContentIdea);
+
+  const [ideaTitle, setIdeaTitle] = React.useState("");
+  const [ideaDescription, setIdeaDescription] = React.useState("");
+  const [isSubmittingIdea, setIsSubmittingIdea] = React.useState(false);
+
+  if (!isChatPage) {
+    return null;
+  }
 
   const handleCreateThread = async () => {
     try {
@@ -53,17 +185,16 @@ export function SidebarRight({ currentThreadId }: SidebarRightProps) {
       await deleteThread({ threadId });
       toast.success("Chat deleted");
 
-      // If we deleted the current thread, redirect to new thread
       if (threadId === currentThreadId) {
         if (threads && threads.length > 1) {
           const otherThread = threads.find((t) => t._id !== threadId);
           if (otherThread) {
             router.push(`?threadId=${otherThread._id}`);
           } else {
-            router.push("/");
+            router.push(chatsBasePath);
           }
         } else {
-          router.push("/");
+          router.push(chatsBasePath);
         }
       }
     } catch (error) {
@@ -76,9 +207,33 @@ export function SidebarRight({ currentThreadId }: SidebarRightProps) {
     router.push(`?threadId=${threadId}`);
   };
 
-  return (
-    <Sidebar side="right" className="border-l">
-      <SidebarHeader className="p-4 border-b">
+  const handleSubmitIdea = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ideaTitle.trim() || !ideaDescription.trim() || isSubmittingIdea) {
+      return;
+    }
+
+    setIsSubmittingIdea(true);
+    try {
+      await createIdea({
+        title: ideaTitle.trim(),
+        description: ideaDescription.trim(),
+        platform: undefined,
+      });
+      toast.success("Content idea created");
+      setIdeaTitle("");
+      setIdeaDescription("");
+    } catch (error) {
+      console.error("Error creating content idea:", error);
+      toast.error("Failed to create content idea");
+    } finally {
+      setIsSubmittingIdea(false);
+    }
+  };
+
+  const sidebarContent = (
+    <div className="flex h-full flex-col w-full">
+      <SidebarHeader className="px-4 py-4 border-b">
         <ButtonPrimary
           onClick={handleCreateThread}
           className="w-full"
@@ -89,25 +244,25 @@ export function SidebarRight({ currentThreadId }: SidebarRightProps) {
         </ButtonPrimary>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="w-full">
         {threads === undefined ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            Loading...
+          <div className="px-4 py-4 text-center text-sm text-muted-foreground">
+            Loading chats...
           </div>
         ) : threads.length === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">
+          <div className="px-4 py-4 text-center text-sm text-muted-foreground">
             No chats yet. Create a new chat to get started.
           </div>
         ) : (
-          <SidebarMenu>
+          <SidebarMenu className="w-full">
             {threads.map((thread) => {
               const isActive = thread._id === currentThreadId;
               return (
-                <SidebarMenuItem key={thread._id}>
+                <SidebarMenuItem key={thread._id} className="w-full">
                   <SidebarMenuButton
                     onClick={() => handleSelectThread(thread._id)}
                     isActive={isActive}
-                    className="flex flex-col items-start gap-1 h-auto py-2"
+                    className="flex h-auto flex-col items-start gap-1 px-4 py-2 w-full"
                   >
                     <span className="font-medium truncate w-full">
                       {thread.title}
@@ -126,7 +281,7 @@ export function SidebarRight({ currentThreadId }: SidebarRightProps) {
                       <SidebarMenuAction
                         showOnHover
                         className={cn(
-                          "opacity-0 group-hover/menu-item:opacity-100 transition-opacity",
+                          "opacity-0 transition-opacity group-hover/menu-item:opacity-100",
                           isActive && "opacity-100",
                         )}
                       >
@@ -153,6 +308,27 @@ export function SidebarRight({ currentThreadId }: SidebarRightProps) {
           </SidebarMenu>
         )}
       </SidebarContent>
-    </Sidebar>
+    </div>
+  );
+
+  return (
+    <>
+      <aside
+        className="hidden lg:flex shrink-0 border-l bg-card w-full"
+        style={{ width: "var(--sidebar-width)" }}
+      >
+        {sidebarContent}
+      </aside>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetContent side="right" className="w-full max-w-md p-0 sm:max-w-sm">
+          <SheetHeader className="border-b px-4 pt-4 pb-2">
+            <SheetTitle>Chats & content ideas</SheetTitle>
+          </SheetHeader>
+          <div className="h-[calc(100vh-4.5rem)] overflow-y-auto">
+            {sidebarContent}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

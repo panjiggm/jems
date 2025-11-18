@@ -4,8 +4,12 @@ import { action } from "../_generated/server";
 import { v } from "convex/values";
 import { currentUserId } from "../auth";
 import { internal } from "../_generated/api";
-import { languageModel } from "../models";
-import { streamText } from "ai";
+import { OpenAI } from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY as string,
+  baseURL: process.env.OPENAI_BASE_URL as string,
+});
 
 /**
  * Chat with AI Assistant - handles user message and generates AI response
@@ -48,15 +52,6 @@ export const chatWithAI = action({
         limit: 20,
       });
 
-    // Format messages for AI
-    const formattedMessages: Array<{
-      role: "user" | "assistant";
-      content: string;
-    }> = messages.map((msg: { role: string; content: string }) => ({
-      role: msg.role as "user" | "assistant",
-      content: msg.content,
-    }));
-
     // Create system prompt with RAG context
     const systemPrompt: string = `You are an AI Assistant helping a content creator manage their content strategy.
 
@@ -72,27 +67,44 @@ Instructions:
 
 Remember: You have access to their recent content campaigns, routines, and social media stats. Use this information to provide personalized advice.`;
 
-    // Generate AI response using streamText
-    const result: Awaited<ReturnType<typeof streamText>> = await streamText({
-      model: languageModel,
-      system: systemPrompt,
-      messages: [
-        ...formattedMessages,
-        {
-          role: "user" as const,
-          content: args.message,
-        },
-      ] as Array<{ role: "user" | "assistant"; content: string }>,
+    // Format messages for OpenAI API
+    const formattedMessages: Array<{
+      role: "user" | "assistant" | "system";
+      content: string;
+    }> = [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      ...messages.map((msg: { role: string; content: string }) => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+      })),
+      {
+        role: "user" as const,
+        content: args.message,
+      },
+    ];
+
+    // Generate AI response using OpenAI streaming
+    const stream = await openai.chat.completions.create({
+      model: process.env.AI_MODEL as string,
+      messages: formattedMessages,
+      stream: true,
     });
 
-    // Collect the full response text
+    // Collect the full response text from stream
     let fullResponse = "";
-    for await (const textPart of result.textStream) {
-      fullResponse += textPart;
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content;
+      if (content) {
+        fullResponse += content;
+      }
     }
 
-    // Get usage info
-    const usage = await result.usage;
+    // Note: OpenAI streaming doesn't provide usage in chunks
+    // Usage info would need to be tracked separately if needed
+    const usage = undefined;
 
     // Save both user message and AI response
     const now = Date.now();
@@ -103,8 +115,8 @@ Remember: You have access to their recent content campaigns, routines, and socia
       threadId: args.threadId,
       content: fullResponse,
       metadata: {
-        model: "gpt-5-nano",
-        tokensUsed: usage?.totalTokens,
+        model: process.env.AI_MODEL || "unknown",
+        tokensUsed: undefined,
       },
       createdAt: now,
     });
