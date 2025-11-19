@@ -8,7 +8,7 @@ import {
   PromptInputButton,
   PromptInputSubmit,
 } from "@/components/ui/ai/prompt-input";
-import { MicIcon, PaperclipIcon } from "lucide-react";
+import { PaperclipIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import type { ChatStatus } from "ai";
@@ -53,9 +53,6 @@ export function ChatPromptInput({
           <PromptInputButton tone="ghost" disabled={!threadId || disabled}>
             <PaperclipIcon size={16} />
           </PromptInputButton>
-          {/* <PromptInputButton tone="ghost" disabled={!threadId || disabled}>
-            <MicIcon size={16} />
-          </PromptInputButton> */}
         </PromptInputTools>
         <PromptInputSubmit
           disabled={!input.trim() || disabled}
