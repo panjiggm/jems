@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useAction } from "convex/react";
-import { api } from "@/../../packages/backend/convex/_generated/api";
+import { api } from "@packages/backend/convex/_generated/api";
 import { ButtonPrimary } from "@/components/ui/button-primary";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Loader2 } from "lucide-react";
-import type { Id } from "@/../../packages/backend/convex/_generated/dataModel";
+import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import { useTranslations } from "@/hooks/use-translations";
 
 interface Step4BioProps {

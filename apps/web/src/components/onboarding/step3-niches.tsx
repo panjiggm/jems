@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/../../packages/backend/convex/_generated/api";
+import { api } from "@packages/backend/convex/_generated/api";
 import { ButtonPrimary } from "@/components/ui/button-primary";
 import { BadgePrimary } from "@/components/ui/badge-primary";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
-import type { Id } from "@/../../packages/backend/convex/_generated/dataModel";
+import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import { useTranslations } from "@/hooks/use-translations";
 
 interface Step3NichesProps {

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/../../packages/backend/convex/_generated/api";
+import { api } from "@packages/backend/convex/_generated/api";
 import { ButtonPrimary } from "@/components/ui/button-primary";
 import { BadgePrimary } from "@/components/ui/badge-primary";
 import { cn } from "@/lib/utils";

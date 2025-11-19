@@ -1,5 +1,4 @@
 import { fetchQuery } from "convex/nextjs";
-import { api } from "@/../../packages/backend/convex/_generated/api";
 import { auth } from "@clerk/nextjs/server";
 import { SidebarLeft } from "@/components/sidebar-left";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +12,7 @@ import {
 import { ProtectedLayoutProvider } from "@/components/providers/protected-layout-provider";
 import { GlobalContentIdeaInput } from "@/components/content-idea/global-input";
 import { SidebarRight } from "@/components/sidebar-right";
+import { api } from "@packages/backend/convex/_generated/api";
 
 export default async function DashboardLayout({
   children,

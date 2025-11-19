@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useMutation } from "convex/react";
-import { api } from "@/../../packages/backend/convex/_generated/api";
+import { api } from "@packages/backend/convex/_generated/api";
 import {
   Dialog,
   DialogHeader,
@@ -18,7 +18,7 @@ import { Step2Categories } from "./step2-categories";
 import { Step3Niches } from "./step3-niches";
 import { Step4Bio } from "./step4-bio";
 import { toast } from "sonner";
-import type { Id } from "@/../../packages/backend/convex/_generated/dataModel";
+import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import { useTranslations } from "@/hooks/use-translations";
 import { useClerk } from "@clerk/nextjs";
 import { LogOut } from "lucide-react";
