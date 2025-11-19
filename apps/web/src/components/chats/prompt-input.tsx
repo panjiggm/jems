@@ -20,7 +20,6 @@ interface ChatPromptInputProps {
   disabled?: boolean;
   threadId: Id<"aiAssistantThreads"> | null;
   status?: ChatStatus;
-  variant?: "initial" | "thread";
 }
 
 export function ChatPromptInput({
@@ -30,15 +29,12 @@ export function ChatPromptInput({
   disabled = false,
   threadId,
   status,
-  variant = "thread",
 }: ChatPromptInputProps) {
   return (
     <PromptInput
       className={cn(
-        "bg-background shadow-lg w-full",
-        variant === "thread"
-          ? "rounded-t-xl rounded-b-none border-b-0"
-          : "rounded-2xl border",
+        "bg-background shadow-lg w-full mb-2",
+        "rounded-2xl border",
       )}
       onSubmit={onSubmit}
     >
@@ -49,7 +45,7 @@ export function ChatPromptInput({
         }
         placeholder="Ask whatever you want..."
         disabled={disabled}
-        minHeight={48}
+        minHeight={40}
         maxHeight={192}
       />
       <PromptInputToolbar>
@@ -57,10 +53,9 @@ export function ChatPromptInput({
           <PromptInputButton tone="ghost" disabled={!threadId || disabled}>
             <PaperclipIcon size={16} />
           </PromptInputButton>
-          <PromptInputButton tone="ghost" disabled={!threadId || disabled}>
+          {/* <PromptInputButton tone="ghost" disabled={!threadId || disabled}>
             <MicIcon size={16} />
-            <span>Voice</span>
-          </PromptInputButton>
+          </PromptInputButton> */}
         </PromptInputTools>
         <PromptInputSubmit
           disabled={!input.trim() || disabled}

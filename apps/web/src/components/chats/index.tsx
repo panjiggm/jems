@@ -194,7 +194,6 @@ export default function ChatsComponent() {
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-y-hidden">
-      {/* Scrollable chat area - takes full height, padding bottom for fixed input */}
       <div
         ref={scrollRef}
         className={cn(
@@ -260,7 +259,6 @@ export default function ChatsComponent() {
                   disabled={isStreaming}
                   threadId={threadId}
                   status={status}
-                  variant="initial"
                 />
               </div>
             </div>
@@ -311,7 +309,6 @@ export default function ChatsComponent() {
               disabled={isStreaming}
               threadId={threadId}
               status={status}
-              variant="thread"
             />
           </div>
         </div>
