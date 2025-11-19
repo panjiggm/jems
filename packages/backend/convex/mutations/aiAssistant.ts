@@ -166,3 +166,37 @@ export const updateThreadTimestamp = internalMutation({
     });
   },
 });
+
+/**
+ * Internal mutation to create or update AI message for streaming
+ * Creates message if it doesn't exist, or updates content if it does
+ */
+export const upsertStreamingAIMessage = internalMutation({
+  args: {
+    threadId: v.id("aiAssistantThreads"),
+    messageId: v.optional(v.id("aiAssistantMessages")),
+    content: v.string(),
+    metadata: v.optional(v.any()),
+    createdAt: v.number(),
+    isComplete: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    if (args.messageId) {
+      // Update existing message
+      await ctx.db.patch(args.messageId, {
+        content: args.content,
+        metadata: args.metadata,
+      });
+    } else {
+      // Create new message
+      const messageId = await ctx.db.insert("aiAssistantMessages", {
+        threadId: args.threadId,
+        role: "assistant",
+        content: args.content,
+        createdAt: args.createdAt,
+        metadata: args.metadata,
+      });
+      return messageId;
+    }
+  },
+});

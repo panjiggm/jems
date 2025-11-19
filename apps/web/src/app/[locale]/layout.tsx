@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="id" suppressHydrationWarning>
-        <body className={cn(inter.className)}>
+        <body className={cn(inter.className, "min-h-screen")}>
           <ThemeProvider attribute={"class"} defaultTheme="system" enableSystem>
             <ConvexClientProvider>
               <NuqsAdapter>{children}</NuqsAdapter>

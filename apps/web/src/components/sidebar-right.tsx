@@ -4,12 +4,7 @@ import * as React from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -30,40 +25,7 @@ import { ButtonPrimary } from "./ui/button-primary";
 import { PlusIcon, Trash2Icon, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-
-type SidebarRightContextValue = {
-  isOpen: boolean;
-  open: () => void;
-  close: () => void;
-  setIsOpen: (open: boolean) => void;
-};
-
-const SidebarRightContext =
-  React.createContext<SidebarRightContextValue | null>(null);
-
-export function SidebarRightProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isOpen, setIsOpen] = React.useState(false);
-
-  const value = React.useMemo(
-    () => ({
-      isOpen,
-      setIsOpen,
-      open: () => setIsOpen(true),
-      close: () => setIsOpen(false),
-    }),
-    [isOpen],
-  );
-
-  return (
-    <SidebarRightContext.Provider value={value}>
-      {children}
-    </SidebarRightContext.Provider>
-  );
-}
+import { useQueryState } from "nuqs";
 
 const isChatsRoute = (pathname?: string | null) => {
   if (!pathname) return false;
@@ -77,13 +39,13 @@ export function SidebarRight({
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [currentThreadId, setCurrentThreadId] =
+    useQueryState<Id<"aiAssistantThreads"> | null>("threadId", {
+      defaultValue: null,
+      parse: (value) => (value ? (value as Id<"aiAssistantThreads">) : null),
+    });
 
   const isChatPage = isChatsRoute(pathname);
-  const threadIdParam = searchParams?.get("threadId");
-  const currentThreadId = threadIdParam
-    ? (threadIdParam as Id<"aiAssistantThreads">)
-    : null;
   const locale = (params?.locale as string) || "";
   const chatsBasePath = locale ? `/${locale}/chats` : "/chats";
 
@@ -95,7 +57,6 @@ export function SidebarRight({
         }
       : "skip",
   );
-  const createThread = useMutation(api.mutations.aiAssistant.createThread);
   const deleteThread = useMutation(api.mutations.aiAssistant.deleteThread);
 
   if (!isChatPage) {
@@ -103,14 +64,7 @@ export function SidebarRight({
   }
 
   const handleCreateThread = async () => {
-    try {
-      const newThreadId = await createThread({ title: "New Chat" });
-      router.push(`?threadId=${newThreadId}`);
-      toast.success("New chat created");
-    } catch (error) {
-      console.error("Error creating thread:", error);
-      toast.error("Failed to create new chat");
-    }
+    router.push(chatsBasePath);
   };
 
   const handleDeleteThread = async (threadId: Id<"aiAssistantThreads">) => {
@@ -122,11 +76,13 @@ export function SidebarRight({
         if (threads && threads.length > 1) {
           const otherThread = threads.find((t) => t._id !== threadId);
           if (otherThread) {
-            router.push(`?threadId=${otherThread._id}`);
+            await setCurrentThreadId(otherThread._id);
           } else {
+            await setCurrentThreadId(null);
             router.push(chatsBasePath);
           }
         } else {
+          await setCurrentThreadId(null);
           router.push(chatsBasePath);
         }
       }
@@ -137,7 +93,7 @@ export function SidebarRight({
   };
 
   const handleSelectThread = (threadId: Id<"aiAssistantThreads">) => {
-    router.push(`?threadId=${threadId}`);
+    void setCurrentThreadId(threadId);
   };
 
   return (

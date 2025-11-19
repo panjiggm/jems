@@ -93,33 +93,75 @@ Remember: You have access to their recent content campaigns, routines, and socia
       stream: true,
     });
 
-    // Collect the full response text from stream
+    // Create initial empty AI message for streaming
+    const now = Date.now();
+    let messageId: string | undefined = undefined;
     let fullResponse = "";
+    let chunkCount = 0;
+    const CHUNK_BATCH_SIZE = 3; // Update database every N chunks for better performance
+
+    // Stream chunks and update database incrementally
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content;
       if (content) {
         fullResponse += content;
+        chunkCount++;
+
+        // Update database every N chunks or on first chunk
+        if (chunkCount === 1 || chunkCount % CHUNK_BATCH_SIZE === 0) {
+          const result = await ctx.runMutation(
+            internal.mutations.aiAssistant.upsertStreamingAIMessage,
+            {
+              threadId: args.threadId,
+              messageId: messageId as any,
+              content: fullResponse,
+              metadata: {
+                model: process.env.AI_MODEL || "unknown",
+                tokensUsed: undefined,
+                streaming: true,
+              },
+              createdAt: now,
+              isComplete: false,
+            },
+          );
+
+          // Store messageId on first creation
+          if (!messageId && result) {
+            messageId = result as string;
+          }
+        }
       }
     }
 
-    // Note: OpenAI streaming doesn't provide usage in chunks
-    // Usage info would need to be tracked separately if needed
-    const usage = undefined;
-
-    // Save both user message and AI response
-    const now = Date.now();
-
-    // User message is already saved by the mutation that calls this action
-    // Just save the AI response
-    await ctx.runMutation(internal.mutations.aiAssistant.insertAIMessage, {
-      threadId: args.threadId,
-      content: fullResponse,
-      metadata: {
-        model: process.env.AI_MODEL || "unknown",
-        tokensUsed: undefined,
-      },
-      createdAt: now,
-    });
+    // Final update to mark message as complete
+    if (messageId) {
+      await ctx.runMutation(
+        internal.mutations.aiAssistant.upsertStreamingAIMessage,
+        {
+          threadId: args.threadId,
+          messageId: messageId as any,
+          content: fullResponse,
+          metadata: {
+            model: process.env.AI_MODEL || "unknown",
+            tokensUsed: undefined,
+            streaming: false,
+          },
+          createdAt: now,
+          isComplete: true,
+        },
+      );
+    } else {
+      // Fallback: create message if streaming didn't work properly
+      await ctx.runMutation(internal.mutations.aiAssistant.insertAIMessage, {
+        threadId: args.threadId,
+        content: fullResponse,
+        metadata: {
+          model: process.env.AI_MODEL || "unknown",
+          tokensUsed: undefined,
+        },
+        createdAt: now,
+      });
+    }
 
     // Update thread updatedAt
     await ctx.runMutation(
@@ -129,6 +171,10 @@ Remember: You have access to their recent content campaigns, routines, and socia
         timestamp: now,
       },
     );
+
+    // Note: OpenAI streaming doesn't provide usage in chunks
+    // Usage info would need to be tracked separately if needed
+    const usage = undefined;
 
     return {
       response: fullResponse,

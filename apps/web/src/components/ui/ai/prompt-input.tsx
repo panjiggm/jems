@@ -16,7 +16,7 @@ import type {
   HTMLAttributes,
   KeyboardEventHandler,
 } from "react";
-import { Children } from "react";
+import { Children, useCallback, useEffect, useRef } from "react";
 import { ButtonPrimary } from "../button-primary";
 
 export type PromptInputProps = HTMLAttributes<HTMLFormElement>;
@@ -41,13 +41,41 @@ export const PromptInputTextarea = ({
   className,
   placeholder = "What would you like to know?",
   minHeight = 48,
-  maxHeight = 164,
+  maxHeight = 192,
   ...props
 }: PromptInputTextareaProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const adjustHeight = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = "auto";
+
+    // Calculate the new height based on scrollHeight
+    const scrollHeight = textarea.scrollHeight;
+    const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
+
+    textarea.style.height = `${newHeight}px`;
+
+    // Show scrollbar only when content exceeds maxHeight
+    if (scrollHeight > maxHeight) {
+      textarea.style.overflowY = "auto";
+    } else {
+      textarea.style.overflowY = "hidden";
+    }
+  }, [minHeight, maxHeight]);
+
+  useEffect(() => {
+    adjustHeight();
+  }, [props.value, adjustHeight]);
+
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === "Enter") {
       if (e.shiftKey) {
         // Allow newline
+        setTimeout(adjustHeight, 0);
         return;
       }
 
@@ -57,21 +85,34 @@ export const PromptInputTextarea = ({
       if (form) {
         form.requestSubmit();
       }
+    } else {
+      // Adjust height on other key presses
+      setTimeout(adjustHeight, 0);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange?.(e);
+    setTimeout(adjustHeight, 0);
   };
 
   return (
     <Textarea
+      ref={textareaRef}
       className={cn(
         "w-full resize-none rounded-none border-none p-3 shadow-none outline-none ring-0",
-        "field-sizing-content max-h-[6lh] bg-transparent dark:bg-transparent",
+        "bg-transparent dark:bg-transparent",
         "focus-visible:ring-0",
         className,
       )}
-      name="message"
-      onChange={(e) => {
-        onChange?.(e);
+      style={{
+        minHeight: `${minHeight}px`,
+        maxHeight: `${maxHeight}px`,
+        height: `${minHeight}px`,
+        overflowY: "hidden",
       }}
+      name="message"
+      onChange={handleChange}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
       {...props}
@@ -158,7 +199,7 @@ export const PromptInputSubmit = ({
 
   return (
     <ButtonPrimary
-      className={cn("gap-1.5 rounded-lg", className)}
+      className={cn("gap-1.5 rounded-full", className)}
       size={size}
       type="submit"
       tone={tone}
