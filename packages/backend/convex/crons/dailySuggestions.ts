@@ -1,10 +1,12 @@
 import { internalAction, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
+import { Id } from "../_generated/dataModel";
 
 /**
  * Regenerate daily suggestions for all users
  * Called by cron job daily at midnight UTC
+ * Cron 1: Generate 3 content suggestions every day
  */
 export const regenerateForAllUsers = internalAction({
   handler: async (
@@ -24,9 +26,6 @@ export const regenerateForAllUsers = internalAction({
     );
 
     const today = new Date().toISOString().split("T")[0];
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
 
     const results: Array<{
       userId: string;
@@ -37,21 +36,12 @@ export const regenerateForAllUsers = internalAction({
 
     for (const persona of allPersonas) {
       try {
-        // Generate new suggestions for today
+        // Generate new suggestions for today (exactly 3 ideas)
         const generateResult: { count: number } = await ctx.runAction(
           internal.actions.contentSuggestions.generateSuggestions,
           {
             userId: persona.userId,
             date: today,
-          },
-        );
-
-        // Delete old suggestions from yesterday (keep only 3, delete the rest)
-        await ctx.runMutation(
-          internal.crons.dailySuggestions.cleanupOldSuggestions,
-          {
-            userId: persona.userId,
-            date: yesterday,
           },
         );
 
@@ -78,40 +68,135 @@ export const regenerateForAllUsers = internalAction({
 });
 
 /**
- * Cleanup old suggestions - keep only 3, delete the rest
+ * Delete old suggestions for all users
+ * Called by cron job to delete content ideas older than 24 hours
+ * Cron 2: Delete content ideas that have passed 24 hours
  */
-export const cleanupOldSuggestions = internalMutation({
+export const deleteOldSuggestionsForAllUsers = internalAction({
+  handler: async (
+    ctx,
+  ): Promise<{
+    processed: number;
+    totalDeleted: number;
+    results: Array<{
+      userId: string;
+      success: boolean;
+      deleted?: number;
+      error?: string;
+    }>;
+  }> => {
+    // Get all users who have completed onboarding (have persona)
+    const allPersonas: Array<{ userId: string }> = await ctx.runQuery(
+      internal.queries.persona.getAllPersonas,
+    );
+
+    const results: Array<{
+      userId: string;
+      success: boolean;
+      deleted?: number;
+      error?: string;
+    }> = [];
+
+    let totalDeleted = 0;
+
+    for (const persona of allPersonas) {
+      try {
+        // Delete old suggestions for this user
+        const deleteResult: { deleted: number } = await ctx.runMutation(
+          internal.crons.dailySuggestions.deleteOldSuggestionsForUser,
+          {
+            userId: persona.userId,
+          },
+        );
+
+        totalDeleted += deleteResult.deleted;
+        results.push({
+          userId: persona.userId,
+          success: true,
+          deleted: deleteResult.deleted,
+        });
+      } catch (error) {
+        console.error(
+          `Error deleting old suggestions for user ${persona.userId}:`,
+          error,
+        );
+        results.push({
+          userId: persona.userId,
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    }
+
+    return {
+      processed: allPersonas.length,
+      totalDeleted,
+      results,
+    };
+  },
+});
+
+/**
+ * Delete old suggestions for a specific user
+ * Deletes content ideas with status "suggestion" that are older than 24 hours
+ */
+export const deleteOldSuggestionsForUser = internalMutation({
   args: {
     userId: v.string(),
-    date: v.string(),
   },
   handler: async (ctx, args) => {
-    // Get suggestions for the date
-    const suggestion = await ctx.db
-      .query("dailyContentSuggestions")
-      .withIndex("by_user_date", (q) =>
-        q.eq("userId", args.userId).eq("suggestionDate", args.date),
-      )
-      .first();
+    const now = Date.now();
+    const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
 
-    if (!suggestion || suggestion.ideaIds.length <= 3) {
+    // Get all content ideas for this user with status "suggestion"
+    const allIdeas = await ctx.db
+      .query("contentIdeas")
+      .withIndex("by_user_status", (q) =>
+        q.eq("userId", args.userId).eq("status", "suggestion"),
+      )
+      .collect();
+
+    // Filter ideas that are older than 24 hours
+    const ideasToDelete = allIdeas.filter(
+      (idea) => idea.createdAt < twentyFourHoursAgo,
+    );
+
+    if (ideasToDelete.length === 0) {
       return { deleted: 0 };
     }
 
-    // Keep first 3, delete the rest
-    const toKeep = suggestion.ideaIds.slice(0, 3);
-    const toDelete = suggestion.ideaIds.slice(3);
+    const deletedIds = new Set<Id<"contentIdeas">>();
 
     // Delete the ideas
-    for (const ideaId of toDelete) {
-      await ctx.db.delete(ideaId);
+    for (const idea of ideasToDelete) {
+      await ctx.db.delete(idea._id);
+      deletedIds.add(idea._id);
     }
 
-    // Update the suggestion record
-    await ctx.db.patch(suggestion._id, {
-      ideaIds: toKeep,
-    });
+    // Update dailyContentSuggestions records
+    // Get all dailyContentSuggestions for this user
+    const allDailySuggestions = await ctx.db
+      .query("dailyContentSuggestions")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
 
-    return { deleted: toDelete.length };
+    for (const suggestion of allDailySuggestions) {
+      // Remove deleted ideaIds from the array
+      const updatedIdeaIds = suggestion.ideaIds.filter(
+        (id) => !deletedIds.has(id),
+      );
+
+      if (updatedIdeaIds.length === 0) {
+        // Delete the dailyContentSuggestions record if no ideas left
+        await ctx.db.delete(suggestion._id);
+      } else if (updatedIdeaIds.length !== suggestion.ideaIds.length) {
+        // Update the record if some ideas were deleted
+        await ctx.db.patch(suggestion._id, {
+          ideaIds: updatedIdeaIds,
+        });
+      }
+    }
+
+    return { deleted: ideasToDelete.length };
   },
 });
