@@ -15,6 +15,7 @@ import { table } from "./table";
 import { terms } from "./terms";
 import { policy } from "./policy";
 import { chats } from "./chats";
+import { contentIdea } from "./content-idea";
 
 export const dictionary = {
   nav,
@@ -34,4 +35,5 @@ export const dictionary = {
   terms,
   policy,
   chats,
+  contentIdea,
 } as const;

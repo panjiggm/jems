@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ProtectedLayoutProvider } from "@/components/providers/protected-layout-provider";
 import { GlobalContentIdeaInput } from "@/components/content-idea/global-input";
+import { ContentIdeaTrigger } from "@/components/content-idea/content-idea-trigger";
 import { SidebarRight } from "@/components/sidebar-right";
 import { api } from "@packages/backend/convex/_generated/api";
 
@@ -53,6 +54,7 @@ export default async function DashboardLayout({
               </Badge>
             </div>
             <div className="flex items-center gap-2">
+              <ContentIdeaTrigger />
               <LanguageSwitcher />
               <ThemeToggle />
             </div>
