@@ -39,6 +39,7 @@ import type * as queries_aiAssistant from "../queries/aiAssistant.js";
 import type * as queries_contentCampaigns from "../queries/contentCampaigns.js";
 import type * as queries_contentIdeas from "../queries/contentIdeas.js";
 import type * as queries_contentRoutines from "../queries/contentRoutines.js";
+import type * as queries_dashboard from "../queries/dashboard.js";
 import type * as queries_media from "../queries/media.js";
 import type * as queries_niches from "../queries/niches.js";
 import type * as queries_persona from "../queries/persona.js";
@@ -95,6 +96,7 @@ declare const fullApi: ApiFromModules<{
   "queries/contentCampaigns": typeof queries_contentCampaigns;
   "queries/contentIdeas": typeof queries_contentIdeas;
   "queries/contentRoutines": typeof queries_contentRoutines;
+  "queries/dashboard": typeof queries_dashboard;
   "queries/media": typeof queries_media;
   "queries/niches": typeof queries_niches;
   "queries/persona": typeof queries_persona;
