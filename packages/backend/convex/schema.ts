@@ -26,7 +26,8 @@ export default defineSchema({
     userId: v.string(),
     full_name: v.string(),
     phone: v.string(),
-    avatar_url: v.string(),
+    avatar_url: v.string(), // Keep for backward compatibility, will be populated from storage
+    avatarStorageId: v.optional(v.id("_storage")), // Storage ID for avatar file
     is_onboarding_completed: v.boolean(),
     locale: v.optional(v.string()), // User's preferred locale (e.g., "id", "en")
   }).index("by_user", ["userId"]),

@@ -14,7 +14,21 @@ export const getProfile = query({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
 
-    return profile;
+    if (!profile) return null;
+
+    // Get avatar URL from storage if storageId exists, otherwise use avatar_url
+    let avatarUrl = profile.avatar_url || "";
+    if (profile.avatarStorageId) {
+      const url = await ctx.storage.getUrl(profile.avatarStorageId);
+      if (url) {
+        avatarUrl = url;
+      }
+    }
+
+    return {
+      ...profile,
+      avatar_url: avatarUrl,
+    };
   },
 });
 

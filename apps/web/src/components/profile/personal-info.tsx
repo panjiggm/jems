@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Input } from "@/components/ui/input";
@@ -146,24 +146,6 @@ export default function PersonalInfo() {
             placeholder={t("profile.personalInfo.phonePlaceholder")}
             disabled={isLoading}
           />
-        </div>
-
-        {/* Avatar URL */}
-        <div className="space-y-2">
-          <Label htmlFor="avatar_url">
-            {t("profile.personalInfo.avatarUrl")}
-          </Label>
-          <Input
-            id="avatar_url"
-            type="url"
-            value={formData.avatar_url}
-            onChange={(e) => handleInputChange("avatar_url", e.target.value)}
-            placeholder={t("profile.personalInfo.avatarUrlPlaceholder")}
-            disabled={isLoading}
-          />
-          <p className="text-xs text-muted-foreground">
-            {t("profile.personalInfo.avatarUrlHelper")}
-          </p>
         </div>
 
         {/* Regenerate AI Prompt Option */}

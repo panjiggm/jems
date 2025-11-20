@@ -9,6 +9,7 @@ export const createProfile = mutation({
     full_name: v.string(),
     phone: v.string(),
     avatar_url: v.optional(v.string()),
+    avatarStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -19,12 +20,31 @@ export const createProfile = mutation({
       .filter((q) => q.eq(q.field("userId"), userId))
       .first();
 
+    // Get avatar URL from storage if storageId is provided
+    let avatarUrl = args.avatar_url || "";
+    if (args.avatarStorageId) {
+      const url = await ctx.storage.getUrl(args.avatarStorageId);
+      avatarUrl = url || "";
+    }
+
     if (existingProfile) {
+      // Delete old avatar file if updating with new one
+      if (args.avatarStorageId && existingProfile.avatarStorageId) {
+        try {
+          await ctx.storage.delete(existingProfile.avatarStorageId);
+        } catch (error) {
+          // Ignore errors if file doesn't exist
+          console.warn("Failed to delete old avatar:", error);
+        }
+      }
+
       // Update existing profile
       await ctx.db.patch(existingProfile._id, {
         full_name: args.full_name,
         phone: args.phone,
-        avatar_url: args.avatar_url || existingProfile.avatar_url,
+        avatar_url: avatarUrl,
+        avatarStorageId:
+          args.avatarStorageId || existingProfile.avatarStorageId,
       });
       return existingProfile._id;
     } else {
@@ -33,7 +53,8 @@ export const createProfile = mutation({
         userId,
         full_name: args.full_name,
         phone: args.phone,
-        avatar_url: args.avatar_url || "",
+        avatar_url: avatarUrl,
+        avatarStorageId: args.avatarStorageId,
         is_onboarding_completed: false,
       });
       return profileId;
@@ -47,6 +68,7 @@ export const updateProfile = mutation({
     full_name: v.optional(v.string()),
     phone: v.optional(v.string()),
     avatar_url: v.optional(v.string()),
+    avatarStorageId: v.optional(v.id("_storage")),
     regeneratePrompt: v.optional(v.boolean()), // Flag to trigger AI prompt regeneration
     locale: v.optional(v.string()),
   },
@@ -63,13 +85,38 @@ export const updateProfile = mutation({
       throw new Error("Profile not found");
     }
 
-    const updates: Record<string, any> = {};
-    if (args.full_name !== undefined) updates.full_name = args.full_name;
-    if (args.phone !== undefined) updates.phone = args.phone;
-    if (args.avatar_url !== undefined) updates.avatar_url = args.avatar_url;
-    if (args.locale !== undefined) updates.locale = args.locale;
+    // Handle avatar update - delete old file if new one is provided
+    if (args.avatarStorageId !== undefined) {
+      // Delete old avatar file if it exists
+      if (profile.avatarStorageId) {
+        try {
+          await ctx.storage.delete(profile.avatarStorageId);
+        } catch (error) {
+          // Ignore errors if file doesn't exist
+          console.warn("Failed to delete old avatar:", error);
+        }
+      }
 
-    await ctx.db.patch(profile._id, updates);
+      // Get URL from new storage file
+      const url = await ctx.storage.getUrl(args.avatarStorageId);
+      const updates: Record<string, any> = {};
+      if (args.full_name !== undefined) updates.full_name = args.full_name;
+      if (args.phone !== undefined) updates.phone = args.phone;
+      updates.avatar_url = url || "";
+      updates.avatarStorageId = args.avatarStorageId;
+      if (args.locale !== undefined) updates.locale = args.locale;
+
+      await ctx.db.patch(profile._id, updates);
+    } else {
+      // Regular update without avatar change
+      const updates: Record<string, any> = {};
+      if (args.full_name !== undefined) updates.full_name = args.full_name;
+      if (args.phone !== undefined) updates.phone = args.phone;
+      if (args.avatar_url !== undefined) updates.avatar_url = args.avatar_url;
+      if (args.locale !== undefined) updates.locale = args.locale;
+
+      await ctx.db.patch(profile._id, updates);
+    }
 
     // If regeneratePrompt flag is true and full_name changed, schedule AI prompt regeneration
     if (args.regeneratePrompt && args.full_name) {
