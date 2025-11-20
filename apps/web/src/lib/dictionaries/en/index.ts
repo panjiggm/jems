@@ -14,6 +14,7 @@ import { profile } from "./profile";
 import { table } from "./table";
 import { terms } from "./terms";
 import { policy } from "./policy";
+import { chats } from "./chats";
 
 export const dictionary = {
   nav,
@@ -32,4 +33,5 @@ export const dictionary = {
   table,
   terms,
   policy,
+  chats,
 } as const;

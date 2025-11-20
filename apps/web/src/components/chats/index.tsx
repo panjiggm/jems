@@ -16,6 +16,7 @@ import { useQueryState } from "nuqs";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { ChatPromptInput } from "./prompt-input";
+import { useTranslations } from "@/hooks/use-translations";
 
 type SuggestionItem = {
   id: string;
@@ -23,29 +24,13 @@ type SuggestionItem = {
   description?: string;
 };
 
-const defaultSuggestions: SuggestionItem[] = [
-  {
-    id: "default-1",
-    title: "Write a to-do list for a personal project or task",
-    description: "Get a structured plan to accomplish your personal goals.",
-  },
-  {
-    id: "default-2",
-    title: "Generate an email to reply to a job offer",
-    description: "Craft a professional response tailored to your tone.",
-  },
-  {
-    id: "default-3",
-    title: "Summarise this article or text for me in one paragraph",
-    description: "Quickly understand the key points from any long read.",
-  },
-];
-
 export default function ChatsComponent() {
+  const { t } = useTranslations();
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [isCreatingThread, setIsCreatingThread] = useState(false);
   const { user } = useUser();
+
   const [threadId, setThreadId] =
     useQueryState<Id<"aiAssistantThreads"> | null>("threadId", {
       defaultValue: null,
@@ -68,6 +53,28 @@ export default function ChatsComponent() {
         }
       : "skip",
   );
+
+  const defaultSuggestions: SuggestionItem[] = useMemo(
+    () => [
+      {
+        id: "default-1",
+        title: t("chats.defaultSuggestions.todo.title"),
+        description: t("chats.defaultSuggestions.todo.description"),
+      },
+      {
+        id: "default-2",
+        title: t("chats.defaultSuggestions.email.title"),
+        description: t("chats.defaultSuggestions.email.description"),
+      },
+      {
+        id: "default-3",
+        title: t("chats.defaultSuggestions.summarize.title"),
+        description: t("chats.defaultSuggestions.summarize.description"),
+      },
+    ],
+    [t],
+  );
+
   const suggestions = useMemo(() => {
     if (contentIdeaSuggestions && contentIdeaSuggestions.length > 0) {
       return contentIdeaSuggestions.slice(0, 3).map((idea) => ({
@@ -78,7 +85,7 @@ export default function ChatsComponent() {
     }
 
     return defaultSuggestions;
-  }, [contentIdeaSuggestions]);
+  }, [contentIdeaSuggestions, defaultSuggestions]);
 
   // Mutations
   const sendMessage = useMutation(api.mutations.aiAssistant.sendMessage);
@@ -143,7 +150,7 @@ export default function ChatsComponent() {
       if (!activeThreadId) {
         setIsCreatingThread(true);
         activeThreadId = await createThread({
-          title: messageText.substring(0, 50) || "New Chat",
+          title: messageText.substring(0, 50) || t("chats.messages.newChat"),
         });
         setThreadId(activeThreadId);
       }
@@ -167,11 +174,11 @@ export default function ChatsComponent() {
       })
         .then(() => {
           // Streaming completed
-          toast.success("AI responded successfully");
+          toast.success(t("chats.messages.aiRespondedSuccess"));
         })
         .catch((error) => {
           console.error("Error streaming AI response:", error);
-          toast.error("Failed to get AI response. Please try again.");
+          toast.error(t("chats.messages.aiResponseError"));
           setInput(messageText);
         })
         .finally(() => {
@@ -180,7 +187,7 @@ export default function ChatsComponent() {
         });
     } catch (error) {
       console.error("Error chatting with AI:", error);
-      toast.error("Failed to get AI response. Please try again.");
+      toast.error(t("chats.messages.aiResponseError"));
       setInput(messageText);
       setIsStreaming(false);
       setIsCreatingThread(false);
@@ -205,21 +212,20 @@ export default function ChatsComponent() {
           {isInitialView ? (
             <div className="flex h-full flex-col items-center justify-center text-center gap-8">
               <div className="space-y-4 max-w-2xl">
-                <p className="text-sm uppercase tracking-wide text-muted-foreground">
-                  AI Assistant
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {t("chats.title")}
                 </p>
                 <h3 className="text-3xl font-semibold sm:text-4xl">
-                  Hi there,{" "}
-                  <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                  {t("chats.greeting")},{" "}
+                  <span className="bg-gradient-to-r from-primary to-red-500 bg-clip-text text-transparent font-black">
                     {displayName}
                   </span>
                 </h3>
                 <p className="text-2xl font-semibold text-muted-foreground">
-                  What would you like to know?
+                  {t("chats.greetingSuffix")}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Use one of the most common prompts below or type your own to
-                  begin the conversation.
+                  {t("chats.subtitle")}
                 </p>
               </div>
 
@@ -232,7 +238,7 @@ export default function ChatsComponent() {
                     onClick={() => setInput(suggestion.title)}
                   >
                     <p className="text-xs font-medium text-primary/70">
-                      Suggested prompt
+                      {t("chats.suggestedPrompt")}
                     </p>
                     <p className="mt-1.5 text-sm font-semibold">
                       {suggestion.title}
@@ -281,7 +287,7 @@ export default function ChatsComponent() {
                         <MessageContent>
                           <div className="flex items-center gap-2">
                             <Loader2Icon className="w-4 h-4 animate-spin" />
-                            <span>Thinking...</span>
+                            <span>{t("chats.messages.thinking")}</span>
                           </div>
                         </MessageContent>
                       </Message>

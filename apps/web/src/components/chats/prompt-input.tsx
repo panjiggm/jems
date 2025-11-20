@@ -12,6 +12,12 @@ import { PaperclipIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
 import type { ChatStatus } from "ai";
+import { useTranslations } from "@/hooks/use-translations";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface ChatPromptInputProps {
   input: string;
@@ -30,6 +36,8 @@ export function ChatPromptInput({
   threadId,
   status,
 }: ChatPromptInputProps) {
+  const { t } = useTranslations();
+
   return (
     <PromptInput
       className={cn(
@@ -43,16 +51,28 @@ export function ChatPromptInput({
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
           onInputChange(e.currentTarget.value)
         }
-        placeholder="Ask whatever you want..."
+        placeholder={t("chats.input.placeholder")}
         disabled={disabled}
         minHeight={40}
         maxHeight={192}
       />
       <PromptInputToolbar>
         <PromptInputTools>
-          <PromptInputButton tone="ghost" disabled={!threadId || disabled}>
-            <PaperclipIcon size={16} />
-          </PromptInputButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <PromptInputButton
+                  tone="ghost"
+                  disabled={!threadId || disabled}
+                >
+                  <PaperclipIcon size={16} />
+                </PromptInputButton>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t("chats.input.attachmentTooltip")}</p>
+            </TooltipContent>
+          </Tooltip>
         </PromptInputTools>
         <PromptInputSubmit
           disabled={!input.trim() || disabled}
