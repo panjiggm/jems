@@ -17,8 +17,8 @@ import type * as actions_seed from "../actions/seed.js";
 import type * as actions_socialMedia from "../actions/socialMedia.js";
 import type * as actions_storage from "../actions/storage.js";
 import type * as auth from "../auth.js";
-import type * as crons_dailySuggestions from "../crons/dailySuggestions.js";
 import type * as crons from "../crons.js";
+import type * as crons_dailySuggestions from "../crons/dailySuggestions.js";
 import type * as models from "../models.js";
 import type * as mutations_aiAssistant from "../mutations/aiAssistant.js";
 import type * as mutations_contentCampaigns from "../mutations/contentCampaigns.js";
@@ -50,12 +50,12 @@ import type * as queries_socialMediaAccounts from "../queries/socialMediaAccount
 import type * as queries_socialMediaStats from "../queries/socialMediaStats.js";
 import type * as queries_stats from "../queries/stats.js";
 import type * as queries_tasks from "../queries/tasks.js";
+import type * as utils from "../utils.js";
 import type * as utils_duration from "../utils/duration.js";
 import type * as utils_ragContext from "../utils/ragContext.js";
 import type * as utils_slug from "../utils/slug.js";
 import type * as utils_tiktok from "../utils/tiktok.js";
 import type * as utils_validators from "../utils/validators.js";
-import type * as utils from "../utils.js";
 
 import type {
   ApiFromModules,
@@ -63,14 +63,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 
-/**
- * A utility for referencing Convex functions in your app's API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
 declare const fullApi: ApiFromModules<{
   "actions/addSlugs": typeof actions_addSlugs;
   "actions/ai": typeof actions_ai;
@@ -81,8 +73,8 @@ declare const fullApi: ApiFromModules<{
   "actions/socialMedia": typeof actions_socialMedia;
   "actions/storage": typeof actions_storage;
   auth: typeof auth;
-  "crons/dailySuggestions": typeof crons_dailySuggestions;
   crons: typeof crons;
+  "crons/dailySuggestions": typeof crons_dailySuggestions;
   models: typeof models;
   "mutations/aiAssistant": typeof mutations_aiAssistant;
   "mutations/contentCampaigns": typeof mutations_contentCampaigns;
@@ -114,21 +106,37 @@ declare const fullApi: ApiFromModules<{
   "queries/socialMediaStats": typeof queries_socialMediaStats;
   "queries/stats": typeof queries_stats;
   "queries/tasks": typeof queries_tasks;
+  utils: typeof utils;
   "utils/duration": typeof utils_duration;
   "utils/ragContext": typeof utils_ragContext;
   "utils/slug": typeof utils_slug;
   "utils/tiktok": typeof utils_tiktok;
   "utils/validators": typeof utils_validators;
-  utils: typeof utils;
 }>;
-declare const fullApiWithMounts: typeof fullApi;
 
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 export declare const api: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "public">
 >;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
 export declare const internal: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "internal">
 >;
 
@@ -253,6 +261,7 @@ export declare const components: {
             vectors: Array<Array<number> | null>;
           };
           failPendingSteps?: boolean;
+          hideFromUserIdSearch?: boolean;
           messages: Array<{
             error?: string;
             fileIds?: Array<string>;
@@ -430,7 +439,7 @@ export declare const components: {
                               Record<string, any>
                             >;
                             sourceType: "url";
-                            title: string;
+                            title?: string;
                             type: "source";
                             url: string;
                           }
@@ -733,7 +742,7 @@ export declare const components: {
                               Record<string, any>
                             >;
                             sourceType: "url";
-                            title: string;
+                            title?: string;
                             type: "source";
                             url: string;
                           }
@@ -856,6 +865,22 @@ export declare const components: {
           }>;
         }
       >;
+      cloneThread: FunctionReference<
+        "action",
+        "internal",
+        {
+          batchSize?: number;
+          copyUserIdForVectorSearch?: boolean;
+          excludeToolMessages?: boolean;
+          insertAtOrder?: number;
+          limit?: number;
+          sourceThreadId: string;
+          statuses?: Array<"pending" | "success" | "failed">;
+          targetThreadId: string;
+          upToAndIncludingMessageId?: string;
+        },
+        number
+      >;
       deleteByIds: FunctionReference<
         "mutation",
         "internal",
@@ -882,12 +907,6 @@ export declare const components: {
           result: { status: "success" } | { error: string; status: "failed" };
         },
         null
-      >;
-      getMessageSearchFields: FunctionReference<
-        "query",
-        "internal",
-        { messageId: string },
-        { embedding?: Array<number>; embeddingModel?: string; text?: string }
       >;
       getMessagesByIds: FunctionReference<
         "query",
@@ -1041,7 +1060,7 @@ export declare const components: {
                           >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "url";
-                          title: string;
+                          title?: string;
                           type: "source";
                           url: string;
                         }
@@ -1155,6 +1174,12 @@ export declare const components: {
             | { message: string; type: "other" }
           >;
         }>
+      >;
+      getMessageSearchFields: FunctionReference<
+        "query",
+        "internal",
+        { messageId: string },
+        { embedding?: Array<number>; embeddingModel?: string; text?: string }
       >;
       listMessagesByThreadId: FunctionReference<
         "query",
@@ -1359,7 +1384,7 @@ export declare const components: {
                               Record<string, any>
                             >;
                             sourceType: "url";
-                            title: string;
+                            title?: string;
                             type: "source";
                             url: string;
                           }
@@ -1648,7 +1673,7 @@ export declare const components: {
                           >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "url";
-                          title: string;
+                          title?: string;
                           type: "source";
                           url: string;
                         }
@@ -1921,7 +1946,7 @@ export declare const components: {
                           >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "url";
-                          title: string;
+                          title?: string;
                           type: "source";
                           url: string;
                         }
@@ -2218,7 +2243,7 @@ export declare const components: {
                               Record<string, any>
                             >;
                             sourceType: "url";
-                            title: string;
+                            title?: string;
                             type: "source";
                             url: string;
                           }
@@ -2432,7 +2457,7 @@ export declare const components: {
                           >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "url";
-                          title: string;
+                          title?: string;
                           type: "source";
                           url: string;
                         }
@@ -2581,6 +2606,7 @@ export declare const components: {
         "internal",
         {
           agentName?: string;
+          format?: "UIMessageChunk" | "TextStreamPart";
           model?: string;
           order: number;
           provider?: string;
@@ -2645,6 +2671,7 @@ export declare const components: {
         },
         Array<{
           agentName?: string;
+          format?: "UIMessageChunk" | "TextStreamPart";
           model?: string;
           order: number;
           provider?: string;
