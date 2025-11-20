@@ -67,6 +67,7 @@ export const updateProfile = mutation({
     if (args.full_name !== undefined) updates.full_name = args.full_name;
     if (args.phone !== undefined) updates.phone = args.phone;
     if (args.avatar_url !== undefined) updates.avatar_url = args.avatar_url;
+    if (args.locale !== undefined) updates.locale = args.locale;
 
     await ctx.db.patch(profile._id, updates);
 

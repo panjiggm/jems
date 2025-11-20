@@ -13,6 +13,7 @@ export const generateSuggestions = internalAction({
   args: {
     userId: v.string(),
     date: v.string(), // ISO date string
+    locale: v.optional(v.string()), // User's locale (e.g., "id", "en"), defaults to "en"
   },
   handler: async (
     ctx,
@@ -40,8 +41,33 @@ export const generateSuggestions = internalAction({
       },
     );
 
-    // Create prompt for generating content suggestions
-    const prompt = `You are a content strategy assistant helping a content creator generate new content ideas.
+    // Determine locale (use provided locale or default to "en")
+    const locale = args.locale || "en";
+    const isIndonesian = locale === "id";
+
+    // Create prompt for generating content suggestions with locale support
+    const prompt = isIndonesian
+      ? `Anda adalah asisten strategi konten yang membantu content creator menghasilkan ide konten baru.
+
+${ragContext}
+
+${persona ? `Persona pengguna fokus pada: ${persona.bio}\nAI Prompt: ${persona.ai_prompt}` : ""}
+
+Buatlah tepat 3 ide konten yang kreatif dan menarik yang:
+1. Selaras dengan persona, niche, dan gaya konten pengguna
+2. Berbeda dari konten terbaru mereka (hindari pengulangan)
+3. Praktis dan dapat ditindaklanjuti
+4. Mempertimbangkan platform dan jenis konten yang mereka sukai
+5. Termasuk judul yang menarik dan deskripsi yang detail
+
+Format respons Anda sebagai array JSON dengan tepat 3 objek, masing-masing berisi:
+- "title": Judul yang menarik dan catchy (maksimal 60 karakter)
+- "description": Deskripsi detail dari ide konten (2-4 kalimat yang menjelaskan konsep, apa yang membuatnya menarik, dan bagaimana ide ini sesuai dengan brand mereka)
+- "platform": Salah satu dari: "tiktok", "instagram", "youtube", "x", "facebook", "threads", atau "other" (berdasarkan riwayat konten mereka)
+- "reasoning": Penjelasan singkat mengapa ide ini sesuai dengan brand mereka (1-2 kalimat)
+
+Kembalikan HANYA array JSON, tanpa teks tambahan atau format markdown.`
+      : `You are a content strategy assistant helping a content creator generate new content ideas.
 
 ${ragContext}
 
@@ -124,26 +150,47 @@ Return ONLY the JSON array, no additional text or markdown formatting.`;
     } catch (error) {
       console.error("Error generating suggestions:", error);
       // Fallback: create basic suggestions if AI fails
-      const fallbackIdeas = [
-        {
-          title: "Engaging Content Idea",
-          description:
-            "Create content that resonates with your audience based on your persona and niche.",
-          platform: "other" as const,
-        },
-        {
-          title: "Trending Topic Content",
-          description:
-            "Leverage current trends in your niche to create timely and relevant content.",
-          platform: "other" as const,
-        },
-        {
-          title: "Educational Content Piece",
-          description:
-            "Share valuable insights and knowledge that align with your brand identity.",
-          platform: "other" as const,
-        },
-      ];
+      const fallbackIdeas = isIndonesian
+        ? [
+            {
+              title: "Ide Konten yang Menarik",
+              description:
+                "Buat konten yang resonan dengan audiens Anda berdasarkan persona dan niche Anda.",
+              platform: "other" as const,
+            },
+            {
+              title: "Konten Topik Trending",
+              description:
+                "Manfaatkan tren terkini di niche Anda untuk membuat konten yang tepat waktu dan relevan.",
+              platform: "other" as const,
+            },
+            {
+              title: "Konten Edukatif",
+              description:
+                "Bagikan wawasan dan pengetahuan berharga yang selaras dengan identitas brand Anda.",
+              platform: "other" as const,
+            },
+          ]
+        : [
+            {
+              title: "Engaging Content Idea",
+              description:
+                "Create content that resonates with your audience based on your persona and niche.",
+              platform: "other" as const,
+            },
+            {
+              title: "Trending Topic Content",
+              description:
+                "Leverage current trends in your niche to create timely and relevant content.",
+              platform: "other" as const,
+            },
+            {
+              title: "Educational Content Piece",
+              description:
+                "Share valuable insights and knowledge that align with your brand identity.",
+              platform: "other" as const,
+            },
+          ];
 
       const ideaIds: any[] = await ctx.runMutation(
         internal.mutations.contentIdeas.createContentIdeas,

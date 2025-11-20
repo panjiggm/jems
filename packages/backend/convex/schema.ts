@@ -28,6 +28,7 @@ export default defineSchema({
     phone: v.string(),
     avatar_url: v.string(),
     is_onboarding_completed: v.boolean(),
+    locale: v.optional(v.string()), // User's preferred locale (e.g., "id", "en")
   }).index("by_user", ["userId"]),
   niches: defineTable({
     slug: v.string(),

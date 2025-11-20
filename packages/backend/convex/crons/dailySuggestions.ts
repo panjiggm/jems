@@ -36,12 +36,24 @@ export const regenerateForAllUsers = internalAction({
 
     for (const persona of allPersonas) {
       try {
+        // Get user profile to determine locale
+        const profile = await ctx.runQuery(
+          internal.queries.profile.getInternalProfile,
+          {
+            userId: persona.userId,
+          },
+        );
+
+        // Use locale from profile or default to "en"
+        const locale = profile?.locale || "en";
+
         // Generate new suggestions for today (exactly 3 ideas)
         const generateResult: { count: number } = await ctx.runAction(
           internal.actions.contentSuggestions.generateSuggestions,
           {
             userId: persona.userId,
             date: today,
+            locale,
           },
         );
 

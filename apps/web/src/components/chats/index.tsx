@@ -39,11 +39,6 @@ const defaultSuggestions: SuggestionItem[] = [
     title: "Summarise this article or text for me in one paragraph",
     description: "Quickly understand the key points from any long read.",
   },
-  {
-    id: "default-4",
-    title: "How does AI work in a technical capacity",
-    description: "Explore AI fundamentals explained in simple terms.",
-  },
 ];
 
 export default function ChatsComponent() {
@@ -69,13 +64,13 @@ export default function ChatsComponent() {
     api.queries.contentIdeas.getActiveSuggestions,
     !threadId
       ? {
-          limit: 4,
+          limit: 3,
         }
       : "skip",
   );
   const suggestions = useMemo(() => {
     if (contentIdeaSuggestions && contentIdeaSuggestions.length > 0) {
-      return contentIdeaSuggestions.slice(0, 4).map((idea) => ({
+      return contentIdeaSuggestions.slice(0, 3).map((idea) => ({
         id: idea._id,
         title: idea.title,
         description: idea.description,
@@ -228,22 +223,22 @@ export default function ChatsComponent() {
                 </p>
               </div>
 
-              <div className="grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid w-full max-w-2xl grid-cols-1 gap-3">
                 {suggestions.map((suggestion) => (
                   <button
                     key={suggestion.id}
                     type="button"
-                    className="rounded-2xl border bg-card/50 p-4 text-left transition hover:border-primary/40 hover:bg-card"
+                    className="rounded-2xl border bg-card/50 p-3 text-left transition hover:border-primary/40 hover:bg-card"
                     onClick={() => setInput(suggestion.title)}
                   >
-                    <p className="text-sm font-medium text-primary/70">
+                    <p className="text-xs font-medium text-primary/70">
                       Suggested prompt
                     </p>
-                    <p className="mt-2 text-base font-semibold">
+                    <p className="mt-1.5 text-sm font-semibold">
                       {suggestion.title}
                     </p>
                     {suggestion.description && (
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {suggestion.description}
                       </p>
                     )}

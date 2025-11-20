@@ -1,4 +1,4 @@
-import { query } from "../_generated/server";
+import { query, internalQuery } from "../_generated/server";
 import { getUserId } from "../schema";
 import { v } from "convex/values";
 
@@ -45,5 +45,20 @@ export const getOnboardingStatusByUserId = query({
       hasPersona: !!persona,
       profile,
     };
+  },
+});
+
+// Internal query to get profile by userId (for use in actions/crons)
+export const getInternalProfile = internalQuery({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profile")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .first();
+
+    return profile;
   },
 });
