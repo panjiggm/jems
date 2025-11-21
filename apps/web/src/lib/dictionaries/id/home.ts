@@ -3,12 +3,12 @@ export const home = {
   subtitle: "Mengoptimalkan WHY kamu — dengan AI yang menjiwai",
   hero: {
     badge: "Segera Hadir • Versi 0.1.0",
-    title: "Mengoptimalkan",
-    titleHighlight: "WHY",
-    titleSuffix: "kamu, — dengan AI yang menjiwai",
+    title: "Organize. Create. ",
+    titleHighlight: "POST. ",
+    titleSuffix: "Repeat.",
     description:
-      "Holobiont adalah platform AI yang memahami cara berpikir Kamu — teman paling setia yang mendukung nilai dan tujuan Kamu.",
-    cta: "Mulai Sekarang",
+      "Holobiont mengatur planning, tracking, jadwal, dan auto-posting konten—dengan AI assistant yang bantu ide dan script harian",
+    cta: "Mulai Ngonten",
   },
   features: {
     title: "Fitur Unggulan",

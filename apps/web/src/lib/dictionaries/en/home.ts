@@ -3,12 +3,12 @@ export const home = {
   subtitle: "Empowering your WHY — with soulful AI",
   hero: {
     badge: "Launch Soon • Version 0.1.0",
-    title: "Empowering your",
-    titleHighlight: "WHY",
-    titleSuffix: ", — with soulful AI",
+    title: "Organize. Create. ",
+    titleHighlight: "POST. ",
+    titleSuffix: "Repeat.",
     description:
-      "Holobiont is an AI platform that understands how you think — your most loyal friend that supports your values and goals.",
-    cta: "Get Started",
+      "Holobiont manages your content planning, tracking, scheduling, and auto-posting — powered by an AI assistant that helps with ideas and daily scripts",
+    cta: "Start Posting",
   },
   features: {
     title: "Key Features",

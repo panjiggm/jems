@@ -16,10 +16,10 @@ export default function Hero() {
           <p className="text-sm font-bold tracking-wider text-sky-600 dark:text-sky-400">
             {t("home.hero.badge")}
           </p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-5xl">
-            {t("home.hero.title")}{" "}
-            <span className="bg-[#f7a641] px-3">
-              {t("home.hero.titleHighlight")}
+          <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-800 dark:text-slate-100 sm:text-5xl">
+            {t("home.hero.title")}
+            <span className="text-primary">
+              {t("home.hero.titleHighlight")}{" "}
             </span>
             {t("home.hero.titleSuffix")}
           </h1>
