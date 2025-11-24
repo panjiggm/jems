@@ -1,176 +1,87 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@packages/backend/convex/_generated/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { ButtonPrimary } from "../ui/button-primary";
-import { SuggestionCard } from "./suggestion-card";
-import { Loader2, LightbulbIcon, RefreshCwIcon } from "lucide-react";
-import { toast } from "sonner";
-import { format } from "date-fns";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { ConvertDialog } from "../content-idea/convert-dialog";
-import type { Id } from "@packages/backend/convex/_generated/dataModel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Lightbulb, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { Id } from "@packages/backend/convex/_generated/dataModel";
 
-export function DailySuggestions() {
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
-  const [convertIdeaId, setConvertIdeaId] = useState<Id<"contentIdeas"> | null>(null);
-  const [convertType, setConvertType] = useState<"campaign" | "routine" | null>(null);
-
-  const dailySuggestions = useQuery(api.queries.contentIdeas.getDailySuggestions, {
-    date: selectedDate,
-  });
-
-  const generateSuggestions = useMutation(
-    api.mutations.contentIdeas.generateDailySuggestions,
-  );
-  const dismissIdea = useMutation(api.mutations.contentIdeas.dismissIdea);
-
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    try {
-      const result = await generateSuggestions({ date: selectedDate });
-      if (result.scheduled) {
-        toast.success("Generating suggestions... Please refresh in a moment.");
-        // Refetch after a short delay
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      } else if (result.ideas) {
-        toast.success("Suggestions loaded!");
-      }
-    } catch (error) {
-      console.error("Error generating suggestions:", error);
-      toast.error("Failed to generate suggestions. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleDismiss = async (ideaId: any) => {
-    try {
-      await dismissIdea({ ideaId });
-      toast.success("Idea dismissed");
-    } catch (error) {
-      console.error("Error dismissing idea:", error);
-      toast.error("Failed to dismiss idea");
-    }
-  };
-
-  const ideas = dailySuggestions?.ideas || [];
-  const hasSuggestions = ideas.length > 0;
-  const today = new Date().toISOString().split("T")[0];
-  const isToday = selectedDate === today;
-
-  return (
-    <Card className="border-2 border-[#f7a641]/30">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <LightbulbIcon className="h-5 w-5 text-primary" />
-            <div>
-              <CardTitle className="text-[#4a2e1a] dark:text-white">
-                Daily Content Suggestions
-              </CardTitle>
-              <CardDescription>
-                {isToday
-                  ? "AI-powered ideas for today"
-                  : `Suggestions for ${format(new Date(selectedDate), "MMM d, yyyy")}`}
-              </CardDescription>
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Date Selector */}
-        <div className="space-y-2">
-          <Label htmlFor="suggestion-date">Select Date</Label>
-          <div className="flex gap-2">
-            <Input
-              id="suggestion-date"
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              max={today}
-              className="flex-1"
-            />
-            <ButtonPrimary
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              size="sm"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <RefreshCwIcon className="h-4 w-4 mr-2" />
-                  Generate
-                </>
-              )}
-            </ButtonPrimary>
-          </div>
-        </div>
-
-        {/* Suggestions List */}
-        {dailySuggestions === undefined ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : !hasSuggestions ? (
-          <div className="text-center py-8 space-y-4">
-            <LightbulbIcon className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">
-                No suggestions yet
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Click &quot;Generate&quot; to get AI-powered content ideas
-                tailored to your brand
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ideas.map((idea) => (
-              <SuggestionCard
-                key={idea._id}
-                idea={idea}
-                onDismiss={handleDismiss}
-                onConvertToCampaign={(ideaId) => {
-                  setConvertIdeaId(ideaId);
-                  setConvertType("campaign");
-                  setConvertDialogOpen(true);
-                }}
-                onConvertToRoutine={(ideaId) => {
-                  setConvertIdeaId(ideaId);
-                  setConvertType("routine");
-                  setConvertDialogOpen(true);
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </CardContent>
-
-      <ConvertDialog
-        open={convertDialogOpen}
-        onOpenChange={setConvertDialogOpen}
-        ideaId={convertIdeaId}
-        convertType={convertType}
-        onSuccess={() => {
-          // Suggestions will automatically refresh via Convex query
-        }}
-      />
-    </Card>
-  );
+interface Suggestion {
+  _id: Id<"contentIdeas">;
+  title: string;
+  description: string;
+  platform?: string | null; // Changed to allow null based on schema usage
 }
 
+export function DailySuggestions({
+  suggestions,
+}: {
+  suggestions: Suggestion[];
+}) {
+  if (!suggestions || !Array.isArray(suggestions) || suggestions.length === 0) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="mb-8"
+    >
+      <div className="relative overflow-hidden rounded-xl border bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 p-1">
+        <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm" />
+        <Card className="relative border-0 bg-transparent shadow-none">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-sm">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-semibold">
+                  Daily AI Suggestions
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Fresh ideas curated for your audience today
+                </p>
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" className="gap-2">
+              View All <ArrowRight className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-3 pt-4">
+            {suggestions.slice(0, 3).map((idea, i) => {
+              if (!idea || !idea._id) return null;
+              return (
+                <motion.div
+                  key={idea._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + i * 0.1 }}
+                  className="group relative overflow-hidden rounded-lg border bg-background/50 p-4 hover:bg-background hover:shadow-md transition-all duration-300 cursor-pointer"
+                >
+                  <div className="flex items-start gap-3">
+                    <Lightbulb className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h3 className="font-medium leading-none group-hover:text-primary transition-colors">
+                        {idea.title || ""}
+                      </h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {idea.description || ""}
+                      </p>
+                      {idea.platform && (
+                        <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium capitalize mt-2">
+                          {idea.platform}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </div>
+    </motion.div>
+  );
+}
