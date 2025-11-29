@@ -1,6 +1,6 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { currentUserId } from "../auth";
+import { getUserId } from "../schema";
 
 export const list = query({
   args: {
@@ -12,7 +12,8 @@ export const list = query({
     pageSize: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
+    if (!userId) return { items: [], cursor: null, isDone: true };
     const pageSize = Math.min(args.pageSize ?? 20, 100);
 
     // Start with base query - use appropriate index based on filters
@@ -84,7 +85,7 @@ export const getStats = query({
     projectId: v.optional(v.id("projects")),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     let routines = await ctx.db
@@ -143,7 +144,7 @@ export const getById = query({
     routineId: v.id("contentRoutines"),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     const routine = await ctx.db.get(args.routineId);
@@ -199,7 +200,7 @@ export const getBySlug = query({
     slug: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     const routine = await ctx.db
@@ -270,7 +271,7 @@ export const getByProject = query({
     platform: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     let routines = await ctx.db
@@ -305,7 +306,7 @@ export const getByProjectWithStats = query({
     projectId: v.id("projects"),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     const routines = await ctx.db
