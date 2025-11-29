@@ -16,6 +16,7 @@ import { terms } from "./terms";
 import { policy } from "./policy";
 import { chats } from "./chats";
 import { contentIdea } from "./content-idea";
+import { dashboard } from "./dashboard";
 
 export const dictionary = {
   nav,
@@ -36,4 +37,5 @@ export const dictionary = {
   policy,
   chats,
   contentIdea,
+  dashboard,
 } as const;

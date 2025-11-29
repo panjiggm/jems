@@ -28,4 +28,11 @@ export const home = {
         "Rencanakan proyek, lacak status, dan jadwalkan posting dengan pengingat yang membuat Kamu tetap on track.",
     },
   },
+  socialMediaIntegration: {
+    badge: "Integrasi Media Sosial",
+    title: "Terintegrasi dengan media sosial favoritmu",
+    description:
+      "Dapatkan insight real-time tentang performa media sosialmu dengan statistik dan analitik yang komprehensif. Upload konten sekali dan otomatis posting ke beberapa platform sekaligus.",
+    cta: "Pelajari Lebih Lanjut",
+  },
 } as const;

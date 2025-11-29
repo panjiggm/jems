@@ -3,6 +3,7 @@
 import Hero from "@/components/common/hero";
 import FeatureStack from "@/components/home/feature-stack";
 import Navbar from "@/components/navbar";
+import SocialMediaIntegration from "./_components/social-media-integration";
 
 export default function Home() {
   return (
@@ -27,6 +28,7 @@ export default function Home() {
           <Navbar />
           <Hero />
           <FeatureStack />
+          <SocialMediaIntegration />
         </div>
       </div>
     </main>

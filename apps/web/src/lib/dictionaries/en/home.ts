@@ -28,4 +28,11 @@ export const home = {
         "Plan projects, track statuses, and schedule posts with reminders that keep you on pace.",
     },
   },
+  socialMediaIntegration: {
+    badge: "Social Media Integration",
+    title: "Integrates with your fav social media",
+    description:
+      "Get real-time insights into your social media performance with comprehensive stats and analytics. Upload content once and automatically post to multiple platforms simultaneously.",
+    cta: "Learn More",
+  },
 } as const;

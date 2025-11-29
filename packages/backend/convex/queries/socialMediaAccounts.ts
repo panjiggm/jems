@@ -202,3 +202,84 @@ export const getConnectionSummary = query({
     return summary;
   },
 });
+
+// Get platform availability status
+// Checks which platforms have OAuth implementation available
+export const getPlatformAvailability = query({
+  args: {},
+  handler: async () => {
+    // Check availability based on environment variables and implementation status
+    // Only TikTok is currently implemented
+    return {
+      tiktok: !!process.env.TIKTOK_CLIENT_KEY,
+      instagram: false, // OAuth not implemented yet
+      facebook: false, // OAuth not implemented yet
+      youtube: false, // OAuth not implemented yet
+    };
+  },
+});
+
+// Get social media stats for dashboard (4 platforms: TikTok, Instagram, Facebook, YouTube)
+export const getSocialMediaStatsForDashboard = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) {
+      return {
+        tiktok: null,
+        instagram: null,
+        facebook: null,
+        youtube: null,
+      };
+    }
+
+    const platforms: Array<"tiktok" | "instagram" | "facebook" | "youtube"> = [
+      "tiktok",
+      "instagram",
+      "facebook",
+      "youtube",
+    ];
+
+    const result: Record<
+      string,
+      {
+        account: any | null;
+        stats: any | null;
+        isConnected: boolean;
+      }
+    > = {};
+
+    for (const platform of platforms) {
+      // Get account for this platform
+      const account = await ctx.db
+        .query("socialMediaAccounts")
+        .withIndex("by_user_platform", (q) =>
+          q.eq("userId", userId).eq("platform", platform),
+        )
+        .first();
+
+      if (account && account.isConnected) {
+        // Get latest stats for this account
+        const latestStats = await ctx.db
+          .query("socialMediaStats")
+          .withIndex("by_account", (q) => q.eq("accountId", account._id))
+          .order("desc")
+          .first();
+
+        result[platform] = {
+          account,
+          stats: latestStats,
+          isConnected: true,
+        };
+      } else {
+        result[platform] = {
+          account: null,
+          stats: null,
+          isConnected: false,
+        };
+      }
+    }
+
+    return result;
+  },
+});
