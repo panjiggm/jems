@@ -9,7 +9,7 @@ import {
 import { Clock, FileText, Calendar1, Folder } from "lucide-react";
 import {
   format,
-  formatDistanceToNow,
+  formatDistanceToNowStrict,
   isToday,
   isTomorrow,
   isYesterday,
@@ -136,8 +136,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <div className="flex items-center gap-1 text-xs text-accent-foreground/90">
               <Calendar1 className="h-3 w-3 flex-shrink-0" />
               <span className="truncate">
-                {t("projects.created")}{" "}
-                {formatDistanceToNow(new Date(createdAt), {
+                {formatDistanceToNowStrict(new Date(createdAt), {
                   addSuffix: true,
                   locale: locale === "id" ? id : enUS,
                 })}
