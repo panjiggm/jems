@@ -1,4 +1,4 @@
-import ChatsComponent from "@/components/chats";
+import ChatsComponent from "./_components";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
