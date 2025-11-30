@@ -448,7 +448,7 @@ export const getForCalendar = query({
         }));
 
       // Also check publishInfo.publishedAt
-      if (campaign.publishInfo?.publishedAt) {
+      if (campaign.publishInfo?.publishedAt && campaign.platform !== "other") {
         publishedDates.push({
           date: campaign.publishInfo.publishedAt,
           type: "published" as const,
@@ -459,12 +459,16 @@ export const getForCalendar = query({
 
       // Check statusHistory for publishedAt
       campaign.statusHistory.forEach((history) => {
-        if (history.publishedAt && !publishedDates.some((d) => d.date === history.publishedAt)) {
+        if (
+          history.publishedAt &&
+          !publishedDates.some((d) => d.date === history.publishedAt) &&
+          campaign.platform !== "other"
+        ) {
           publishedDates.push({
             date: history.publishedAt,
             type: "published" as const,
             platform: campaign.platform,
-            status: campaign.status,
+            status: "published",
           });
         }
       });

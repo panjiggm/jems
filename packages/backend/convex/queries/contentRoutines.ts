@@ -424,7 +424,7 @@ export const getForCalendar = query({
         }));
 
       // Also check publishInfo.publishedAt
-      if (routine.publishInfo?.publishedAt) {
+      if (routine.publishInfo?.publishedAt && routine.platform !== "other") {
         publishedDates.push({
           date: routine.publishInfo.publishedAt,
           type: "published" as const,
@@ -435,20 +435,28 @@ export const getForCalendar = query({
 
       // Check statusHistory for scheduledAt and publishedAt
       routine.statusHistory.forEach((history) => {
-        if (history.scheduledAt && !scheduledDates.some((d) => d.date === history.scheduledAt)) {
+        if (
+          history.scheduledAt &&
+          !scheduledDates.some((d) => d.date === history.scheduledAt) &&
+          routine.platform !== "other"
+        ) {
           scheduledDates.push({
             date: history.scheduledAt,
             type: "scheduled" as const,
             platform: routine.platform,
-            status: routine.status,
+            status: "pending",
           });
         }
-        if (history.publishedAt && !publishedDates.some((d) => d.date === history.publishedAt)) {
+        if (
+          history.publishedAt &&
+          !publishedDates.some((d) => d.date === history.publishedAt) &&
+          routine.platform !== "other"
+        ) {
           publishedDates.push({
             date: history.publishedAt,
             type: "published" as const,
             platform: routine.platform,
-            status: routine.status,
+            status: "published",
           });
         }
       });
