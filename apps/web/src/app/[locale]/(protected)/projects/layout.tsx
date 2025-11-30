@@ -14,8 +14,8 @@ import {
   List,
   Calendar,
 } from "lucide-react";
-import ProjectStats from "@/components/projects/project-stats";
-import RecentActivity from "@/components/projects/recent-activity";
+import ProjectStats from "./_components/project-stats";
+import RecentActivity from "./_components/recent-activity";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,10 +26,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CreateProjectDialog } from "@/components/projects/dialog-create-project";
-import { EditProjectDialog } from "@/components/projects/dialog-edit-project";
-import { DeleteProjectDialog } from "@/components/projects/dialog-delete-project";
-import { TemplateProjectsDialog } from "@/components/projects/dialog-template-projects";
+import { CreateProjectDialog } from "./_components/dialog-create-project";
+import { EditProjectDialog } from "./_components/dialog-edit-project";
+import { DeleteProjectDialog } from "./_components/dialog-delete-project";
+import { TemplateProjectsDialog } from "./_components/dialog-template-projects";
 import {
   useCreateProjectDialogStore,
   useEditProjectDialogStore,
@@ -41,7 +41,7 @@ import TabsWithOverflow from "@/components/tabs/tabs-with-overflow";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ContentDialog } from "@/components/contents/dialog-content";
 import { TabsYear } from "@/components/tabs";
-import ProjectBreadcrumb from "@/components/projects/project-breadcrumb";
+import ProjectBreadcrumb from "./_components/project-breadcrumb";
 import { ButtonGroupDropdown } from "@/components/ui/button-group";
 import { useQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "@packages/backend/convex/_generated/api";

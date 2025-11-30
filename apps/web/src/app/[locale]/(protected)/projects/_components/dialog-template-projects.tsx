@@ -24,7 +24,7 @@ import { useTemplateDialogStore } from "@/store/use-dialog-template-store";
 import { useTranslations } from "@/hooks/use-translations";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ButtonPrimary } from "../ui/button-primary";
+import { ButtonPrimary } from "@/components/ui/button-primary";
 
 export function TemplateProjectsDialog() {
   const params = useParams();

@@ -18,16 +18,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
 
-import { useEditProjectDialogStore } from "@/store/use-dialog-store";
-import { ButtonPrimary } from "../ui/button-primary";
+import { useCreateProjectDialogStore } from "@/store/use-dialog-store";
+import { ButtonPrimary } from "@/components/ui/button-primary";
 import { useTranslations } from "@/hooks/use-translations";
 
-export function EditProjectDialog() {
+export function CreateProjectDialog() {
   const { t } = useTranslations();
   const {
     isOpen,
     isLoading,
-    projectId,
     formData,
     errors,
     closeDialog,
@@ -36,9 +35,9 @@ export function EditProjectDialog() {
     setError,
     clearErrors,
     resetForm,
-  } = useEditProjectDialogStore();
+  } = useCreateProjectDialogStore();
 
-  const updateProject = useMutation(api.mutations.projects.update);
+  const createProject = useMutation(api.mutations.projects.create);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +49,7 @@ export function EditProjectDialog() {
     let hasErrors = false;
 
     if (!formData.title.trim()) {
-      setError("title", t("projects.editDialog.form.titleRequired"));
+      setError("title", t("projects.dialog.form.titleRequired"));
       hasErrors = true;
     }
 
@@ -59,38 +58,35 @@ export function EditProjectDialog() {
       formData.endDate &&
       formData.startDate > formData.endDate
     ) {
-      setError("endDate", t("projects.editDialog.form.endDateError"));
+      setError("endDate", t("projects.dialog.form.endDateError"));
       hasErrors = true;
     }
 
-    if (hasErrors || !projectId) {
+    if (hasErrors) {
       return;
     }
 
     try {
       setLoading(true);
 
-      await updateProject({
-        id: projectId,
-        patch: {
-          title: formData.title.trim(),
-          description: formData.description.trim() || undefined,
-          startDate: formData.startDate?.toISOString().split("T")[0],
-          endDate: formData.endDate?.toISOString().split("T")[0],
-        },
+      await createProject({
+        title: formData.title.trim(),
+        description: formData.description.trim() || undefined,
+        startDate: formData.startDate?.toISOString().split("T")[0],
+        endDate: formData.endDate?.toISOString().split("T")[0],
       });
 
-      toast.success(t("projects.editDialog.messages.success"), {
-        description: `"${formData.title}" ${t("projects.editDialog.messages.successDescription")}`,
+      toast.success(t("projects.dialog.messages.success"), {
+        description: `"${formData.title}" ${t("projects.dialog.messages.successDescription")}`,
       });
 
       // Reset form and close dialog
       resetForm();
       closeDialog();
     } catch (error) {
-      console.error("Failed to update project:", error);
-      toast.error(t("projects.editDialog.messages.error"), {
-        description: t("projects.editDialog.messages.errorDescription"),
+      console.error("Failed to create project:", error);
+      toast.error(t("projects.dialog.messages.error"), {
+        description: t("projects.dialog.messages.errorDescription"),
       });
     } finally {
       setLoading(false);
@@ -114,24 +110,24 @@ export function EditProjectDialog() {
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{t("projects.editDialog.title")}</DialogTitle>
+            <DialogTitle>{t("projects.dialog.title")}</DialogTitle>
             <DialogDescription>
-              {t("projects.editDialog.description")}
+              {t("projects.dialog.description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             {/* Project Title */}
             <div className="grid gap-2">
-              <Label htmlFor="edit-title">
-                {t("projects.editDialog.form.title")}{" "}
+              <Label htmlFor="title">
+                {t("projects.dialog.form.title")}{" "}
                 <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="edit-title"
+                id="title"
                 value={formData.title}
                 onChange={(e) => updateFormData({ title: e.target.value })}
-                placeholder={t("projects.editDialog.form.titlePlaceholder")}
+                placeholder={t("projects.dialog.form.titlePlaceholder")}
                 disabled={isLoading}
                 className={errors.title ? "border-red-500" : ""}
               />
@@ -142,18 +138,16 @@ export function EditProjectDialog() {
 
             {/* Description */}
             <div className="grid gap-2">
-              <Label htmlFor="edit-description">
-                {t("projects.editDialog.form.description")}
+              <Label htmlFor="description">
+                {t("projects.dialog.form.description")}
               </Label>
               <Textarea
-                id="edit-description"
+                id="description"
                 value={formData.description}
                 onChange={(e) =>
                   updateFormData({ description: e.target.value })
                 }
-                placeholder={t(
-                  "projects.editDialog.form.descriptionPlaceholder",
-                )}
+                placeholder={t("projects.dialog.form.descriptionPlaceholder")}
                 rows={3}
                 disabled={isLoading}
                 className={errors.description ? "border-red-500" : ""}
@@ -165,31 +159,23 @@ export function EditProjectDialog() {
 
             {/* Date Range */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <DatePicker
-                  className="w-full"
-                  label={t("projects.editDialog.form.startDate")}
-                  date={formData.startDate}
-                  onSelectDate={handleDateChange("startDate")}
-                />
-                {errors.startDate && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {errors.startDate}
-                  </p>
-                )}
-              </div>
+              <DatePicker
+                className="w-full"
+                label={t("projects.dialog.form.startDate")}
+                onSelectDate={handleDateChange("startDate")}
+              />
+              {errors.startDate && (
+                <p className="text-sm text-red-500">{errors.startDate}</p>
+              )}
 
-              <div>
-                <DatePicker
-                  className="w-full"
-                  label={t("projects.editDialog.form.endDate")}
-                  date={formData.endDate}
-                  onSelectDate={handleDateChange("endDate")}
-                />
-                {errors.endDate && (
-                  <p className="text-sm text-red-500 mt-1">{errors.endDate}</p>
-                )}
-              </div>
+              <DatePicker
+                className="w-full"
+                label={t("projects.dialog.form.endDate")}
+                onSelectDate={handleDateChange("endDate")}
+              />
+              {errors.endDate && (
+                <p className="text-sm text-red-500">{errors.endDate}</p>
+              )}
             </div>
           </div>
 
@@ -200,13 +186,13 @@ export function EditProjectDialog() {
               onClick={handleClose}
               disabled={isLoading}
             >
-              {t("projects.editDialog.buttons.cancel")}
+              {t("projects.dialog.buttons.cancel")}
             </ButtonPrimary>
             <ButtonPrimary type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isLoading
-                ? t("projects.editDialog.buttons.updating")
-                : t("projects.editDialog.buttons.update")}
+                ? t("projects.dialog.buttons.creating")
+                : t("projects.dialog.buttons.create")}
             </ButtonPrimary>
           </DialogFooter>
         </form>

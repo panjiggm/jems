@@ -3,7 +3,7 @@
 import { useQuery } from "convex-helpers/react/cache";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
-import { FilterState } from "../../project/search-filter-content";
+import { FilterState } from "@/app/[locale]/(protected)/projects/[year]/[projectId]/_components/search-filter-content";
 import { RoutineContentCard } from "./content-card";
 import { ContentRoutineStatus, Platform } from "@/types/status";
 import { useTranslations } from "@/hooks/use-translations";

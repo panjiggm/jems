@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { useDeleteProjectDialogStore } from "@/store/use-dialog-store";
-import { ButtonPrimary } from "../ui/button-primary";
+import { ButtonPrimary } from "@/components/ui/button-primary";
 import { useTranslations } from "@/hooks/use-translations";
 
 export function DeleteProjectDialog() {

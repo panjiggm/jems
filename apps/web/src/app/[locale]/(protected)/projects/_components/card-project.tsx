@@ -17,7 +17,7 @@ import {
 import { id, enUS } from "date-fns/locale";
 import { useTranslations } from "@/hooks/use-translations";
 import { useRouter, usePathname, useParams } from "next/navigation";
-import { CardHeader } from "../ui/card";
+import { CardHeader } from "@/components/ui/card";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
 
 interface Project {

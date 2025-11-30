@@ -1,6 +1,6 @@
 "use client";
 
-import ProjectDetailsComponent from "@/components/project";
+import ProjectDetailsComponent from "./_components";
 import { useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Id } from "@packages/backend/convex/_generated/dataModel";

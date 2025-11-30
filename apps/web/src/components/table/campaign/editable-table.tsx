@@ -17,7 +17,7 @@ import {
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
-import { FilterState } from "../../project/search-filter-content";
+import { FilterState } from "@/app/[locale]/(protected)/projects/[year]/[projectId]/_components/search-filter-content";
 import {
   ContentCampaignStatus,
   ContentCampaignType,

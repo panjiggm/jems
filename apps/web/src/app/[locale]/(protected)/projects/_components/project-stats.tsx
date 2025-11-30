@@ -14,7 +14,7 @@ import {
   BarChart3,
   User,
 } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "@/hooks/use-translations";
 
 interface ProjectStatsProps {
