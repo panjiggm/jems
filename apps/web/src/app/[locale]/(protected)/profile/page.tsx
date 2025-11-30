@@ -14,9 +14,9 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 // Import tab components
-import PersonalInfo from "@/components/profile/personal-info";
-import NichePersona from "@/components/profile/niche-persona";
-import AISystem from "@/components/profile/ai-system";
+import PersonalInfo from "./_components/personal-info";
+import NichePersona from "./_components/niche-persona";
+import AISystem from "./_components/ai-system";
 
 interface MenuItem {
   id: string;
@@ -26,7 +26,6 @@ interface MenuItem {
 
 export default function ProfilePage() {
   const params = useParams();
-  const locale = params.locale as string;
   const [showFullBio, setShowFullBio] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);

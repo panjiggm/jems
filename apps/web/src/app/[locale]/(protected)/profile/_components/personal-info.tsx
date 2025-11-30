@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { ButtonPrimary } from "../ui/button-primary";
+import { ButtonPrimary } from "../../../../../components/ui/button-primary";
 import { useTranslations } from "@/hooks/use-translations";
 
 export default function PersonalInfo() {

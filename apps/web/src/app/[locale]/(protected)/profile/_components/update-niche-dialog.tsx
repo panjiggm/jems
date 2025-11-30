@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Id } from "@packages/backend/convex/_generated/dataModel";
-import { ButtonPrimary } from "../ui/button-primary";
+import { ButtonPrimary } from "../../../../../components/ui/button-primary";
 import { useTranslations } from "@/hooks/use-translations";
 
 interface UpdateNicheDialogProps {

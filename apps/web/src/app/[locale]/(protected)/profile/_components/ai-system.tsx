@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Label } from "@/components/ui/label";
