@@ -385,3 +385,94 @@ export const getAllSlugsForUser = query({
     return campaigns.map((c) => c.slug).filter(Boolean);
   },
 });
+
+// Get campaigns for calendar view with scheduled and published dates
+export const getForCalendar = query({
+  args: {
+    projectId: v.optional(v.id("projects")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    let campaigns = await ctx.db
+      .query("contentCampaigns")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    // Filter by project if specified
+    if (args.projectId) {
+      campaigns = campaigns.filter((c) => c.projectId === args.projectId);
+    }
+
+    // Get scheduled publishes for these campaigns
+    const campaignIds = campaigns.map((c) => c._id);
+    const schedules = await Promise.all(
+      campaignIds.map((id) =>
+        ctx.db
+          .query("scheduledPublishes")
+          .withIndex("by_content", (q) =>
+            q.eq("contentType", "campaign").eq("contentId", id),
+          )
+          .collect(),
+      ),
+    );
+
+    // Flatten schedules
+    const allSchedules = schedules.flat();
+
+    // Combine campaigns with their schedules
+    return campaigns.map((campaign) => {
+      const campaignSchedules = allSchedules.filter(
+        (s) => s.contentId === campaign._id,
+      );
+
+      // Get scheduled dates (future)
+      const scheduledDates = campaignSchedules
+        .filter((s) => s.status === "pending" || s.status === "processing")
+        .map((s) => ({
+          date: s.scheduledAt,
+          type: "scheduled" as const,
+          platform: s.platform,
+          status: s.status,
+        }));
+
+      // Get published dates (past)
+      const publishedDates = campaignSchedules
+        .filter((s) => s.status === "published" && s.publishedAt)
+        .map((s) => ({
+          date: new Date(s.publishedAt!).toISOString(),
+          type: "published" as const,
+          platform: s.platform,
+          status: s.status,
+        }));
+
+      // Also check publishInfo.publishedAt
+      if (campaign.publishInfo?.publishedAt) {
+        publishedDates.push({
+          date: campaign.publishInfo.publishedAt,
+          type: "published" as const,
+          platform: campaign.platform,
+          status: "published",
+        });
+      }
+
+      // Check statusHistory for publishedAt
+      campaign.statusHistory.forEach((history) => {
+        if (history.publishedAt && !publishedDates.some((d) => d.date === history.publishedAt)) {
+          publishedDates.push({
+            date: history.publishedAt,
+            type: "published" as const,
+            platform: campaign.platform,
+            status: campaign.status,
+          });
+        }
+      });
+
+      return {
+        ...campaign,
+        calendarEvents: [...scheduledDates, ...publishedDates],
+      };
+    });
+  },
+});

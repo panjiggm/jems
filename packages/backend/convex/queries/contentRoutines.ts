@@ -361,3 +361,102 @@ export const getAllSlugsForUser = query({
     return routines.map((r) => r.slug).filter(Boolean);
   },
 });
+
+// Get routines for calendar view with scheduled and published dates
+export const getForCalendar = query({
+  args: {
+    projectId: v.optional(v.id("projects")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    let routines = await ctx.db
+      .query("contentRoutines")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    // Filter by project if specified
+    if (args.projectId) {
+      routines = routines.filter((r) => r.projectId === args.projectId);
+    }
+
+    // Get scheduled publishes for these routines
+    const routineIds = routines.map((r) => r._id);
+    const schedules = await Promise.all(
+      routineIds.map((id) =>
+        ctx.db
+          .query("scheduledPublishes")
+          .withIndex("by_content", (q) =>
+            q.eq("contentType", "routine").eq("contentId", id),
+          )
+          .collect(),
+      ),
+    );
+
+    // Flatten schedules
+    const allSchedules = schedules.flat();
+
+    // Combine routines with their schedules
+    return routines.map((routine) => {
+      const routineSchedules = allSchedules.filter(
+        (s) => s.contentId === routine._id,
+      );
+
+      // Get scheduled dates (future)
+      const scheduledDates = routineSchedules
+        .filter((s) => s.status === "pending" || s.status === "processing")
+        .map((s) => ({
+          date: s.scheduledAt,
+          type: "scheduled" as const,
+          platform: s.platform,
+          status: s.status,
+        }));
+
+      // Get published dates (past)
+      const publishedDates = routineSchedules
+        .filter((s) => s.status === "published" && s.publishedAt)
+        .map((s) => ({
+          date: new Date(s.publishedAt!).toISOString(),
+          type: "published" as const,
+          platform: s.platform,
+          status: s.status,
+        }));
+
+      // Also check publishInfo.publishedAt
+      if (routine.publishInfo?.publishedAt) {
+        publishedDates.push({
+          date: routine.publishInfo.publishedAt,
+          type: "published" as const,
+          platform: routine.platform,
+          status: "published",
+        });
+      }
+
+      // Check statusHistory for scheduledAt and publishedAt
+      routine.statusHistory.forEach((history) => {
+        if (history.scheduledAt && !scheduledDates.some((d) => d.date === history.scheduledAt)) {
+          scheduledDates.push({
+            date: history.scheduledAt,
+            type: "scheduled" as const,
+            platform: routine.platform,
+            status: routine.status,
+          });
+        }
+        if (history.publishedAt && !publishedDates.some((d) => d.date === history.publishedAt)) {
+          publishedDates.push({
+            date: history.publishedAt,
+            type: "published" as const,
+            platform: routine.platform,
+            status: routine.status,
+          });
+        }
+      });
+
+      return {
+        ...routine,
+        calendarEvents: [...scheduledDates, ...publishedDates],
+      };
+    });
+  },
+});

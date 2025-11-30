@@ -22,4 +22,13 @@ export const common = {
   contact: "Hubungi",
   free: "Gratis",
   navigation: "Navigasi",
+  month: "Bulan",
+  week: "Minggu",
+  day: "Hari",
+  agenda: "Agenda",
+  date: "Tanggal",
+  time: "Waktu",
+  today: "Hari ini",
+  event: "Acara",
+  noEventsInRange: "Tidak ada acara dalam rentang ini",
 } as const;

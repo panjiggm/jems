@@ -22,4 +22,13 @@ export const common = {
   contact: "Contact",
   free: "Free",
   navigation: "Navigation",
+  month: "Month",
+  week: "Week",
+  day: "Day",
+  agenda: "Agenda",
+  date: "Date",
+  time: "Time",
+  today: "Today",
+  event: "Event",
+  noEventsInRange: "No events in this range",
 } as const;
