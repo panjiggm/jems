@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { LayoutGrid, List } from "lucide-react";
-import { ButtonPrimary } from "../ui/button-primary";
+import { ButtonPrimary } from "@/components/ui/button-primary";
 import { useTranslations } from "@/hooks/use-translations";
 
 interface ViewToggleProps {

@@ -1,6 +1,6 @@
 import { preloadQuery } from "convex/nextjs";
 import { api } from "@packages/backend/convex/_generated/api";
-import { DriveClient } from "@/components/drive";
+import { DriveClient } from "./_components";
 
 interface DrivePageProps {
   params: Promise<{ locale: string }>;

@@ -23,7 +23,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Upload, Check, X } from "lucide-react";
 import { toast } from "sonner";
-import { ButtonPrimary } from "../ui/button-primary";
+import { ButtonPrimary } from "@/components/ui/button-primary";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/use-translations";
 

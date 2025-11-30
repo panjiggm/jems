@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { DriveStats } from "@/components/drive/drive-stats";
+import { DriveStats } from "./_components/drive-stats";
 
 export default function DriveLayout({
   children,
