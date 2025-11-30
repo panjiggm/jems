@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, Preloaded, usePreloadedQuery } from "convex/react";
@@ -50,7 +49,7 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { useTranslations } from "@/hooks/use-translations";
-import { ButtonPrimary } from "../ui/button-primary";
+import { ButtonPrimary } from "@/components/ui/button-primary";
 
 // Infer types from Convex queries
 type CampaignData = FunctionReturnType<

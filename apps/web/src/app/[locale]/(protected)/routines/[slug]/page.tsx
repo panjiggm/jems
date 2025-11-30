@@ -1,6 +1,6 @@
 import { preloadQuery } from "convex/nextjs";
 import { api } from "@packages/backend/convex/_generated/api";
-import { ContentDetailPage } from "@/components/contents";
+import { ContentDetailPage } from "./_components/content-detail-page";
 
 type PageProps = {
   params: Promise<{ slug: string; locale: string }>;

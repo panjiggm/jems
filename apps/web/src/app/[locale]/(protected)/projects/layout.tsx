@@ -39,7 +39,7 @@ import { useTemplateDialogStore } from "@/store/use-dialog-template-store";
 import { useTranslations } from "@/hooks/use-translations";
 import TabsWithOverflow from "@/components/tabs/tabs-with-overflow";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { ContentDialog } from "@/components/contents/dialog-content";
+import { ContentDialog } from "./_components/dialog-content";
 import { TabsYear } from "@/components/tabs";
 import ProjectBreadcrumb from "./_components/project-breadcrumb";
 import { ButtonGroupDropdown } from "@/components/ui/button-group";

@@ -1,9 +1,9 @@
 "use client";
 
-import Hero from "@/components/common/hero";
-import FeatureStack from "@/components/home/feature-stack";
-import Navbar from "@/components/navbar";
+import Hero from "./_components/hero";
+import FeatureStack from "./_components/feature-stack";
 import SocialMediaIntegration from "./_components/social-media-integration";
+import Navbar from "@/components/navbar";
 
 export default function Home() {
   return (

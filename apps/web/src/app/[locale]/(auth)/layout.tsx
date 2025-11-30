@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Navbar from "@/components/navbar";
-import FooterSimple from "@/components/common/footer-simple";
+import FooterSimple from "@/components/footer-simple";
 
 export const metadata: Metadata = {
   title: "Authentication | Holobiont",

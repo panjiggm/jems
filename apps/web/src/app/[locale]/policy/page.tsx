@@ -1,7 +1,7 @@
 import { getDictionary } from "@/lib/get-dictionary";
 import { Locale } from "@/lib/i18n";
 import Navbar from "@/components/navbar";
-import FooterSimple from "@/components/common/footer-simple";
+import FooterSimple from "@/components/footer-simple";
 import { Metadata } from "next";
 
 interface PolicyPageProps {
