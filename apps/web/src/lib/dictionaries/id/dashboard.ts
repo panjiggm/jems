@@ -27,7 +27,8 @@ export const dashboard = {
     status: {
       connected: "Terhubung",
       notConnected: "Belum terhubung",
-      unavailable: "Dalam pengembangan",
+      unavailable: "Belum tersedia",
+      underDevelopment: "Dalam pengembangan",
     },
   },
 } as const;

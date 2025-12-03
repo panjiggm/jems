@@ -1,6 +1,6 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { currentUserId } from "../auth";
+import { getUserId } from "../schema";
 
 /**
  * Get daily suggestions for a specific date
@@ -10,7 +10,7 @@ export const getDailySuggestions = query({
     date: v.optional(v.string()), // ISO date string, defaults to today
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     const suggestionDate = args.date || new Date().toISOString().split("T")[0];
@@ -45,7 +45,7 @@ export const getActiveSuggestions = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     const limit = Math.min(args.limit ?? 50, 100);
@@ -86,7 +86,7 @@ export const listContentIdeas = query({
     cursor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return { items: [], isDone: true, cursor: undefined };
 
     const limit = Math.min(args.limit ?? 20, 100);
@@ -153,7 +153,7 @@ export const getContentIdea = query({
     ideaId: v.id("contentIdeas"),
   },
   handler: async (ctx, args) => {
-    const userId = await currentUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     const idea = await ctx.db.get(args.ideaId);

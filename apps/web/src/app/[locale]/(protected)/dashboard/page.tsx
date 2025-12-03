@@ -1,48 +1,36 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useMemo } from "react";
 import { api } from "@packages/backend/convex/_generated/api";
 import StatisticsCard, { formatNumber } from "./_components/statistics-card";
 import { SocialMediaIcon } from "./_components/social-media-icon";
 import DailySuggestionsCard from "./_components/daily-suggestions-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "@/hooks/use-translations";
 
-// Platform configuration with colors
-const platformConfig = {
+// Platform configuration with colors (non-translatable properties)
+const platformConfigBase = {
   tiktok: {
-    title: "TikTok Followers",
     iconClassName: "bg-black/10 dark:bg-white/10",
-    badgeConnected: "Terhubung",
-    badgeAvailable: "Belum terhubung",
-    badgeUnavailable: "Dalam pengembangan",
   },
   instagram: {
-    title: "Instagram Followers",
     iconClassName: "bg-gradient-to-br from-purple-500/10 to-pink-500/10",
-    badgeConnected: "Terhubung",
-    badgeAvailable: "Belum terhubung",
-    badgeUnavailable: "Dalam pengembangan",
   },
   facebook: {
-    title: "Facebook Followers",
     iconClassName: "bg-blue-500/10",
-    badgeConnected: "Terhubung",
-    badgeAvailable: "Belum terhubung",
-    badgeUnavailable: "Dalam pengembangan",
   },
   youtube: {
-    title: "YouTube Subscribers",
     iconClassName: "bg-red-500/10",
-    badgeConnected: "Terhubung",
-    badgeAvailable: "Belum terhubung",
-    badgeUnavailable: "Dalam pengembangan",
   },
 } as const;
 
 export default function DashboardPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+  const { t } = useTranslations();
 
   // Fetch platform availability and stats
   const platformAvailability = useQuery(
@@ -66,13 +54,27 @@ export default function DashboardPage() {
     ];
 
     return platforms.map((platform) => {
-      const config = platformConfig[platform];
+      const baseConfig = platformConfigBase[platform];
       const isAvailable = platformAvailability[platform];
       const platformData = socialMediaStats[platform];
       const isConnected = platformData?.isConnected ?? false;
 
+      // Get translated strings
+      const title = t(`dashboard.socialMedia.${platform}.title`);
+      const badgeConnected = t("dashboard.socialMedia.status.connected");
+      const badgeAvailable = t("dashboard.socialMedia.status.notConnected");
+      const badgeUnavailable = t("dashboard.socialMedia.status.unavailable");
+      const badgeUnderDevelopment = t(
+        "dashboard.socialMedia.status.underDevelopment",
+      );
+      const connectText = t(`dashboard.socialMedia.${platform}.connect`);
+
       // Determine status
-      let status: "available" | "connected" | "unavailable";
+      let status:
+        | "available"
+        | "connected"
+        | "unavailable"
+        | "underDevelopment";
       let value: string;
       let badgeContent: string;
       let trend: "up" | "down" | undefined;
@@ -81,13 +83,13 @@ export default function DashboardPage() {
       if (!isAvailable) {
         // Condition 1: Unavailable
         status = "unavailable";
-        value = "Belum tersedia";
-        badgeContent = config.badgeUnavailable;
+        value = badgeUnavailable;
+        badgeContent = badgeUnderDevelopment;
       } else if (!isConnected || !platformData) {
         // Condition 2: Available but not connected
         status = "available";
-        value = `Connect with ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
-        badgeContent = config.badgeAvailable;
+        value = connectText;
+        badgeContent = badgeAvailable;
       } else {
         // Condition 3: Connected
         status = "connected";
@@ -104,7 +106,7 @@ export default function DashboardPage() {
           const followers = stats?.followersCount ?? 0;
           value = formatNumber(followers);
         }
-        badgeContent = config.badgeConnected;
+        badgeContent = badgeConnected;
 
         // TODO: Calculate trend and change percentage from previous stats
         // For now, we'll leave it undefined
@@ -113,19 +115,25 @@ export default function DashboardPage() {
       return {
         platform,
         icon: <SocialMediaIcon platform={platform} width={20} height={20} />,
-        title: config.title,
+        title,
         value,
         badgeContent,
         status,
-        iconClassName: config.iconClassName,
+        iconClassName: baseConfig.iconClassName,
         trend,
         changePercentage,
         onConnectClick: () => {
-          router.push("/settings/accounts");
+          if (platform === "tiktok") {
+            // Redirect to OAuth initiation API route
+            window.location.href = "/api/oauth/tiktok";
+          } else {
+            // For other platforms, redirect to settings page
+            router.push(`/${locale}/settings/accounts`);
+          }
         },
       };
     });
-  }, [platformAvailability, socialMediaStats, router]);
+  }, [platformAvailability, socialMediaStats, router, locale, t]);
 
   const isLoading = !platformAvailability || !socialMediaStats;
 

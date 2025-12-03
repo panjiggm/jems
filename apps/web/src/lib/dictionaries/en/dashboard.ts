@@ -27,7 +27,8 @@ export const dashboard = {
     status: {
       connected: "Connected",
       notConnected: "Not connected",
-      unavailable: "Under development",
+      unavailable: "Not available",
+      underDevelopment: "Under development",
     },
   },
 } as const;

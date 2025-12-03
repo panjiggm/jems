@@ -47,6 +47,13 @@ After that, optionally add the `OPENAI_API_KEY` env var from
 [OpenAI](https://platform.openai.com/account/api-keys) to your Convex
 environment variables to get AI summaries.
 
+For TikTok OAuth integration, add the following environment variables to your Convex deployment:
+- `TIKTOK_CLIENT_KEY`: Your TikTok OAuth Client Key from [TikTok Developer Portal](https://developers.tiktok.com/)
+- `TIKTOK_CLIENT_SECRET`: Your TikTok OAuth Client Secret
+
+Also add to your web app `.env.local`:
+- `NEXT_PUBLIC_APP_URL`: Your app's public URL (e.g., `http://localhost:4000` for development, or your production URL)
+
 The `setup` command should now finish successfully.
 
 ### 3. Configure both apps

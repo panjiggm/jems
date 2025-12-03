@@ -31,7 +31,7 @@ export type StatisticsCardProps = {
   className?: string;
   iconClassName?: string;
   // New props for social media cards
-  status?: "available" | "connected" | "unavailable";
+  status?: "available" | "connected" | "unavailable" | "underDevelopment";
   onConnectClick?: () => void;
 };
 
@@ -50,6 +50,7 @@ const StatisticsCard = ({
   const isUnavailable = status === "unavailable";
   const isAvailable = status === "available";
   const isConnected = status === "connected";
+  const isUnderDevelopment = status === "underDevelopment";
 
   return (
     <Card className={cn("gap-4 border rounded-lg", className)}>
@@ -81,16 +82,20 @@ const StatisticsCard = ({
           <span className="text-muted-foreground text-xs">{title}</span>
         </p>
         <div className="flex flex-col gap-2">
-          <Badge
-            className={cn(
-              "bg-primary/10 text-primary text-[11px]",
-              isUnavailable && "bg-muted text-muted-foreground text-[11px]",
-              isAvailable &&
-                "bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 text-[11px]",
-            )}
-          >
-            {badgeContent}
-          </Badge>
+          {isUnavailable && (
+            <Badge
+              className={cn(
+                "bg-primary/10 text-primary text-[11px]",
+                isUnavailable && "bg-muted text-muted-foreground text-[11px]",
+                isUnderDevelopment &&
+                  "bg-muted text-muted-foreground text-[11px]",
+                isAvailable &&
+                  "bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 text-[11px]",
+              )}
+            >
+              {badgeContent}
+            </Badge>
+          )}
           {isAvailable && onConnectClick && (
             <Button
               variant="outline"

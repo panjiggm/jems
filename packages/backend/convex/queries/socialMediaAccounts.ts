@@ -207,7 +207,7 @@ export const getConnectionSummary = query({
 // Checks which platforms have OAuth implementation available
 export const getPlatformAvailability = query({
   args: {},
-  handler: async () => {
+  handler: async (ctx) => {
     // Check availability based on environment variables and implementation status
     // Only TikTok is currently implemented
     return {
