@@ -50,31 +50,27 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useTranslations } from "@/hooks/use-translations";
 import { ButtonPrimary } from "@/components/ui/button-primary";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Infer types from Convex queries
+// Use getBySlugOrId since that's what we're using now
 type CampaignData = FunctionReturnType<
-  typeof api.queries.contentCampaigns.getBySlug
+  typeof api.queries.contentCampaigns.getBySlugOrId
 >;
 type RoutineData = FunctionReturnType<
-  typeof api.queries.contentRoutines.getBySlug
+  typeof api.queries.contentRoutines.getBySlugOrId
 >;
 
 // Props interface for preloaded data
-// Accept getBySlug, getById, or getBySlugOrId since they return the same structure
+// Accept getBySlugOrId (which handles both slug and ID cases)
 interface CampaignDetailPageProps {
   contentType: "campaign";
-  preloadedData:
-    | Preloaded<typeof api.queries.contentCampaigns.getBySlug>
-    | Preloaded<typeof api.queries.contentCampaigns.getById>
-    | Preloaded<typeof api.queries.contentCampaigns.getBySlugOrId>;
+  preloadedData: Preloaded<typeof api.queries.contentCampaigns.getBySlugOrId>;
 }
 
 interface RoutineDetailPageProps {
   contentType: "routine";
-  preloadedData:
-    | Preloaded<typeof api.queries.contentRoutines.getBySlug>
-    | Preloaded<typeof api.queries.contentRoutines.getById>
-    | Preloaded<typeof api.queries.contentRoutines.getBySlugOrId>;
+  preloadedData: Preloaded<typeof api.queries.contentRoutines.getBySlugOrId>;
 }
 
 type ContentDetailPageProps = CampaignDetailPageProps | RoutineDetailPageProps;
@@ -455,7 +451,7 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
   const [activeTab, setActiveTab] = useQueryState("tab");
   const locale = (params.locale as string) || "en";
 
-  const data = usePreloadedQuery(preloadedData) as RoutineData;
+  const data = usePreloadedQuery(preloadedData);
 
   // Mutations
   const deleteRoutine = useMutation(api.mutations.contentRoutines.remove);
@@ -482,16 +478,61 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
     router.back();
   };
 
-  // Loading state
+  // Loading state with skeleton
   if (data === undefined) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-xs text-muted-foreground">
-            {t("common.loading")}...
-          </p>
+      <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+        {/* Header Skeleton */}
+        <div className="bg-background sticky top-14 z-10">
+          <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-4">
+            <div className="flex items-center justify-between mb-4">
+              <Skeleton className="h-7 w-16" />
+              <Skeleton className="h-7 w-20" />
+            </div>
+            <div className="space-y-3 mb-4">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-3/4" />
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-6 w-24" />
+              </div>
+              <Skeleton className="h-16 w-full" />
+            </div>
+          </div>
+          {/* Tabs Navigation Skeleton */}
+          <div className="border-b">
+            <div className="container max-w-5xl mx-auto px-4 sm:px-6">
+              <div className="flex gap-4">
+                <Skeleton className="h-10 w-24" />
+                <Skeleton className="h-10 w-20" />
+                <Skeleton className="h-10 w-24" />
+              </div>
+            </div>
+          </div>
         </div>
+        {/* Content Skeleton */}
+        <ScrollArea className="flex-1">
+          <div className="container max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="mt-4 space-y-6">
+              <div className="space-y-4">
+                <Skeleton className="h-5 w-20" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-7 w-24" />
+                  <Skeleton className="h-7 w-28" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-32 w-full" />
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
       </div>
     );
   }
