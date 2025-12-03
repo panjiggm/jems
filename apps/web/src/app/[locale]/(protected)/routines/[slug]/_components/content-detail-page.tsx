@@ -60,14 +60,21 @@ type RoutineData = FunctionReturnType<
 >;
 
 // Props interface for preloaded data
+// Accept getBySlug, getById, or getBySlugOrId since they return the same structure
 interface CampaignDetailPageProps {
   contentType: "campaign";
-  preloadedData: Preloaded<typeof api.queries.contentCampaigns.getBySlug>;
+  preloadedData:
+    | Preloaded<typeof api.queries.contentCampaigns.getBySlug>
+    | Preloaded<typeof api.queries.contentCampaigns.getById>
+    | Preloaded<typeof api.queries.contentCampaigns.getBySlugOrId>;
 }
 
 interface RoutineDetailPageProps {
   contentType: "routine";
-  preloadedData: Preloaded<typeof api.queries.contentRoutines.getBySlug>;
+  preloadedData:
+    | Preloaded<typeof api.queries.contentRoutines.getBySlug>
+    | Preloaded<typeof api.queries.contentRoutines.getById>
+    | Preloaded<typeof api.queries.contentRoutines.getBySlugOrId>;
 }
 
 type ContentDetailPageProps = CampaignDetailPageProps | RoutineDetailPageProps;

@@ -1,6 +1,7 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
 import { getUserId } from "../schema";
+import { Id } from "../_generated/dataModel";
 
 export const list = query({
   args: {
@@ -200,8 +201,14 @@ export const getById = query({
       }
     });
 
+    // Get project info
+    const project = campaign.projectId
+      ? await ctx.db.get(campaign.projectId)
+      : null;
+
     return {
       campaign,
+      project,
       taskStats,
     };
   },
@@ -224,6 +231,85 @@ export const getBySlug = query({
       .first();
 
     if (!campaign) return null;
+
+    // Get project info
+    const project = campaign.projectId
+      ? await ctx.db.get(campaign.projectId)
+      : null;
+
+    // Get tasks for this campaign
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("contentId"), campaign._id),
+          q.eq(q.field("contentType"), "campaign"),
+        ),
+      )
+      .collect();
+
+    // Calculate task stats
+    const taskStats = {
+      total: tasks.length,
+      byStatus: {
+        todo: 0,
+        doing: 0,
+        done: 0,
+        skipped: 0,
+      },
+      withDueDate: 0,
+      overdue: 0,
+    };
+
+    const today = new Date().toISOString().split("T")[0];
+
+    tasks.forEach((task) => {
+      taskStats.byStatus[task.status]++;
+      if (task.dueDate) {
+        taskStats.withDueDate++;
+        if (task.dueDate < today && task.status !== "done") {
+          taskStats.overdue++;
+        }
+      }
+    });
+
+    return {
+      campaign,
+      project,
+      taskStats,
+    };
+  },
+});
+
+// Get campaign by slug or ID with task stats
+// Tries slug first, then falls back to ID if not found
+export const getBySlugOrId = query({
+  args: {
+    identifier: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    // Try by slug first
+    let campaign = await ctx.db
+      .query("contentCampaigns")
+      .withIndex("by_user_slug", (q) =>
+        q.eq("userId", userId).eq("slug", args.identifier),
+      )
+      .first();
+
+    // If not found by slug, try by ID
+    if (!campaign) {
+      try {
+        campaign = await ctx.db.get(args.identifier as Id<"contentCampaigns">);
+        if (!campaign || campaign.userId !== userId) return null;
+      } catch {
+        // Invalid ID format
+        return null;
+      }
+    }
 
     // Get project info
     const project = campaign.projectId

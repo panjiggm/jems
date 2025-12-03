@@ -9,10 +9,10 @@ type PageProps = {
 export default async function RoutineDetailPage({ params }: PageProps) {
   const { slug } = await params;
 
-  // Preload routine data on server
+  // Preload routine data - tries slug first, then falls back to ID
   const preloadedRoutineData = await preloadQuery(
-    api.queries.contentRoutines.getBySlug,
-    { slug },
+    api.queries.contentRoutines.getBySlugOrId,
+    { identifier: slug },
   );
 
   return (

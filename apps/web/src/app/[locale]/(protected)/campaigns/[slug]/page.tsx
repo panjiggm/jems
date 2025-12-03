@@ -9,10 +9,10 @@ type PageProps = {
 export default async function CampaignDetailPage({ params }: PageProps) {
   const { slug } = await params;
 
-  // Preload campaign data on server
+  // Preload campaign data - tries slug first, then falls back to ID
   const preloadedCampaignData = await preloadQuery(
-    api.queries.contentCampaigns.getBySlug,
-    { slug },
+    api.queries.contentCampaigns.getBySlugOrId,
+    { identifier: slug },
   );
 
   return (
