@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useMutation, Preloaded, usePreloadedQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
 import { Id } from "@packages/backend/convex/_generated/dataModel";
-import { FunctionReturnType } from "convex/server";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -52,25 +51,15 @@ import { useTranslations } from "@/hooks/use-translations";
 import { ButtonPrimary } from "@/components/ui/button-primary";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Infer types from Convex queries
-// Use getBySlugOrId since that's what we're using now
-type CampaignData = FunctionReturnType<
-  typeof api.queries.contentCampaigns.getBySlugOrId
->;
-type RoutineData = FunctionReturnType<
-  typeof api.queries.contentRoutines.getBySlugOrId
->;
-
-// Props interface for preloaded data
-// Accept getBySlugOrId (which handles both slug and ID cases)
+// Props interface
 interface CampaignDetailPageProps {
   contentType: "campaign";
-  preloadedData: Preloaded<typeof api.queries.contentCampaigns.getBySlugOrId>;
+  identifier: string;
 }
 
 interface RoutineDetailPageProps {
   contentType: "routine";
-  preloadedData: Preloaded<typeof api.queries.contentRoutines.getBySlugOrId>;
+  identifier: string;
 }
 
 type ContentDetailPageProps = CampaignDetailPageProps | RoutineDetailPageProps;
@@ -86,7 +75,7 @@ export function ContentDetailPage(props: ContentDetailPageProps) {
 
 // Campaign Detail Page Inner Component
 function CampaignDetailPageInner(props: CampaignDetailPageProps) {
-  const { preloadedData } = props;
+  const { identifier } = props;
   const { t } = useTranslations();
   const router = useRouter();
   const params = useParams();
@@ -94,7 +83,9 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
   const [activeTab, setActiveTab] = useQueryState("tab");
   const locale = (params.locale as string) || "en";
 
-  const data = usePreloadedQuery(preloadedData);
+  const data = useQuery(api.queries.contentCampaigns.getBySlugOrId, {
+    identifier,
+  });
 
   // Mutations
   const deleteCampaign = useMutation(api.mutations.contentCampaigns.remove);
@@ -489,7 +480,7 @@ function CampaignDetailPageInner(props: CampaignDetailPageProps) {
 
 // Routine Detail Page Inner Component
 function RoutineDetailPageInner(props: RoutineDetailPageProps) {
-  const { preloadedData } = props;
+  const { identifier } = props;
   const { t } = useTranslations();
   const router = useRouter();
   const params = useParams();
@@ -497,7 +488,9 @@ function RoutineDetailPageInner(props: RoutineDetailPageProps) {
   const [activeTab, setActiveTab] = useQueryState("tab");
   const locale = (params.locale as string) || "en";
 
-  const data = usePreloadedQuery(preloadedData) as RoutineData;
+  const data = useQuery(api.queries.contentRoutines.getBySlugOrId, {
+    identifier,
+  });
 
   // Mutations
   const deleteRoutine = useMutation(api.mutations.contentRoutines.remove);
